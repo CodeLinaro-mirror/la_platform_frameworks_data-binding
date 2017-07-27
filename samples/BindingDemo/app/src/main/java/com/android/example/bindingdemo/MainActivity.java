@@ -4,7 +4,7 @@ import android.databinding.Bindable;
 import android.databinding.DataBindingUtil;
 import android.databinding.Observable;
 import android.databinding.Observable.OnPropertyChangedCallback;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import  com.android.example.bindingdemo.BR;
-public class MainActivity extends ActionBarActivity implements Observable {
+public class MainActivity extends AppCompatActivity implements Observable {
     @Bindable
     UserAdapter tkAdapter;
     @Bindable
