@@ -78,8 +78,13 @@ internal class BindingAdapterStore : Intermediate {
      */
     @field:Transient
     private var currentModuleStore: BindingAdapterStore? = null
+    private val useAndroidX: Boolean
 
-    constructor(stores: MutableList<Intermediate>, previousStores: List<BindingAdapterStore>) {
+    constructor(
+            stores: MutableList<Intermediate>,
+            previousStores: List<BindingAdapterStore>,
+            useAndroidX: Boolean
+    ) : this(useAndroidX) {
         previousStores.forEach {
             merge(it.upgrade() as BindingAdapterStore)
         }
@@ -88,7 +93,9 @@ internal class BindingAdapterStore : Intermediate {
         }
     }
 
-    constructor(v3: SetterStore.IntermediateV3) {
+
+    // we only care about androidX for the current process' store, others can stay unprocessed
+    constructor(v3: SetterStore.IntermediateV3) : this(false) {
         merge(adapterMethods, v3.adapterMethods)
         merge(renamedMethods, v3.renamedMethods)
         merge(conversionMethods, v3.conversionMethods)
@@ -99,24 +106,64 @@ internal class BindingAdapterStore : Intermediate {
         twoWayMethods.putAll(v3.twoWayMethods)
     }
 
-    private constructor()
+    private constructor(useAndroidX: Boolean) {
+        this.useAndroidX = useAndroidX
+    }
+
+    private fun String.androidSupportArtifact() = this.startsWith("android.databinding.adapters")
+
+    private fun <K1, K2, V : MethodDescription> Map<K1, Map<K2, V>>
+            .filterOutAndroidSupport(): Map<K1, Map<K2, V>> {
+        if (!useAndroidX) {
+            return this
+        }
+        return mapValues {
+            it.value.filterOutAndroidSupportFromMap()
+        }
+    }
+
+    private fun <K, V : MethodDescription> Map<K, V>
+            .filterOutAndroidSupportFromMap(): Map<K, V> {
+        if (!useAndroidX) {
+            return this
+        }
+        return filterValues {
+            !it.type.androidSupportArtifact()
+        }
+    }
+
+    private fun <K : InverseMethodDescription, V> Map<K, V>
+            .filterOutAndroidSupportFromMapByKeys(): Map<K, V> {
+        if (!useAndroidX) {
+            return this
+        }
+        return filterKeys {
+            !it.type.androidSupportArtifact()
+        }
+    }
 
     /**
      * Sets this as the instance used by SetterStore which means it will have modifications.
      */
     fun setAsMainStore() {
-        currentModuleStore = BindingAdapterStore()
+        currentModuleStore = BindingAdapterStore(useAndroidX)
     }
 
     private fun merge(other: BindingAdapterStore) {
-        merge(adapterMethods, other.adapterMethods)
-        merge(renamedMethods, other.renamedMethods)
-        merge(conversionMethods, other.conversionMethods)
-        multiValueAdapters.putAll(other.multiValueAdapters)
-        untaggableTypes.putAll(other.untaggableTypes)
-        merge(inverseAdapters, other.inverseAdapters)
-        merge(inverseMethods, other.inverseMethods)
-        twoWayMethods.putAll(other.twoWayMethods)
+        merge(adapterMethods, other.adapterMethods.filterOutAndroidSupport())
+        merge(renamedMethods, other.renamedMethods.filterOutAndroidSupport())
+        merge(conversionMethods, other.conversionMethods.filterOutAndroidSupport())
+        multiValueAdapters.putAll(other.multiValueAdapters.filterOutAndroidSupportFromMap())
+        untaggableTypes.putAll(if (useAndroidX) {
+            other.untaggableTypes.filterNot {
+                it.key.androidSupportArtifact() || it.value.androidSupportArtifact()
+            }
+        } else {
+            other.untaggableTypes
+        })
+        merge(inverseAdapters, other.inverseAdapters.filterOutAndroidSupport())
+        merge(inverseMethods, other.inverseMethods.filterOutAndroidSupport())
+        twoWayMethods.putAll(other.twoWayMethods.filterOutAndroidSupportFromMapByKeys())
     }
 
     /**

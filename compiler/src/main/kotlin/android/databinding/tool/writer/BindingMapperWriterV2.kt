@@ -37,7 +37,6 @@ import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import java.util.HashMap
 import java.util.Locale
-import javax.annotation.Generated
 import javax.lang.model.element.Modifier
 
 class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
@@ -163,9 +162,8 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
         superclass(dataBinderMapper)
         addModifiers(Modifier.PUBLIC)
         if (ModelAnalyzer.getInstance().hasGeneratedAnnotation()) {
-            addAnnotation(AnnotationSpec.builder(Generated::class.java).apply {
-                addMember("value", S, "Android Data Binding")
-            }.build())
+            addAnnotation(AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated"))
+                .addMember("value", S, "Android Data Binding").build())
         }
         addMethods(generateGetViewDataBinder())
         addMethod(generateGetViewArrayDataBinder())

@@ -157,11 +157,18 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
             if (typeElement == null && hasDot && imports != null) {
                 int lastDot = className.lastIndexOf('.');
                 TypeElement parent = getTypeElement(className.substring(0, lastDot), imports);
-                if (parent == null) {
-                    return null;
+                if (parent != null) {
+                    String name = parent.getQualifiedName() + "."
+                            + className.substring(lastDot + 1);
+                    return getTypeElement(name, null);
                 }
-                String name = parent.getQualifiedName() + "." + className.substring(lastDot + 1);
-                return getTypeElement(name, null);
+            }
+            // try to jetify if we couldn't find it
+            if (typeElement == null) {
+                String converted = libTypes.convert(className);
+                if (!converted.equals(className)) {
+                    return getTypeElement(converted, imports);
+                }
             }
             return typeElement;
         } catch (Exception e) {

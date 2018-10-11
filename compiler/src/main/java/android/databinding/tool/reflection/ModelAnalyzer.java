@@ -19,12 +19,12 @@ import android.databinding.tool.Context;
 import android.databinding.tool.LibTypes;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.Preconditions;
+import com.android.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -44,18 +44,76 @@ public abstract class ModelAnalyzer {
     private static final String VIEW_STUB_CLASS_NAME = "android.view.ViewStub";
 
     private List<ModelClass> mListTypes;
-    private ModelClass mMapType;
-    private ModelClass mStringType;
-    private ModelClass mObjectType;
-    private ModelClass mObservableType;
-    private ModelClass mObservableListType;
-    private ModelClass mObservableMapType;
-    private ModelClass mLiveDataType;
-    private ModelClass mMutableLiveDataType;
+    private CachedClass mMapType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return loadClassErasure(MAP_CLASS_NAME);
+        }
+    };
+    private CachedClass mStringType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return findClass(STRING_CLASS_NAME, null);
+        }
+    };
+    private CachedClass mObjectType = new CachedClass() {
+
+        @Override
+        ModelClass find() {
+            return findClass(OBJECT_CLASS_NAME, null);
+
+        }
+    };
+    private CachedClass mObservableType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return findClass(libTypes.getObservable(), null);
+        }
+    };
+    private CachedClass mObservableListType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return loadClassErasure(libTypes.getObservableList());
+        }
+    };
+    private CachedClass mObservableMapType = new CachedClass() {
+
+        @Override
+        ModelClass find() {
+            return loadClassErasure(libTypes.getObservableMap());
+        }
+    };
+    private CachedClass mLiveDataType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return loadClassErasure(libTypes.getLiveData());
+        }
+    };
+    private CachedClass mMutableLiveDataType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return loadClassErasure(libTypes.getMutableLiveData());
+        }
+    };
     private List<ModelClass> mObservableFieldTypes;
-    private ModelClass mViewBindingType;
-    private ModelClass mViewStubType;
-    private ModelClass mViewStubProxyType;
+    private CachedClass mViewBindingType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return findClass(libTypes.getViewDataBinding(), null);
+        }
+    };
+    private CachedClass mViewStubType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return findClass(VIEW_STUB_CLASS_NAME, null);
+        }
+    };
+    private CachedClass mViewStubProxyType = new CachedClass() {
+        @Override
+        ModelClass find() {
+            return findClass(libTypes.getViewStubProxy(), null);
+        }
+    };
 
     public final LibTypes libTypes;
 
@@ -223,75 +281,46 @@ public abstract class ModelAnalyzer {
     }
 
     public ModelClass getMapType() {
-        if (mMapType == null) {
-            mMapType = loadClassErasure(MAP_CLASS_NAME);
-        }
-        return mMapType;
+        return mMapType.get();
     }
 
     ModelClass getStringType() {
-        if (mStringType == null) {
-            mStringType = findClass(STRING_CLASS_NAME, null);
-        }
-        return mStringType;
+        return mStringType.get();
     }
 
     ModelClass getObjectType() {
-        if (mObjectType == null) {
-            mObjectType = findClass(OBJECT_CLASS_NAME, null);
-        }
-        return mObjectType;
+        return mObjectType.get();
     }
 
     ModelClass getObservableType() {
-        if (mObservableType == null) {
-            mObservableType = findClass(libTypes.getObservable(), null);
-        }
-        return mObservableType;
+        return mObservableType.get();
     }
 
     ModelClass getObservableListType() {
-        if (mObservableListType == null) {
-            mObservableListType = loadClassErasure(libTypes.getObservableList());
-        }
-        return mObservableListType;
+        return mObservableListType.get();
     }
 
     ModelClass getObservableMapType() {
-        if (mObservableMapType == null) {
-            mObservableMapType = loadClassErasure(libTypes.getObservableMap());
-        }
-        return mObservableMapType;
+        return mObservableMapType.get();
     }
 
     ModelClass getLiveDataType() {
-        if (mLiveDataType == null) {
-            mLiveDataType = loadClassErasure(libTypes.getLiveData());
-        }
-        return mLiveDataType;
+        return mLiveDataType.get();
     }
 
     ModelClass getMutableLiveDataType() {
-        if (mMutableLiveDataType == null) {
-            mMutableLiveDataType = loadClassErasure(libTypes.getMutableLiveData());
-        }
-        return mMutableLiveDataType;
+        return mMutableLiveDataType.get();
     }
 
     ModelClass getViewDataBindingType() {
-        if (mViewBindingType == null) {
-            mViewBindingType = findClass(libTypes.getViewDataBinding(), null);
-        }
-        Preconditions.checkNotNull(mViewBindingType, "Cannot find %s class. Something is wrong "
+        ModelClass result = mViewBindingType.get();
+        Preconditions.checkNotNull(result, "Cannot find %s class. Something is wrong "
                 + "in the classpath, please submit a bug report", libTypes.getViewDataBinding());
-        return mViewBindingType;
+        return result;
     }
 
     public ModelClass getViewStubProxyType() {
-        if (mViewStubProxyType == null) {
-            mViewStubProxyType = findClass(libTypes.getViewStubProxy(), null);
-        }
-        return mViewStubProxyType;
+        return mViewStubProxyType.get();
     }
 
     protected List<ModelClass> getObservableFieldTypes() {
@@ -306,10 +335,7 @@ public abstract class ModelAnalyzer {
     }
 
     ModelClass getViewStubType() {
-        if (mViewStubType == null) {
-            mViewStubType = findClass(VIEW_STUB_CLASS_NAME, null);
-        }
-        return mViewStubType;
+        return mViewStubType.get();
     }
 
     private ModelClass loadClassErasure(String className) {
@@ -329,4 +355,5 @@ public abstract class ModelAnalyzer {
     }
 
     protected abstract boolean findGeneratedAnnotation();
+
 }

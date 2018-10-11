@@ -221,6 +221,7 @@ iml_module(
         "//tools/idea/.idea/libraries:JUnit4[test]",
         "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.8.0:jar",
         "//tools/idea/.idea/libraries:KotlinJavaRuntime",
+        "//tools/idea/.idea/libraries:jetbrains-annotations-java5",
     ],
 )
 

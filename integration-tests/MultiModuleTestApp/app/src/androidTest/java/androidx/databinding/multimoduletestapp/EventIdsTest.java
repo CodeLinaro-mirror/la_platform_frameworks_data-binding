@@ -16,17 +16,16 @@
 
 package androidx.databinding.multimoduletestapp;
 
-import androidx.databinding.Observable;
-import androidx.databinding.Observable.OnPropertyChangedCallback;
-import androidx.databinding.multimoduletestapp.BR;
-import androidx.databinding.testlibrary1.ObservableInLibrary;
-import android.support.test.runner.AndroidJUnit4;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import androidx.databinding.Observable;
+import androidx.databinding.Observable.OnPropertyChangedCallback;
+import androidx.databinding.testlibrary1.ObservableInLibrary;
+import androidx.test.runner.AndroidJUnit4;
 
 import static org.junit.Assert.assertEquals;
 

@@ -23,9 +23,9 @@ import android.databinding.tool.reflection.ModelAnalyzer
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import javax.annotation.Generated
 import javax.lang.model.element.Modifier
 
 class BRWriter(private val useFinal : Boolean) {
@@ -33,7 +33,7 @@ class BRWriter(private val useFinal : Boolean) {
         val spec = TypeSpec.classBuilder("BR").apply {
             addModifiers(Modifier.PUBLIC)
             if (ModelAnalyzer.getInstance().hasGeneratedAnnotation()) {
-                addAnnotation(AnnotationSpec.builder(Generated::class.java)
+                addAnnotation(AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated"))
                         .addMember("value", S,"Android Data Binding").build())
             }
             values.props.forEach {

@@ -22,9 +22,9 @@ import androidx.databinding.multimoduletestapp.R;
 import androidx.databinding.multimoduletestapp.databinding.ActivityMainBinding;
 import androidx.databinding.testlibrary2.TestObservable;
 import androidx.databinding.testlibrary2.databinding.Layout2Binding;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
