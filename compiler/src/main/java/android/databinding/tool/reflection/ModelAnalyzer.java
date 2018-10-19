@@ -19,7 +19,6 @@ import android.databinding.tool.Context;
 import android.databinding.tool.LibTypes;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.Preconditions;
-import com.android.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -251,14 +250,14 @@ public abstract class ModelAnalyzer {
         return "null";
     }
 
-    public final ModelClass findClass(String className, Map<String, String> imports) {
+    public final ModelClass findClass(String className, ImportBag imports) {
         if (mInjectedClasses.containsKey(className)) {
             return mInjectedClasses.get(className);
         }
         return findClassInternal(className, imports);
     }
 
-    public abstract ModelClass findClassInternal(String className, Map<String, String> imports);
+    public abstract ModelClass findClassInternal(String className, ImportBag importBag);
 
     public abstract ModelClass findClass(Class classType);
 

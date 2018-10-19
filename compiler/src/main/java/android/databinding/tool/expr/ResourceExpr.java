@@ -16,6 +16,7 @@
 package android.databinding.tool.expr;
 
 import android.databinding.tool.BindingTarget;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.writer.KCode;
@@ -66,7 +67,7 @@ public class ResourceExpr extends Expr {
 
     private Map<String, ModelClass> getResourceToTypeMapping(ModelAnalyzer modelAnalyzer) {
         if (mResourceToTypeMapping == null) {
-            final Map<String, String> imports = getModel().getImports();
+            final ImportBag imports = getModel().getImports();
             mResourceToTypeMapping = new HashMap<String, ModelClass>();
             mResourceToTypeMapping.put("anim", modelAnalyzer.findClass("android.view.animation.Animation",
                             imports));

@@ -15,6 +15,7 @@ package android.databinding.tool.reflection.java;
 
 import android.databinding.tool.Context;
 import android.databinding.tool.LibTypes;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.SdkUtil;
@@ -88,7 +89,7 @@ public class JavaAnalyzer extends ModelAnalyzer {
     }
 
     @Override
-    public ModelClass findClassInternal(String className, Map<String, String> imports) {
+    public ModelClass findClassInternal(String className, ImportBag imports) {
         // TODO handle imports
         JavaClass loaded = mClassCache.get(className);
         if (loaded != null) {

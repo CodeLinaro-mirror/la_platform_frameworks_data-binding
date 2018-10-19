@@ -16,6 +16,7 @@
 package android.databinding.tool.reflection.annotation;
 
 import android.databinding.tool.LibTypes;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.TypeUtil;
@@ -71,7 +72,7 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
     }
 
     @Override
-    public ModelClass findClassInternal(String className, Map<String, String> imports) {
+    public ModelClass findClassInternal(String className, ImportBag imports) {
         className = className.trim();
         int numDimensions = 0;
         while (className.endsWith("[]")) {
@@ -130,12 +131,12 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
         return new AnnotationClass(type);
     }
 
-    private TypeElement getTypeElement(String className, Map<String, String> imports) {
+    private TypeElement getTypeElement(String className, ImportBag imports) {
         Elements elementUtils = getElementUtils();
         final boolean hasDot = className.indexOf('.') >= 0;
         if (!hasDot && imports != null) {
             // try the imports
-            String importedClass = imports.get(className);
+            String importedClass = imports.find(className);
             if (importedClass != null) {
                 className = importedClass;
             }
@@ -177,7 +178,7 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
     }
 
     private ArrayList<String> splitTemplateParameters(String templateParameters) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         int index = 0;
         int openCount = 0;
         StringBuilder arg = new StringBuilder();

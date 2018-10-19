@@ -20,9 +20,11 @@ import android.databinding.tool.BindingTarget;
 import android.databinding.tool.CallbackWrapper;
 import android.databinding.tool.InverseBinding;
 import android.databinding.tool.processing.ErrorMessages;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelMethod;
+import android.databinding.tool.reflection.MutableImportBag;
 import android.databinding.tool.store.Location;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.Preconditions;
@@ -45,7 +47,7 @@ import java.util.stream.Collectors;
 public class ExprModel {
     public static final String SAFE_UNBOX_METHOD_NAME = "safeUnbox";
 
-    Map<String, Expr> mExprMap = new HashMap<String, Expr>();
+    Map<String, Expr> mExprMap = new HashMap<>();
 
     List<Expr> mBindingExpressions = new ArrayList<Expr>();
 
@@ -81,7 +83,7 @@ public class ExprModel {
 
     private boolean mSealed = false;
 
-    private Map<String, String> mImports = new HashMap<String, String>();
+    private MutableImportBag mImports = new MutableImportBag();
 
     private ParserRuleContext mCurrentParserContext;
     private Location mCurrentLocationInFile;
@@ -116,6 +118,15 @@ public class ExprModel {
         }
         //noinspection unchecked
         T existing = (T) mExprMap.get(expr.getUniqueKey());
+        if (existing == null) {
+            // if it is identifier, look for java.lang
+            // extra check to exclude StaticIdentifier since
+            // while registering it, we'll hit this case
+            if (expr instanceof IdentifierExpr && !(expr instanceof StaticIdentifierExpr)) {
+                IdentifierExpr id = (IdentifierExpr) expr;
+                existing = (T) lazyImportFromJavaLang(id.getName());
+            }
+        }
         if (existing != null) {
             Preconditions.check(expr.getParents().isEmpty(),
                     "If an expression already exists, it should've never been added to a parent,"
@@ -269,7 +280,7 @@ public class ExprModel {
         }
         while (true) {
             String candidate = cnt == 0 ? baseName : baseName + cnt;
-            if (!mImports.containsKey(candidate)) {
+            if (!mImports.contains(candidate)) {
                 return addImport(candidate, type, null);
             }
             cnt ++;
@@ -339,7 +350,7 @@ public class ExprModel {
     }
 
     public StaticIdentifierExpr addImport(String alias, String type, Location location) {
-        String existing = mImports.get(alias);
+        String existing = mImports.find(alias);
         if (existing != null) {
             if (existing.equals(type)) {
                 final StaticIdentifierExpr id = findStaticIdentifierExpr(type);
@@ -362,7 +373,7 @@ public class ExprModel {
         return id;
     }
 
-    public Map<String, String> getImports() {
+    public ImportBag getImports() {
         return mImports;
     }
 
@@ -783,6 +794,18 @@ public class ExprModel {
             if (expr instanceof IdentifierExpr && name.equals(((IdentifierExpr) expr).getName())) {
                 return (IdentifierExpr) expr;
             }
+        }
+        return lazyImportFromJavaLang(name);
+    }
+
+    @Nullable
+    private StaticIdentifierExpr lazyImportFromJavaLang(String name) {
+        // check for java lang imports and add from there if it exists
+        if (ImportBag.JAVA_LANG_IMPORTS.contains(name)) {
+            final StaticIdentifierExpr id = staticIdentifier(name);
+            L.d("adding java lang import %s", name);
+            id.setUserDefinedType("java.lang." + name);
+            return id;
         }
         return null;
     }

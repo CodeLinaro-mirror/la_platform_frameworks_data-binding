@@ -31,13 +31,13 @@ public class InjectedMethod extends ModelMethod {
     private final String mName;
     private final String mReturnTypeName;
     private final String[] mParameterTypeNames;
-    private final Map<String, String> mImports;
+    private final ImportBag mImports;
     private ModelClass[] mParameterTypes;
     private ModelClass mReturnType;
     private boolean mIsStatic;
 
     public InjectedMethod(InjectedClass containingClass, boolean isStatic, String name,
-            Map<String, String> imports, String returnType, String... parameters) {
+            ImportBag imports, String returnType, String... parameters) {
         mContainingClass = containingClass;
         mName = name;
         mIsStatic = isStatic;

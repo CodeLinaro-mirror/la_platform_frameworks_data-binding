@@ -18,6 +18,7 @@ package android.databinding.tool.expr;
 
 import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.Scope;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.store.Location;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.Preconditions;
@@ -42,7 +43,7 @@ public class CallbackExprModel extends ExprModel {
     }
 
     @Override
-    public Map<String, String> getImports() {
+    public ImportBag getImports() {
         return mOriginal.getImports();
     }
 

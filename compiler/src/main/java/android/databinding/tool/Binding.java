@@ -22,6 +22,7 @@ import android.databinding.tool.expr.LambdaExpr;
 import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.Scope;
 import android.databinding.tool.processing.scopes.LocationScopeProvider;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelMethod;
@@ -34,7 +35,6 @@ import android.databinding.tool.util.Preconditions;
 import android.databinding.tool.writer.LayoutBinderWriterKt;
 
 import java.util.List;
-import java.util.Map;
 
 public class Binding implements LocationScopeProvider {
 
@@ -314,7 +314,7 @@ public class Binding implements LocationScopeProvider {
         private final SetterCall mWrappedCall;
 
         public ViewStubDirectCall(String name, ModelClass viewType, ModelClass resolvedType,
-                Map<String, String> imports) {
+                                  ImportBag imports) {
             mWrappedCall = SetterStore.get().getSetterCall(name,
                     viewType, resolvedType, imports);
             if (mWrappedCall == null) {

@@ -46,7 +46,7 @@ public class InjectedClass extends ModelClass {
         mSuperClass = superClass;
     }
 
-    public void addVariable(String name, String type, Map<String, String> imports) {
+    public void addVariable(String name, String type, ImportBag imports) {
         String capName = StringUtils.capitalize(name);
         String setName = "set" + capName;
         String getName = "get" + capName;

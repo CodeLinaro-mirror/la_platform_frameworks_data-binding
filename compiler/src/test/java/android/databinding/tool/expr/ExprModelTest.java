@@ -882,7 +882,7 @@ public class ExprModelTest {
         StaticIdentifierExpr id = (StaticIdentifierExpr) child;
         assertEquals(id.getResolvedType().getCanonicalName(), "android.view.View");
         // on demand import
-        assertEquals("android.view.View", mExprModel.getImports().get("View"));
+        assertEquals("android.view.View", mExprModel.getImports().find("View"));
     }
 
     @Test
@@ -895,9 +895,16 @@ public class ExprModelTest {
         final StaticIdentifierExpr id = mExprModel.staticIdentifierFor(myView.getResolvedType());
         mExprModel.seal();
         // on demand import with conflict
-        assertEquals("android.view.View", mExprModel.getImports().get("View1"));
+        assertEquals("android.view.View", mExprModel.getImports().find("View1"));
         assertEquals("View1", id.getName());
         assertEquals("android.view.View", id.getUserDefinedType());
+    }
+
+    @Test
+    public void testFindStatic() {
+        IdentifierExpr id = mExprModel.findIdentifier("String");
+        assertNotNull(id);
+        assertEquals("java.lang.String", id.getUserDefinedType());
     }
 
     @Test

@@ -16,6 +16,7 @@
 package android.databinding.tool.store;
 
 import android.databinding.tool.Context;
+import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelMethod;
@@ -553,7 +554,7 @@ public class SetterStore {
     }
 
     public SetterCall getSetterCall(String attribute, ModelClass viewType,
-            ModelClass valueType, Map<String, String> imports) {
+                                    ModelClass valueType, ImportBag imports) {
         if (viewType == null) {
             return null;
         }
@@ -628,7 +629,7 @@ public class SetterStore {
     }
 
     public BindingGetterCall getGetterCall(String attribute, ModelClass viewType,
-            ModelClass valueType, Map<String, String> imports) {
+            ModelClass valueType, ImportBag imports) {
         if (viewType == null) {
             return null;
         } else if (viewType.isViewDataBinding()) {
@@ -660,7 +661,7 @@ public class SetterStore {
                             ModelAnalyzer modelAnalyzer = ModelAnalyzer.getInstance();
                             ModelClass listenerType = modelAnalyzer.findClass(
                                     modelAnalyzer.libTypes.getInverseBindingListener(),
-                                    Collections.emptyMap());
+                                    ImportBag.EMPTY);
                             BindingSetterCall eventCall = getSetterCall(
                                     inverseDescription.event, finalViewType, listenerType, imports);
                             if (eventCall == null) {
@@ -704,7 +705,7 @@ public class SetterStore {
     }
 
     private ModelMethod getBestSetter(ModelClass viewType, ModelClass argumentType,
-            String attribute, Map<String, String> imports) {
+            String attribute, ImportBag imports) {
         if (viewType.isGeneric()) {
             argumentType = eraseType(argumentType, viewType.getTypeArguments());
             viewType = viewType.erasure();
@@ -747,7 +748,7 @@ public class SetterStore {
     }
 
     private InverseMethod getBestGetter(ModelClass viewType, ModelClass valueType,
-            String attribute, Map<String, String> imports) {
+            String attribute, ImportBag imports) {
         @SuppressWarnings("WeakerAccess")
         class BestSetter {
             @Nullable
@@ -797,7 +798,7 @@ public class SetterStore {
         if (bestSetter.description != null) {
             ModelAnalyzer modelAnalyzer = ModelAnalyzer.getInstance();
             final ModelClass listenerType = modelAnalyzer.findClass(
-                    modelAnalyzer.libTypes.getInverseBindingListener(), Collections.emptyMap());
+                    modelAnalyzer.libTypes.getInverseBindingListener(), ImportBag.EMPTY);
             SetterCall eventSetter = getSetterCall(bestSetter.description.event, viewType,
                     listenerType, imports);
             if (eventSetter == null) {
@@ -856,7 +857,7 @@ public class SetterStore {
      * another for an argument. It is assumed that both view types match the targeted view.
      * <p>
      * Note that this has different priorities than
-     * {@link #isBetterReturn(ModelClass, ModelClass, ModelClass, ModelClass, ModelClass, Map)}
+     * {@link #isBetterReturn(ModelClass, ModelClass, ModelClass, ModelClass, ModelClass, ImportBag)}
      *
      * @param argument The argument type being passed to the setter.
      * @param newViewType The type of the view in the BindingAdapter or setter method.
@@ -873,7 +874,7 @@ public class SetterStore {
     private boolean isBetterParameter(@NonNull ModelClass argument,
             @NonNull ModelClass newViewType, @NonNull ModelClass newParameter,
             @Nullable ModelClass oldViewType, @Nullable ModelClass oldParameter,
-            @Nullable Map<String, String> imports) {
+            @Nullable ImportBag imports) {
         if (oldParameter == null) {
             // just validate that it can be converted
             return calculateConversionPriority(argument, newParameter, imports) >= 0;
@@ -913,7 +914,7 @@ public class SetterStore {
      * than another for a method call. It is assumed that both view types match the targeted view.
      * <p>
      * Note that this has different priorities than
-     * {@link #isBetterParameter(ModelClass, ModelClass, ModelClass, ModelClass, ModelClass, Map)}
+     * {@link #isBetterParameter(ModelClass, ModelClass, ModelClass, ModelClass, ModelClass, ImportBag)}
      *
      * @param expected The type that is expected from the getter.
      * @param newViewType The type of the view in the InverseBindingAdapter or getter method.
@@ -931,7 +932,7 @@ public class SetterStore {
     private boolean isBetterReturn(@NonNull ModelClass expected,
             @NonNull ModelClass newViewType, @NonNull ModelClass newReturnType,
             @Nullable ModelClass oldViewType, @Nullable ModelClass oldReturnType,
-            @Nullable Map<String, String> imports) {
+            @Nullable ImportBag imports) {
         if (oldReturnType == null) {
             // just validate that it can be converted
             return calculateConversionPriority(newReturnType, expected, imports) >= 0;
@@ -980,7 +981,7 @@ public class SetterStore {
      * where {@code 0} is an exact match and greater numbers are progressively worse matches.
      */
     private int calculateConversionPriority(@NonNull ModelClass from, @NonNull ModelClass to,
-            @Nullable Map<String, String> imports) {
+            @Nullable ImportBag imports) {
         if (to.equals(from)) {
             return 0; // exact match
         }
@@ -1004,7 +1005,7 @@ public class SetterStore {
     }
 
     private MethodDescription getConversionMethod(ModelClass from, ModelClass to,
-            Map<String, String> imports) {
+            ImportBag imports) {
         if (from != null && to != null) {
             if (to.isObject()) {
                 return null;
