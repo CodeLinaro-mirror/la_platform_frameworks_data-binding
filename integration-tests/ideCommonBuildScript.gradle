@@ -1,9 +1,9 @@
 rootProject.buildscript {
     rootProject.ext.checkoutDir = "${rootProject.projectDir}/../../../.."
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
-    rootProject.ext.latestCompileSdk = 'android-28'
+    rootProject.ext.latestCompileSdk = 28
     rootProject.ext.buildToolsVersion = "28.0.2"
-    rootProject.ext.kotlinVersion = '1.2.61'
+    rootProject.ext.kotlinVersion = '1.2.71'
 
     repositories {
         maven { url "file://${rootProject.ext.checkoutDir}/out/repo/" }

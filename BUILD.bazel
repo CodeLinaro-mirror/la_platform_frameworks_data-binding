@@ -106,7 +106,7 @@ iml_module(
         "//tools/idea/.idea/libraries:Guava",
         "//tools/idea/.idea/libraries:KotlinJavaRuntime",
         "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.8.0:jar",
-        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-alpha10:jar",
+        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta02:jar",
         "//tools/idea/.idea/libraries:gson",
     ],
 )

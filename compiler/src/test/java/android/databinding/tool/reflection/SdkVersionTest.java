@@ -30,14 +30,14 @@ public class SdkVersionTest {
     public void testApiVersionsFromResources() {
         SdkUtil.get().swapApiChecker(new SdkUtil.ApiChecker(null));
         ModelClass view = ModelAnalyzer.getInstance().findClass("android.widget.TextView", null);
-        ModelMethod isSuggestionsEnabled = view.getMethods("isSuggestionsEnabled", 0)[0];
+        ModelMethod isSuggestionsEnabled = view.getMethods("isSuggestionsEnabled", 0).get(0);
         assertEquals(14, SdkUtil.get().getMinApi(isSuggestionsEnabled));
     }
 
     @Test
     public void testNewApiMethod() {
         ModelClass view = ModelAnalyzer.getInstance().findClass("android.view.View", null);
-        ModelMethod setElevation = view.getMethods("setElevation", 1)[0];
+        ModelMethod setElevation = view.getMethods("setElevation", 1).get(0);
         assertEquals(21, SdkUtil.get().getMinApi(setElevation));
     }
 
@@ -45,7 +45,7 @@ public class SdkVersionTest {
     public void testCustomCode() {
         ModelClass view = ModelAnalyzer.getInstance()
                 .findClass("android.databinding.tool.reflection.SdkVersionTest", null);
-        ModelMethod setElevation = view.getMethods("testCustomCode", 0)[0];
+        ModelMethod setElevation = view.getMethods("testCustomCode", 0).get(0);
         assertEquals(1, SdkUtil.get().getMinApi(setElevation));
     }
 
@@ -53,7 +53,7 @@ public class SdkVersionTest {
     public void testSetForeground() {
         ModelClass view = ModelAnalyzer.getInstance()
                 .findClass("android.widget.FrameLayout", null);
-        ModelMethod setForeground = view.getMethods("setForegroundGravity", 1)[0];
+        ModelMethod setForeground = view.getMethods("setForegroundGravity", 1).get(0);
         assertEquals(1, SdkUtil.get().getMinApi(setForeground));
     }
 }

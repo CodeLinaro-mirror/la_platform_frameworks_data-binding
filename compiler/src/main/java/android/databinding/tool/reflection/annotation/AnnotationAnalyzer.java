@@ -81,7 +81,7 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
         }
         AnnotationClass primitive = loadPrimitive(className);
         if (primitive != null) {
-            return addDimension(primitive.mTypeMirror, numDimensions);
+            return addDimension(primitive.typeMirror, numDimensions);
         }
         if ("void".equals(className.toLowerCase())) {
             return addDimension(getTypeUtils().getNoType(TypeKind.VOID), numDimensions);
@@ -115,7 +115,7 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
                             baseClassName);
                     return null;
                 }
-                typeArgs[i] = clazz.mTypeMirror;
+                typeArgs[i] = clazz.typeMirror;
             }
             Types typeUtils = getTypeUtils();
             declaredType = typeUtils.getDeclaredType(typeElement, typeArgs);

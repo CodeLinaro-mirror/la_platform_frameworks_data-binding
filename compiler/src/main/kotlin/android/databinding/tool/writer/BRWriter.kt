@@ -32,7 +32,7 @@ class BRWriter(private val useFinal : Boolean) {
     fun write(values : BindableBag.BRWithValues): String {
         val spec = TypeSpec.classBuilder("BR").apply {
             addModifiers(Modifier.PUBLIC)
-            if (ModelAnalyzer.getInstance().hasGeneratedAnnotation()) {
+            if (ModelAnalyzer.getInstance().hasGeneratedAnnotation) {
                 addAnnotation(AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated"))
                         .addMember("value", S,"Android Data Binding").build())
             }

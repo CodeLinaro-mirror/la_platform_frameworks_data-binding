@@ -161,7 +161,7 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
             = TypeSpec.classBuilder(className).apply {
         superclass(dataBinderMapper)
         addModifiers(Modifier.PUBLIC)
-        if (ModelAnalyzer.getInstance().hasGeneratedAnnotation()) {
+        if (ModelAnalyzer.getInstance().hasGeneratedAnnotation) {
             addAnnotation(AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated"))
                 .addMember("value", S, "Android Data Binding").build())
         }

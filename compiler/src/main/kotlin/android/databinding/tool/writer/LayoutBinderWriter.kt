@@ -127,7 +127,7 @@ val BindingTarget.readableName by lazyProp { target: BindingTarget ->
 }
 
 fun BindingTarget.superConversion(variable : String) : String {
-    return if (resolvedType != null && resolvedType.extendsViewStub()) {
+    return if (resolvedType != null && resolvedType.extendsViewStub) {
         val libTypes = ModelAnalyzer.getInstance().libTypes
         "new ${libTypes.viewStubProxy}((android.view.ViewStub) $variable)"
     } else {
@@ -157,7 +157,7 @@ val BindingTarget.androidId by lazyProp { target: BindingTarget ->
 }
 
 val BindingTarget.interfaceClass by lazyProp { target: BindingTarget ->
-    if (target.resolvedType != null && target.resolvedType.extendsViewStub()) {
+    if (target.resolvedType != null && target.resolvedType.extendsViewStub) {
         val libTypes = ModelAnalyzer.getInstance().libTypes
         libTypes.viewStubProxy
     } else {
@@ -549,7 +549,7 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                 }
             }
             if (!it.isBinder) {
-                if (it.resolvedType != null && it.resolvedType.extendsViewStub()) {
+                if (it.resolvedType != null && it.resolvedType.extendsViewStub) {
                     tab("this.${it.fieldName}.setContainingBinding(this);")
                 }
                 if (it.supportsTag() && it.tag != null &&
@@ -1038,7 +1038,7 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                 nl("executeBindingsOn(${binder.fieldName});")
             }
             layoutBinder.sortedTargets.filter {
-                it.isUsed && it.resolvedType != null && it.resolvedType.extendsViewStub()
+                it.isUsed && it.resolvedType != null && it.resolvedType.extendsViewStub
             }.forEach {
                 block("if (${it.fieldName}.getBinding() != null)") {
                     nl("executeBindingsOn(${it.fieldName}.getBinding());")

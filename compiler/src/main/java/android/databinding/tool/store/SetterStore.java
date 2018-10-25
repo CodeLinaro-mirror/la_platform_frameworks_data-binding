@@ -731,7 +731,7 @@ public class SetterStore {
         List<ModelClass> args = new ArrayList<>();
         args.add(argumentType);
         for (String name : setterCandidates) {
-            ModelMethod[] methods = viewType.getMethods(name, 1);
+            List<ModelMethod> methods = viewType.getMethods(name, 1);
 
             for (ModelMethod method : methods) {
                 ModelClass[] parameterTypes = method.getParameterTypes();

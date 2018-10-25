@@ -122,7 +122,7 @@ public class Binding implements LocationScopeProvider {
         ModelClass viewType = mTarget.getResolvedType();
         if ("android:visibility".equals(mName) && viewType != null && viewType.isViewDataBinding()) {
             mSetterCall = new IncludeVisibilityCall();
-        } else if (viewType != null && viewType.extendsViewStub()) {
+        } else if (viewType != null && viewType.getExtendsViewStub()) {
             mExpr = mExpr.unwrapObservableField();
             if (isListenerAttribute(mName)) {
                 ModelAnalyzer modelAnalyzer = ModelAnalyzer.getInstance();
@@ -136,7 +136,6 @@ public class Binding implements LocationScopeProvider {
                 mSetterCall = new ViewStubSetterCall(mName);
             }
         } else {
-            ModelAnalyzer modelAnalyzer = ModelAnalyzer.getInstance();
             if (mExpr.getResolvedType().getObservableGetterName() != null) {
                 // If it is an ObservableField, try with the contents of it first.
                 Expr expr = mExpr.unwrapObservableField();
@@ -164,7 +163,7 @@ public class Binding implements LocationScopeProvider {
         ModelAnalyzer modelAnalyzer = ModelAnalyzer.getInstance();
         ModelClass objectParameter = modelAnalyzer.findClass(Object.class);
         SetterStore setterStore = SetterStore.get();
-        if (viewType != null && viewType.extendsViewStub()) {
+        if (viewType != null && viewType.getExtendsViewStub()) {
             if (isListenerAttribute(name)) {
                 ModelClass viewStubProxy = modelAnalyzer.getViewStubProxyType();
                 setterCall = SetterStore.get().getSetterCall(name,

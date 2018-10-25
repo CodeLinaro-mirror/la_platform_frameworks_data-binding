@@ -17,18 +17,20 @@ import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelField;
 import android.databinding.tool.reflection.ModelMethod;
 import android.databinding.tool.reflection.TypeUtil;
+import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class JavaClass extends ModelClass {
-    public final Class mClass;
+    final Class mClass;
 
     public JavaClass(Class clazz) {
         mClass = clazz;
     }
 
+    @NotNull
     @Override
     public String toJavaCode() {
         return toJavaCode(mClass);
@@ -139,6 +141,7 @@ public class JavaClass extends ModelClass {
         return void.class.equals(mClass);
     }
 
+    @NotNull
     @Override
     public ModelClass unbox() {
         if (mClass.isPrimitive()) {
@@ -167,6 +170,7 @@ public class JavaClass extends ModelClass {
 
     }
 
+    @NotNull
     @Override
     public JavaClass box() {
         if (!mClass.isPrimitive()) {
@@ -197,6 +201,7 @@ public class JavaClass extends ModelClass {
     @Override
     public boolean isAssignableFrom(ModelClass that) {
         Class thatClass = ((JavaClass) that).mClass;
+        //noinspection unchecked
         return mClass.isAssignableFrom(thatClass);
     }
 
@@ -208,48 +213,38 @@ public class JavaClass extends ModelClass {
         return new JavaClass(mClass.getSuperclass());
     }
 
+    @NotNull
     @Override
     public String getCanonicalName() {
         return mClass.getCanonicalName();
     }
 
+    @NotNull
     @Override
     public ModelClass erasure() {
         return this;
     }
 
+    @NotNull
     @Override
     public String getJniDescription() {
         return TypeUtil.getInstance().getDescription(this);
     }
 
+    @NotNull
     @Override
-    protected ModelField[] getDeclaredFields() {
-        Field[] fields = mClass.getDeclaredFields();
-        ModelField[] modelFields;
-        if (fields == null) {
-            modelFields = new ModelField[0];
-        } else {
-            modelFields = new ModelField[fields.length];
-            for (int i = 0; i < fields.length; i++) {
-                modelFields[i] = new JavaField(fields[i]);
-            }
-        }
-        return modelFields;
+    public List<ModelField> getDeclaredFields() {
+        return Stream.of(mClass.getDeclaredFields())
+                .map(JavaField::new)
+                .collect(Collectors.toList());
     }
 
+    @NotNull
     @Override
-    protected ModelMethod[] getDeclaredMethods() {
-        Method[] methods = mClass.getDeclaredMethods();
-        if (methods == null) {
-            return new ModelMethod[0];
-        } else {
-            ModelMethod[] classMethods = new ModelMethod[methods.length];
-            for (int i = 0; i < methods.length; i++) {
-                classMethods[i] = new JavaMethod(methods[i]);
-            }
-            return classMethods;
-        }
+    public List<ModelMethod> getDeclaredMethods() {
+        return Stream.of(mClass.getDeclaredMethods())
+                .map(JavaMethod::new)
+                .collect(Collectors.toList());
     }
 
     @Override

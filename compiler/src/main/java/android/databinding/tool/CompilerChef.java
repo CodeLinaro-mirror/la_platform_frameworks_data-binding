@@ -163,6 +163,9 @@ public class CompilerChef {
                         String fieldName = bindingTargetBundle.getId();
                         if (fields.add(fieldName)) {
                             String fieldType = bindingTargetBundle.getInterfaceType();
+                            if (fieldType == null) {
+                                fieldType = bindingTargetBundle.getFullClassName();
+                            }
                             bindingClass.addField(fieldName, fieldType);
                         }
                     }

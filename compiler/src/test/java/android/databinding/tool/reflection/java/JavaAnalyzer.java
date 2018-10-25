@@ -75,11 +75,6 @@ public class JavaAnalyzer extends ModelAnalyzer {
     }
 
     @Override
-    protected List<ModelClass> getObservableFieldTypes() {
-        return Collections.emptyList();
-    }
-
-    @Override
     protected boolean findGeneratedAnnotation() {
         try {
             return Class.forName(GENERATED_ANNOTATION) != null;

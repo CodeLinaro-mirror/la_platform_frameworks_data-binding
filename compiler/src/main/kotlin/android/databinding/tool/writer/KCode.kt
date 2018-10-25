@@ -14,7 +14,7 @@
 package android.databinding.tool.writer
 
 import android.databinding.tool.reflection.ModelAnalyzer
-import android.databinding.tool.reflection.ModelAnalyzer.GENERATED_ANNOTATION
+import android.databinding.tool.reflection.ModelAnalyzer.Companion.GENERATED_ANNOTATION
 import android.databinding.tool.util.StringUtils
 import java.util.BitSet
 
@@ -58,7 +58,7 @@ class KCode (private val s : String? = null){
     }
 
     fun annotateWithGenerated() : KCode {
-        if (ModelAnalyzer.getInstance().hasGeneratedAnnotation()) {
+        if (ModelAnalyzer.getInstance().hasGeneratedAnnotation) {
             nl("@${GENERATED_ANNOTATION}(\"Android Data Binding\")")
         }
         return this
