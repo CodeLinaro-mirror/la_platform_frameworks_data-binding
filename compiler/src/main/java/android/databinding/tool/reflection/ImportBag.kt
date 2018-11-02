@@ -21,8 +21,12 @@ class MutableImportBag : ImportBag() {
     }
 }
 
-private class ImmutableImportBag : ImportBag() {
-
+class ImmutableImportBag(imports : Map<String, String>? = null) : ImportBag() {
+    init {
+        if (imports != null) {
+            this.imports.putAll(imports)
+        }
+    }
 }
 
 /**
@@ -54,6 +58,14 @@ sealed class ImportBag {
 
     override fun hashCode(): Int {
         return imports.hashCode()
+    }
+
+    fun toImmutable() : ImmutableImportBag {
+        return if (this is ImmutableImportBag) {
+            this
+        } else {
+            ImmutableImportBag(imports)
+        }
     }
 
     companion object {

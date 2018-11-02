@@ -55,6 +55,7 @@
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="gson" level="project" />
     <orderEntry type="library" scope="TEST" name="JUnit4" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="module-library">
       <library name="javapoet" type="repository">
         <properties maven-id="com.squareup:javapoet:1.8.0" />

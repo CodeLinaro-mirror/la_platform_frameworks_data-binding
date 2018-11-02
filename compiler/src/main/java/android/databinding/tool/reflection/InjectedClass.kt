@@ -102,8 +102,7 @@ class InjectedClass(private val mClassName: String, private val mSuperClass: Str
         val setName = "set" + capName!!
         val getName = "get$capName"
         addMethod(InjectedMethod(this, false, getName, imports, type))
-        addMethod(InjectedMethod(this, false, setName, imports,
-                "void", type))
+        addMethod(InjectedMethod(this, false, setName, imports, "void", type))
     }
 
     fun addField(name: String, type: String) {

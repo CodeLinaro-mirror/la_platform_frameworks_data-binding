@@ -118,12 +118,16 @@ abstract class ModelAnalyzer protected constructor(@JvmField val libTypes: LibTy
 
     fun getDefaultValue(className: String) = DEFAULT_VALUES[className] ?: "null"
 
-    fun findClass(className: String, imports: ImportBag?): ModelClass? {
-        return if (mInjectedClasses.containsKey(className)) {
+    val classFinderCache = ClassFinderCache { className, imports ->
+        if (mInjectedClasses.containsKey(className)) {
             mInjectedClasses[className]
         } else {
             findClassInternal(className, imports)
         }
+    }
+
+    fun findClass(className: String, imports: ImportBag?): ModelClass? {
+        return classFinderCache.find(className, imports)
     }
 
     abstract fun findClassInternal(className: String, importBag: ImportBag?): ModelClass

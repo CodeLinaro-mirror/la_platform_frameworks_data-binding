@@ -40,6 +40,7 @@ dependencies {
     compile libs.antlr4
     compile libs.juniversalchardet
     testCompile libs.junit
+    testCompile libs.mockito_core
 }
 
 uploadArchives {

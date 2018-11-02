@@ -309,7 +309,10 @@ def createExtensionsBuildTask(folder, taskName) {
         environment MAVEN_REPO: rootProject.ext.localRepo
         environment PREBUILTS_REPO: rootProject.file('../prebuilts/tools/common/m2/repository')
         environment OUT_REPO: rootProject.ext.localRepo
-        environment ANDROID_HOME: getFullSdkPath()
+        def fullSdkPath = getFullSdkPath()
+        if (fullSdkPath.exists()) {
+            environment ANDROID_HOME: fullSdkPath
+	}
     }
     return buildRuntimeLibrary
 }

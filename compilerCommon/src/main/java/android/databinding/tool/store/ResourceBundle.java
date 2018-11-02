@@ -37,6 +37,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -722,12 +723,25 @@ public class ResourceBundle implements Serializable {
 
         static {
             try {
-                JAXBContext context = JAXBContext.newInstance(LayoutFileBundle.class);
+                JAXBContext context = jaxbContext(LayoutFileBundle.class);
                 sMarshaller = context.createMarshaller();
                 sMarshaller.setProperty(Marshaller.JAXB_ENCODING, "utf-8");
                 sUnmarshaller = context.createUnmarshaller();
             } catch (JAXBException e) {
                 throw new RuntimeException("Cannot create the xml marshaller", e);
+            }
+        }
+
+        private static JAXBContext jaxbContext(Class<?> clazz) throws JAXBException {
+            try {
+                return (JAXBContext)
+                        Class.forName("com.sun.xml.bind.v2.ContextFactory")
+                                .getMethod("createContext", Class[].class, Map.class)
+                                .invoke(null, new Class[] {clazz}, Collections.emptyMap());
+            } catch (ClassNotFoundException e) {
+                return JAXBContext.newInstance(clazz);
+            } catch (ReflectiveOperationException e) {
+                throw new LinkageError(e.getMessage(), e);
             }
         }
 

@@ -16,9 +16,9 @@
 
 package android.databinding.annotationprocessor;
 
+import android.databinding.tool.CompilerArguments;
 import android.databinding.tool.CompilerChef;
 import android.databinding.tool.Context;
-import android.databinding.tool.CompilerArguments;
 import android.databinding.tool.processing.Scope;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.store.GenClassInfoLog;
