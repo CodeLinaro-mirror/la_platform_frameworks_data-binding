@@ -39,7 +39,6 @@ import javax.xml.xpath.XPathExpressionException;
  */
 public class LayoutXmlProcessor {
     // hardcoded in baseAdapters
-    public static final String RESOURCE_BUNDLE_PACKAGE = "android.databinding.layouts";
     public static final String CLASS_NAME = "DataBindingInfo";
     private static final FilenameFilter LAYOUT_FOLDER_FILTER = (dir, name)
             -> name.startsWith("layout");
@@ -280,7 +279,7 @@ public class LayoutXmlProcessor {
     }
 
     public String getInfoClassFullName() {
-        return RESOURCE_BUNDLE_PACKAGE + "." + CLASS_NAME;
+        return mResourceBundle.getAppPackage() + "." + CLASS_NAME;
     }
 
     /**
@@ -312,11 +311,11 @@ public class LayoutXmlProcessor {
         final Class annotation = useAndroidX
                 ? androidx.databinding.BindingBuildInfo.class
                 : android.databinding.BindingBuildInfo.class;
-        String classString = "package " + RESOURCE_BUNDLE_PACKAGE + ";\n\n" +
+        String classString = "package " + mResourceBundle.getAppPackage() + ";\n\n" +
                 "import " + annotation.getCanonicalName() + ";\n\n" +
                 "@" + annotation.getSimpleName() + "\n" +
                 "public class " + CLASS_NAME + " {}\n";
-        mFileWriter.writeToFile(RESOURCE_BUNDLE_PACKAGE + "." + CLASS_NAME, classString);
+        mFileWriter.writeToFile(mResourceBundle.getAppPackage() + "." + CLASS_NAME, classString);
     }
 
     /**
