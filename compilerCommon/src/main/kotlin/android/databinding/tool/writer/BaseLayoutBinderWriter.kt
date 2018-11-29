@@ -36,13 +36,22 @@ class BaseLayoutBinderWriter(val model: BaseLayoutModel, val libTypes: LibTypes)
         private val ANDROID_VIEW = ClassName.get("android.view", "View")
         private val ANDROID_LAYOUT_INFLATOR = ClassName.get("android.view", "LayoutInflater")
         private val ANDROID_VIEW_GROUP = ClassName.get("android.view", "ViewGroup")
+
+        private val DEPRECATED = ClassName.get(java.lang.Deprecated::class.java)
+
+        private val JAVADOC_BINDING_COMPONENT = """
+            This method receives DataBindingComponent instance as type Object instead of
+            type DataBindingComponent to avoid causing too many compilation errors if
+            compilation fails for another reason.
+            https://issuetracker.google.com/issues/116541301
+            """.trimIndent()
     }
 
     private val binderTypeName = ClassName.get(model.bindingClassPackage, model.bindingClassName)
     private val viewDataBinding = libTypes.viewDataBinding.toClassName()
     private val nonNull = libTypes.nonNull.toClassName()
     private val nullable = libTypes.nullable.toClassName()
-    private val dataBindingComponent = libTypes.dataBindingComponent.toClassName()
+    private val dataBindingComponent = ClassName.get(Object::class.java)
     private val dataBindingUtil = libTypes.dataBindingUtil.toClassName()
     private val bindable = libTypes.bindable.toClassName()
     fun write(): TypeSpec {
@@ -71,8 +80,7 @@ class BaseLayoutBinderWriter(val model: BaseLayoutModel, val libTypes: LibTypes)
             addAnnotation(nullable)
         }.build()
         val rLayoutFile = "${model.modulePackage}.R.layout.${model.baseFileName}"
-        val attachToRootParam = ParameterSpec.builder(TypeName.BOOLEAN, "attachToRoot").
-                build()
+        val attachToRootParam = ParameterSpec.builder(TypeName.BOOLEAN, "attachToRoot").build()
         return listOf(
                 MethodSpec.methodBuilder("inflate").apply {
                     addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -93,8 +101,12 @@ class BaseLayoutBinderWriter(val model: BaseLayoutModel, val libTypes: LibTypes)
                     addParameter(componentParam)
                     returns(binderTypeName)
                     addAnnotation(nonNull)
-                    addStatement("return $T.<$T>inflate($N, $L, $N, $N, $N)",
-                            dataBindingUtil, binderTypeName,
+                    addAnnotation(DEPRECATED)
+                    addJavadoc(JAVADOC_BINDING_COMPONENT)
+                    addJavadoc("\n@Deprecated Use DataBindingUtil.inflate(inflater, R.layout.$L, $N, $N, $N)\n",
+                            model.baseFileName, viewGroupParam, attachToRootParam, componentParam)
+                    addStatement("return $T.<$T>inflateInternal($N, $L, $N, $N, $N)",
+                            viewDataBinding, binderTypeName,
                             inflaterParam, rLayoutFile, viewGroupParam, attachToRootParam,
                             componentParam)
                 }.build(),
@@ -114,8 +126,12 @@ class BaseLayoutBinderWriter(val model: BaseLayoutModel, val libTypes: LibTypes)
                     addParameter(componentParam)
                     returns(binderTypeName)
                     addAnnotation(nonNull)
-                    addStatement("return $T.<$T>inflate($N, $L, null, false, $N)",
-                            dataBindingUtil, binderTypeName, inflaterParam,
+                    addAnnotation(DEPRECATED)
+                    addJavadoc(JAVADOC_BINDING_COMPONENT)
+                    addJavadoc("\n@Deprecated Use DataBindingUtil.inflate(inflater, R.layout.$L, null, false, $N)\n",
+                            model.baseFileName, componentParam)
+                    addStatement("return $T.<$T>inflateInternal($N, $L, null, false, $N)",
+                            viewDataBinding, binderTypeName, inflaterParam,
                             rLayoutFile, componentParam)
                 }.build(),
 
@@ -131,6 +147,10 @@ class BaseLayoutBinderWriter(val model: BaseLayoutModel, val libTypes: LibTypes)
                     addParameter(viewParam)
                     addParameter(componentParam)
                     returns(binderTypeName)
+                    addAnnotation(DEPRECATED)
+                    addJavadoc(JAVADOC_BINDING_COMPONENT)
+                    addJavadoc("\n@Deprecated Use DataBindingUtil.bind($N, $N)\n",
+                            viewParam, componentParam)
                     addStatement("return ($T)bind($N, $N, $L)",
                             binderTypeName, componentParam, viewParam, rLayoutFile)
                 }.build()

@@ -17,6 +17,8 @@
 package androidx.databinding;
 
 import android.annotation.TargetApi;
+
+import androidx.annotation.RestrictTo;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -271,8 +273,8 @@ public abstract class ViewDataBinding extends BaseObservable {
     /**
      * @hide
      */
-    protected ViewDataBinding(DataBindingComponent bindingComponent, View root, int localFieldCount) {
-        mBindingComponent = bindingComponent;
+    protected ViewDataBinding(Object bindingComponent, View root, int localFieldCount) {
+        mBindingComponent = checkAndCastToBindingComponent(bindingComponent);
         mLocalFieldObservers = new WeakListener[localFieldCount];
         this.mRoot = root;
         if (Looper.myLooper() == null) {
@@ -290,6 +292,19 @@ public abstract class ViewDataBinding extends BaseObservable {
             mFrameCallback = null;
             mUIThreadHandler = new Handler(Looper.myLooper());
         }
+    }
+
+    private static DataBindingComponent checkAndCastToBindingComponent(Object bindingComponent) {
+        if (bindingComponent == null) {
+            return null;
+        }
+        if (!(bindingComponent instanceof DataBindingComponent)) {
+            throw new IllegalArgumentException("The provided bindingComponent parameter must" +
+                    " be an instance of DataBindingComponent. See " +
+                    " https://issuetracker.google.com/issues/116541301 for details of why" +
+                    " this parameter is not defined as DataBindingComponent");
+        }
+        return (DataBindingComponent) bindingComponent;
     }
 
     /**
@@ -653,9 +668,11 @@ public abstract class ViewDataBinding extends BaseObservable {
     /**
      * @hide
      */
-    protected static ViewDataBinding bind(DataBindingComponent bindingComponent, View view,
-            int layoutId) {
-        return DataBindingUtil.bind(bindingComponent, view, layoutId);
+    protected static ViewDataBinding bind(Object bindingComponent, View view, int layoutId) {
+        return DataBindingUtil.bind(
+                checkAndCastToBindingComponent(bindingComponent),
+                view,
+                layoutId);
     }
 
     /**
@@ -1312,6 +1329,26 @@ public abstract class ViewDataBinding extends BaseObservable {
                 listener.unregister();
             }
         }
+    }
+
+    /**
+     * Pass through inflate method for generated code that receives bindingComponent as an object.
+     * <p>
+     * Only called by the generated code.
+     * See b/116541301 for details.
+     * @hide
+     */
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    protected static <T extends ViewDataBinding> T inflateInternal(
+            @NonNull LayoutInflater inflater, int layoutId, @Nullable ViewGroup parent,
+            boolean attachToParent, @Nullable Object bindingComponent) {
+        return DataBindingUtil.inflate(
+                inflater,
+                layoutId,
+                parent,
+                attachToParent,
+                checkAndCastToBindingComponent(bindingComponent)
+        );
     }
 
     private interface ObservableReference<T> {

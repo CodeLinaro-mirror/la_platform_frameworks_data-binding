@@ -19,6 +19,8 @@ IFS=$'\n'
 
 cd extensions;
 copy_gradle "../.."
+cd ../extensions-support;
+copy_gradle "../.."
 echo "start in $current_dir"
 cd $current_dir;
 for line in `find integration-tests integration-tests-support -name 'settings.gradle'`
