@@ -273,11 +273,7 @@ public abstract class ViewDataBinding extends BaseObservable {
      * @hide
      */
     protected ViewDataBinding(Object bindingComponent, View root, int localFieldCount) {
-        if (bindingComponent == null) {
-            mBindingComponent = null;
-        } else {
-            mBindingComponent = checkAndCastToBindingComponent(bindingComponent);
-        }
+        mBindingComponent = checkAndCastToBindingComponent(bindingComponent);
         mLocalFieldObservers = new WeakListener[localFieldCount];
         this.mRoot = root;
         if (Looper.myLooper() == null) {
@@ -298,6 +294,9 @@ public abstract class ViewDataBinding extends BaseObservable {
     }
 
     private static DataBindingComponent checkAndCastToBindingComponent(Object bindingComponent) {
+        if (bindingComponent == null) {
+            return null;
+        }
         if (!(bindingComponent instanceof DataBindingComponent)) {
             throw new IllegalArgumentException("The provided bindingComponent parameter must" +
                     " be an instance of DataBindingComponent. See " +
