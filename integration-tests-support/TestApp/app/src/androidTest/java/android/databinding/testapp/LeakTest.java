@@ -52,6 +52,7 @@ public class LeakTest {
                                 getActivity().getLayoutInflater());
                         getActivity().setContentView(binding.getRoot());
                         mWeakReference = new WeakReference<>(binding);
+                        binding.setLifecycleOwner(getActivity());
                         binding.setName("hello world");
                         binding.executePendingBindings();
                     } catch (Exception e) {

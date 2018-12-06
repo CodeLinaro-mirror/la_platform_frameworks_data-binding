@@ -458,7 +458,8 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                     list.add(it)
                 }
 
-                includeMap.keys.forEach {
+                // sort keys for consistent output
+                includeMap.keys.sortedBy { indices[it] }.forEach {
                     val index = indices[it]
                     tab("sIncludes.setIncludes($index, ") {
                         tab("new String[] {${

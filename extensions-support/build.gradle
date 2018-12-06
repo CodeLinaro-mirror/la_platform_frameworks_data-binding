@@ -130,7 +130,9 @@ task createArchive(type: Zip) {
     description "Creates a maven repository that includes just the libraries compiled in this" +
             " project, without any history from prebuilts."
     from dataBindingConfig.maven.out_repo
-    destinationDir dataBindingConfig.maven.zip_out
+    if (dataBindingConfig.maven.zip_out != null) {
+        destinationDir dataBindingConfig.maven.zip_out
+    }
     baseName = "dataBindingRuntimeRepo"
     doLast {
     println "created rpeo at  ${dataBindingConfig.maven}"

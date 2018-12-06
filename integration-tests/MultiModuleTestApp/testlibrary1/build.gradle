@@ -46,7 +46,7 @@ android {
 
 dependencies {
     api fileTree(dir: 'libs', include: ['*.aar'])
-    implementation "androidx.cardview:cardview:1.0.0-beta01"
+    implementation "androidx.cardview:cardview:1.0.0"
     androidTestCompile ('androidx.test:runner:1.1.0-alpha4') {
         exclude module: 'support-annotations'
     }

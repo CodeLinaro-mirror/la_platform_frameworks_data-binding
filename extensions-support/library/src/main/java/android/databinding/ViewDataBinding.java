@@ -379,7 +379,7 @@ public abstract class ViewDataBinding extends BaseObservable {
         mLifecycleOwner = lifecycleOwner;
         if (lifecycleOwner != null) {
             if (mOnStartListener == null) {
-                mOnStartListener = new OnStartListener();
+                mOnStartListener = new OnStartListener(this);
             }
             lifecycleOwner.getLifecycle().addObserver(mOnStartListener);
         }
@@ -1648,13 +1648,18 @@ public abstract class ViewDataBinding extends BaseObservable {
      *
      * @hide
      */
-    public class OnStartListener implements LifecycleObserver {
-        private OnStartListener() {
+    static class OnStartListener implements LifecycleObserver {
+        final WeakReference<ViewDataBinding> mBinding;
+        private OnStartListener(ViewDataBinding binding) {
+            mBinding = new WeakReference<>(binding);
         }
 
         @OnLifecycleEvent(Lifecycle.Event.ON_START)
         public void onStart() {
-            executePendingBindings();
+            ViewDataBinding dataBinding = mBinding.get();
+            if (dataBinding != null) {
+                dataBinding.executePendingBindings();
+            }
         }
     }
 }

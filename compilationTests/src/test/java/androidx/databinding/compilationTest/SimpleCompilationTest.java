@@ -61,7 +61,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(0, result.resultCode);
         assertTrue("there should not be any errors", StringUtils.isEmpty(result.error));
         assertTrue("Test sanity, empty project tasks",
-                result.resultContainsText("All tasks runnable from root project"));
+                result.resultContainsText("Tasks runnable from root project"));
     }
 
     @Test

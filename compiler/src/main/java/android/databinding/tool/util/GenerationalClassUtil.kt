@@ -65,7 +65,7 @@ class GenerationalClassUtil constructor(
             it.isFile && it.name.endsWith(ext.ext)
         }.mapNotNull {
             if (ext.isJson) {
-                GSON.fromJson(it.bufferedReader(Charsets.UTF_8), klass)
+                it.bufferedReader(Charsets.UTF_8).use { reader -> GSON.fromJson(reader, klass) }
             } else {
                 deserializeObject(it)
             }

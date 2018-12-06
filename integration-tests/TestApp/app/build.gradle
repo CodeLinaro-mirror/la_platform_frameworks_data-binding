@@ -32,8 +32,8 @@ android {
 }
 
 dependencies {
-    def supportVersion = "1.0.0-alpha1"
-    def lifecycleVersion = "2.0.0-alpha1"
+    def supportVersion = "1.0.0"
+    def lifecycleVersion = "2.0.0"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     //compile "androidx.appcompat:appcompat:$supportVersion"
     compile "androidx.annotation:annotation:$supportVersion"
