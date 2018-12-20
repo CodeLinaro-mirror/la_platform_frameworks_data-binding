@@ -28,7 +28,6 @@ import android.databinding.tool.store.LayoutInfoInput
 import android.databinding.tool.util.L
 import android.databinding.tool.writer.JavaFileWriter
 import com.beust.jcommander.JCommander
-import com.beust.jcommander.ParameterException
 import org.apache.commons.io.Charsets
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -40,6 +39,8 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 object AndroidDataBinding {
+    private const val PROCESS_RESOURCES = "PROCESS"
+    private const val GEN_BASE_CLASSES = "GEN_BASE_CLASSES"
     @JvmStatic
     fun main(args: Array<String>) {
         /** Sample run:
@@ -49,16 +50,53 @@ object AndroidDataBinding {
          *     -sourceOut test-run/src.zip \
          *     -package ygt.me
          */
-        val processXmlOptions = GenerateBaseClassesOptions()
-        val jCommander = JCommander(processXmlOptions)
-        try {
-            jCommander.parse(*args)
-        } catch (ex: ParameterException) {
-            jCommander.usage()
-            System.err.println(ex.message)
-            System.exit(1)
+        if (args.isEmpty()) {
+            printUsageAndExit()
         }
-        generateBaseClasses(processXmlOptions)
+        try {
+            when(args[0]) {
+                PROCESS_RESOURCES -> {
+                    val processXmlOptions = ProcessXmlOptions()
+                    val jCommander = JCommander(processXmlOptions)
+                    jCommander.parse(*(args.drop(1).toTypedArray()))
+                    processResources(processXmlOptions)
+                }
+                GEN_BASE_CLASSES -> {
+                    val genBaseClassOptions = GenerateBaseClassesOptions()
+                    val jCommander = JCommander(genBaseClassOptions)
+                    jCommander.parse(*(args.drop(1).toTypedArray()))
+                    generateBaseClasses(genBaseClassOptions)
+                }
+                else -> {
+                    printUsageAndExit()
+                }
+            }
+        } catch (e : Exception) {
+            e.printStackTrace()
+            printUsageAndExit()
+        }
+    }
+
+    private fun printUsageAndExit() {
+        val baseClassArgs = GenerateBaseClassesOptions()
+        val baseClass = JCommander(baseClassArgs)
+
+        val processArgs = ProcessXmlOptions()
+        val process = JCommander(processArgs)
+        println(
+                StringBuilder().apply {
+                    appendln("Usage: This binary can be used to either process xml resources or generate " +
+                            "base classes for data binding.")
+                    append("exec.jar $PROCESS_RESOURCES ")
+                    process.usage(this)
+
+                    appendln()
+                    appendln("exec.jar $GEN_BASE_CLASSES")
+                    baseClass.usage(this)
+                }.toString()
+        )
+        process.usage()
+        System.exit(1)
     }
 
     @Deprecated("use processXML",
@@ -71,7 +109,7 @@ object AndroidDataBinding {
 
     @JvmStatic
     fun processResources(processXmlOptions: ProcessXmlOptions) {
-        println(processXmlOptions)
+        println("options $processXmlOptions")
         val processor = createXmlProcessor(processXmlOptions)
         val input = LayoutXmlProcessor.ResourceInput(
                 false,
@@ -87,6 +125,7 @@ object AndroidDataBinding {
             val zfw = ZipFileWriter(outZip)
             processor.writeLayoutInfoFiles(processXmlOptions.layoutInfoOutput, zfw)
             zfw.close()
+            L.d("writing info zip to ${outZip.canonicalPath}")
         } else {
             processor.writeLayoutInfoFiles(processXmlOptions.layoutInfoOutput)
         }
@@ -111,7 +150,7 @@ object AndroidDataBinding {
                 packageName = options.packageName,
                 logFolder = Files.createTempDirectory("db-incremental-log").toFile(),
                 incremental = false,
-                useAndroidX = options.useAndoirdX
+                useAndroidX = options.useAndroidX
         )
         val sourceFileWriter = if (options.zipSourceOutput) {
             ZipFileWriter(options.sourceFileOut)

@@ -134,7 +134,7 @@ class BindableBag(
                 properties.map { prop ->
                     val value = fields.firstOrNull {
                         it.simpleName.toString() == prop
-                    }?.constantValue as Int
+                    }?.constantValue as? Int // might happen with blaze
                     Property(prop, value)
                 }
             }

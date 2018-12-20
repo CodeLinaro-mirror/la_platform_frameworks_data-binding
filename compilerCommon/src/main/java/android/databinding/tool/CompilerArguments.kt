@@ -27,7 +27,7 @@ import java.util.HashMap
  * It can serialize itself to a given list of annotation processor options and read itself
  * from there.
  */
-class CompilerArguments constructor(
+data class CompilerArguments constructor(
     val artifactType: Type,
     val modulePackage: String,
     val minApi: Int,

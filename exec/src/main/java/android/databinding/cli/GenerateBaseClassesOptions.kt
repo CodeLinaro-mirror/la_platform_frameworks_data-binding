@@ -83,7 +83,8 @@ class GenerateBaseClassesOptions {
      */
     @Parameter(
         names = ["-zipSourceOutput"], required = false, description = "Specifies " +
-                "whether the source output should be exported as 1 zip file instead of a folder."
+                "whether the source output should be exported as 1 zip file instead of a folder.",
+            arity = 1
     )
     var zipSourceOutput: Boolean = true
 
@@ -91,8 +92,9 @@ class GenerateBaseClassesOptions {
      * True if Data Binding should generate code that uses androidX.
      */
     @Parameter(
-            names = ["-useAndoirdX"], required = false, description = "Specifies " +
-            "whether data binding should use androidX packages or not"
+            names = ["-useAndroidX"], required = false, description = "Specifies " +
+            "whether data binding should use androidX packages or not",
+            arity = 1
     )
-    var useAndoirdX: Boolean = true
+    var useAndroidX: Boolean = true
 }

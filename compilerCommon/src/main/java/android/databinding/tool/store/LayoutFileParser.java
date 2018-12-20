@@ -452,7 +452,8 @@ public class LayoutFileParser {
         String res = XmlEditor.strip(xml, newTag, encoding);
         Preconditions.checkNotNull(res, "layout file should've changed %s", xml.getAbsolutePath());
         if (res != null) {
-            L.d("file %s has changed, overwriting %s", xml.getName(), xml.getAbsolutePath());
+            L.d("file %s has changed, overwriting %s",
+                    xml.getAbsolutePath(), output.getAbsolutePath());
             FileUtils.writeStringToFile(output, res, encoding);
         }
     }

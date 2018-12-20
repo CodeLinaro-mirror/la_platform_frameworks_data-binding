@@ -47,7 +47,8 @@ public class DataBinder {
     private final LibTypes mLibTypes;
 
     public DataBinder(ResourceBundle resourceBundle, boolean enableV2, LibTypes libTypes) {
-        L.d("reading resource bundle into data binder");
+        L.d("reading resource bundle into data binder.enable V2: %s, layout cnt:%d",
+            enableV2, resourceBundle.getLayoutFileBundlesInSource().size());
         mLibTypes = libTypes;
         mEnableV2 = enableV2;
         mComponentClass = mLibTypes.getBindingPackage() + ".DataBindingComponent";
@@ -55,8 +56,11 @@ public class DataBinder {
             for(ResourceBundle.LayoutFileBundle bundle :
                     resourceBundle.getLayoutFileBundlesInSource()) {
                 try {
+                    L.d("adding layout binder %s", bundle.getBindingClassName());
                     mLayoutBinders.add(new LayoutBinder(bundle, true));
+                    L.d("added %s", bundle.getBindingClassName());
                 } catch (ScopedException ex) {
+                    L.d("FAILED TO ADD layout binder %s", bundle.getBindingClassName());
                     Scope.defer(ex);
                 }
             }
@@ -72,6 +76,7 @@ public class DataBinder {
                 }
             }
         }
+        L.d("done loading info files into data binding.");
     }
     public List<LayoutBinder> getLayoutBinders() {
         return mLayoutBinders;

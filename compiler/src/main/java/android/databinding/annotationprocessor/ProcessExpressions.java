@@ -38,6 +38,7 @@ import com.google.common.base.Joiner;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -72,14 +73,18 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
             resourceBundle = new ResourceBundle(
                     args.getModulePackage(),
                     ModelAnalyzer.getInstance().libTypes.getUseAndroidX());
+            L.d("creating resource bundle for %s", args.getModulePackage());
             final List<IntermediateV2> intermediateList;
             GenClassInfoLog infoLog = null;
             @Nullable
             CompilerChef v1CompatChef = null;
             if (args.isEnableV2()) {
                 try {
+                    L.d("trying to read class log from %s", args.getClassLogDir());
                     infoLog = ResourceBundle.loadClassInfoFromFolder(args.getClassLogDir());
+                    L.d("done reading class log. cools.");
                 } catch (IOException e) {
+                    L.d(e,"failed to read class log :/");
                     infoLog = new GenClassInfoLog();
                     Scope.defer(new ScopedException("cannot load the info log from %s",
                             args.getClassLogDir()));
@@ -155,60 +160,76 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
 
     private IntermediateV2 createIntermediateFromLayouts(File layoutInfoDir,
             List<IntermediateV2> intermediateList) {
+        L.d("creating intermediate list from input layouts of %s", layoutInfoDir);
         final Set<String> excludeList = new HashSet<String>();
         for (IntermediateV2 lib : intermediateList) {
             excludeList.addAll(lib.mLayoutInfoMap.keySet());
         }
-        if (!layoutInfoDir.isDirectory()) {
-            L.d("layout info folder does not exist, skipping for %s", layoutInfoDir.getPath());
-            return null;
-        }
         IntermediateV2 result = new IntermediateV2();
-        for (File layoutFile : layoutInfoDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".xml") && !excludeList.contains(name);
+        if (!layoutInfoDir.isDirectory()) {
+            // it is a zip in blaze / bazel.
+            L.d("trying to load layout info from zip file");
+            if (layoutInfoDir.exists()) {
+                L.d("found zip file %s", layoutInfoDir);
+                try {
+                    loadLayoutInfoFromZipFile(layoutInfoDir, result, excludeList);
+                    L.d("done loading from zip file");
+                } catch (IOException e) {
+                    L.e(e, "error while trying to load layout info from %s", layoutInfoDir);
+                }
+            } else {
+                L.d("layout info folder does not exist, skipping for %s", layoutInfoDir.getPath());
+            };
+        } else {
+            // it is a directory, search sub folders.
+            for (File layoutFile : FileUtils.listFiles(layoutInfoDir, new String[]{"xml"}, true)) {
+                if (excludeList.contains(layoutFile.getName())) {
+                    continue;
+                }
+                L.d("found xml file %s", layoutFile.getAbsolutePath());
+                try {
+                    result.addEntry(layoutFile.getName(), FileUtils.readFileToString(layoutFile));
+                } catch (IOException e) {
+                    L.e(e, "cannot load layout file information. Try a clean build");
+                }
             }
-        })) {
-            try {
-                result.addEntry(layoutFile.getName(), FileUtils.readFileToString(layoutFile));
-            } catch (IOException e) {
-                L.e(e, "cannot load layout file information. Try a clean build");
+            // also accept zip files
+            for (File zipFile : FileUtils.listFiles(layoutInfoDir, new String[]{"zip"}, true)) {
+                try {
+                    L.d("found zip file %s", zipFile.getAbsolutePath());
+                    loadLayoutInfoFromZipFile(zipFile, result, excludeList);
+                } catch (IOException e) {
+                    L.e(e, "error while reading layout zip file %s", zipFile);
+                }
             }
         }
 
-        // also accept zip files
-        for (File zipFile : layoutInfoDir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".zip");
-            }
-        })) {
-            try {
-                loadLayoutInfoFromZipFile(zipFile, result, excludeList);
-            } catch (IOException e) {
-                L.e(e, "error while reading layout zip file %s", zipFile);
-            }
-        }
+        L.d("done loading info files");
         return result;
     }
 
     private void loadLayoutInfoFromZipFile(File zipFile, IntermediateV2 result,
             Set<String> excludeList) throws IOException {
         ZipFile zf = new ZipFile(zipFile);
+        L.d("checking zip file %s", zipFile);
         final Enumeration<? extends ZipEntry> entries = zf.entries();
         while (entries.hasMoreElements()) {
             ZipEntry entry = entries.nextElement();
+            L.d("checking entry %s", entry.getName());
             if (excludeList.contains(entry.getName())) {
+                L.d("exclude entry %s", entry.getName());
                 continue;
             }
+            L.d("use entry %s", entry.getName());
             try {
                 result.addEntry(entry.getName(), IOUtils.toString(zf.getInputStream(entry),
                         Charsets.UTF_8));
+                L.d("loaded entry %s", entry.getName());
             } catch (IOException e) {
                 L.e(e, "cannot load layout file information. Try a clean build");
             }
         }
+        L.d("done loading zip file %s", zipFile);
 
     }
 

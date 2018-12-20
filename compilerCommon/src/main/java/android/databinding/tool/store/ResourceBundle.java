@@ -141,7 +141,7 @@ public class ResourceBundle implements Serializable {
     public static GenClassInfoLog loadClassInfoFromFolder(File folder) throws IOException {
         GenClassInfoLog merged = new GenClassInfoLog();
         // blaze might pass a zip instead of a folder
-        if (folder.isFile() && folder.getName().endsWith(".zip")) {
+        if (folder.isFile()) { //bazel
             // unzip it into a tmp folder and use it.
             ZipFile zipFile = new ZipFile(folder);
             zipFile.stream().forEach((Consumer<ZipEntry>) zipEntry -> {
@@ -157,15 +157,19 @@ public class ResourceBundle implements Serializable {
                     }
                 }
             });
-        }
-        SuffixFileFilter fileFilter = new SuffixFileFilter(
+        } else if (folder.isDirectory()){
+            SuffixFileFilter fileFilter = new SuffixFileFilter(
                 DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
                 IOCase.SYSTEM);
-        Collection<File> files = FileUtils.listFiles(folder,
+            Collection<File> files = FileUtils.listFiles(folder,
                 fileFilter,
                 TrueFileFilter.INSTANCE);
-        for (File file : files) {
-            merged.addAll(GenClassInfoLog.fromFile(file));
+            for (File file : files) {
+                merged.addAll(GenClassInfoLog.fromFile(file));
+            }
+        } else {
+            // happens w/ blaze
+            L.w("no info log is passed. There are no resources?");
         }
         return merged;
     }

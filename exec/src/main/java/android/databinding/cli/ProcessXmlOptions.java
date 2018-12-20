@@ -29,11 +29,6 @@ public class ProcessXmlOptions {
             "The package name of the application."
                     + " This should be the same package that R file uses.")
     private String appId;
-    @Parameter(names = "-minSdk", required = true, description = "Min sdk for the app.")
-    private int minSdk;
-    @Parameter(names = "-library", required = false, description = "True if this is a library "
-            + "project.")
-    private boolean library = false;
     @Parameter(names = "-resInput", required = true, converter = FileConverter.class,
             description =
                     "The folder which contains merged resources. It is the folder that contains the"
@@ -49,7 +44,7 @@ public class ProcessXmlOptions {
                             + " data binding related information for the layout files.")
     private File layoutInfoOutput;
 
-    @Parameter(names = "-zipLayoutInfo", required = false,
+    @Parameter(names = "-zipLayoutInfo", required = false, arity = 1,
             description =
                     "Whether the generated layout-info files should be zipped into 1 or not. If "
                             + "set "
@@ -63,19 +58,12 @@ public class ProcessXmlOptions {
      */
     @Parameter(names = "-useAndroidX",
             required = false,
+            arity = 1,
             description = "Specifies whether data binding should use androidX packages or not")
     private boolean useAndroidX = false;
 
     public String getAppId() {
         return appId;
-    }
-
-    public int getMinSdk() {
-        return minSdk;
-    }
-
-    public boolean isLibrary() {
-        return library;
     }
 
     public File getResInput() {
@@ -96,14 +84,6 @@ public class ProcessXmlOptions {
 
     public void setAppId(String appId) {
         this.appId = appId;
-    }
-
-    public void setMinSdk(int minSdk) {
-        this.minSdk = minSdk;
-    }
-
-    public void setLibrary(boolean library) {
-        this.library = library;
     }
 
     public void setResInput(File resInput) {
@@ -134,8 +114,6 @@ public class ProcessXmlOptions {
     public String toString() {
         return "ProcessXmlOptions{" +
                 "appId='" + appId + '\'' +
-                ", minSdk=" + minSdk +
-                ", library=" + library +
                 ", resInput=" + resInput +
                 ", resOutput=" + resOutput +
                 ", layoutInfoOutput=" + layoutInfoOutput +
