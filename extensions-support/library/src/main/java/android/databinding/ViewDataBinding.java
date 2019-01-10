@@ -391,6 +391,17 @@ public abstract class ViewDataBinding extends BaseObservable {
     }
 
     /**
+     * Returns the current LifecycleOwner assigned to the binding.
+     * Might be null if not set.
+     *
+     * @return The current LifecycleOwner used by the binding.
+     */
+    @Nullable
+    public LifecycleOwner getLifecycleOwner() {
+        return mLifecycleOwner;
+    }
+
+    /**
      * Add a listener to be called when reevaluating dirty fields. This also allows automatic
      * updates to be halted, but does not stop explicit calls to {@link #executePendingBindings()}.
      *
@@ -547,17 +558,18 @@ public abstract class ViewDataBinding extends BaseObservable {
         if (mContainingBinding != null) {
             mContainingBinding.requestRebind();
         } else {
+            final LifecycleOwner owner = this.mLifecycleOwner;
+            if (owner != null) {
+                Lifecycle.State state = owner.getLifecycle().getCurrentState();
+                if (!state.isAtLeast(Lifecycle.State.STARTED)) {
+                    return; // wait until lifecycle owner is started
+                }
+            }
             synchronized (this) {
                 if (mPendingRebind) {
                     return;
                 }
                 mPendingRebind = true;
-            }
-            if (mLifecycleOwner != null) {
-                Lifecycle.State state = mLifecycleOwner.getLifecycle().getCurrentState();
-                if (!state.isAtLeast(Lifecycle.State.STARTED)) {
-                    return; // wait until lifecycle owner is started
-                }
             }
             if (USE_CHOREOGRAPHER) {
                 mChoreographer.postFrameCallback(mFrameCallback);
