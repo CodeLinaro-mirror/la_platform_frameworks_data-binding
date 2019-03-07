@@ -26,12 +26,15 @@ class LibTypes(val useAndroidX: Boolean) {
     } else {
         "android.databinding"
     }
+
     private val typeRewriter by lazy(LazyThreadSafetyMode.NONE) {
-        val config = ConfigParser.loadDefaultConfig()
+        // Since subprojects with data binding can be built in parallel and loading the Jetifier
+        // config below is not thread-safe, we need to use a lock (see bug 123984697 for more info).
+        val config = synchronized(lockForConfigParser) {
+             ConfigParser.loadDefaultConfig()
                 ?: throw IllegalStateException("Cannot load AndroidX conversion file.")
-        TypeRewriter(
-                config = config,
-                useFallback = true)
+        }
+        TypeRewriter(config = config, useFallback = true)
     }
 
     val viewStubProxy by lazy(LazyThreadSafetyMode.NONE) {
@@ -188,6 +191,10 @@ class LibTypes(val useAndroidX: Boolean) {
     }
 
     companion object {
+        // Lock for loading the Jetifier config. (We assume that there is a 1-1 mapping between
+        // between this LibTypes class and the Jetifier ConfigParser class.)
+        private val lockForConfigParser = Object()
+
         // needed until we can update jettifier w/ arch and data binding
         private val PREFIX_REPLACEMENTS = mapOf(
                 "android.databinding." to "androidx.databinding.",
