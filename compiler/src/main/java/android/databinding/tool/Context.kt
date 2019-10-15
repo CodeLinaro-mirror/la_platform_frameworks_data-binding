@@ -37,7 +37,6 @@ import javax.annotation.processing.ProcessingEnvironment
 object Context {
     private val logger: AnnotationLogger = AnnotationLogger()
     @JvmStatic
-    @JvmOverloads
     fun init(processingEnvironment: ProcessingEnvironment,
              args: CompilerArguments) {
         L.setClient(logger)

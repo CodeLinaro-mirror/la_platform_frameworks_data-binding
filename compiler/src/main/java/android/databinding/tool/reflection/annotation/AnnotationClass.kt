@@ -55,6 +55,10 @@ class AnnotationClass(
     }
 
     override fun toDeclarationCode(): String {
+        if (typeMirror is TypeVariable) {
+            // if it is a type var, use upper bound
+            return AnnotationTypeUtil.getInstance().toJava(typeMirror.upperBound)
+        }
         return AnnotationTypeUtil.getInstance().toJava(typeMirror)
     }
 

@@ -26,7 +26,7 @@ public class MockLayoutBinder extends LayoutBinder {
         super(
             new ResourceBundle.LayoutFileBundle(
                 RelativizableFile.fromAbsoluteFile(new File("./blah.xml").getAbsoluteFile(), null),
-                "blah.xml", "layout", "com.test.submodule", false, false, "android.view.View"),
+                "blah.xml", "layout", "com.test.submodule", false, false, "android.view.View", null),
             false);
     }
 

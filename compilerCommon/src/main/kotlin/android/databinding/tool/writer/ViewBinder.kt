@@ -37,15 +37,24 @@ data class ViewBinder(
         require(layoutReference.type == "layout") {
             "Layout reference type must be 'layout': $layoutReference"
         }
+        if (rootNode is RootNode.Binding) {
+            require(rootNode.binding in bindings) {
+                "Root node binding is not present in bindings list: ${rootNode.binding}, $bindings"
+            }
+            require(rootNode.binding.isRequired) {
+                "Root node binding is not present in all configurations: ${rootNode.binding}"
+            }
+        }
     }
 
+    /** Describes the root node of the layout. */
     sealed class RootNode {
-        abstract val type: ClassName
-
-        object Merge : RootNode() {
-            override val type get() = ANDROID_VIEW
-        }
-        data class View(override val type: ClassName): RootNode()
+        /** Root `<merge>` tag. */
+        object Merge : RootNode()
+        /** Root view of type [type] with no ID or with IDs that vary across configurations. */
+        data class View(val type: ClassName): RootNode()
+        /** Root view is the same as that for [binding]. */
+        data class Binding(val binding: ViewBinding): RootNode()
     }
 }
 
@@ -54,7 +63,7 @@ data class ViewBinding(
     val name: String,
     val type: ClassName,
     val form: Form,
-    val idReference: ResourceReference,
+    val id: ResourceReference,
     /** Layout folders that this view is present in. */
     val presentConfigurations: List<String>,
     /**
@@ -66,7 +75,7 @@ data class ViewBinding(
     val absentConfigurations: List<String>
 ) {
     init {
-        require(idReference.type == "id") { "ID reference type must be 'id': $idReference" }
+        require(id.type == "id") { "ID reference type must be 'id': $id" }
     }
 
     val isRequired get() = absentConfigurations.isEmpty()
@@ -92,13 +101,27 @@ fun BaseLayoutModel.toViewBinder(): ViewBinder {
           name = fieldName(this),
           type = parseLayoutClassName(fieldType),
           form = if (isBinder) ViewBinding.Form.Binder else ViewBinding.Form.View,
-          idReference = idReference,
+          id = idReference,
           presentConfigurations = present,
           absentConfigurations = absent
         )
     }
 
-    val rootNode = if (variations.any { it.isMerge }) {
+    val bindings = sortedTargets.filter { it.id != null }.map { it.toBinding() }
+    val rootNode = parseRootNode(rClassName, bindings)
+    return ViewBinder(
+        generatedTypeName = ClassName.get(bindingClassPackage, bindingClassName),
+        layoutReference = ResourceReference(rClassName, "layout", baseFileName),
+        bindings = bindings,
+        rootNode = rootNode
+    )
+}
+
+private fun BaseLayoutModel.parseRootNode(
+    rClassName: ClassName,
+    bindings: List<ViewBinding>
+): RootNode {
+    if (variations.any { it.isMerge }) {
         // If anyone is a <merge>, everyone must be a <merge>.
         check(variations.all { it.isMerge }) {
             val (present, absent) = variations.partition { it.isMerge }
@@ -111,25 +134,42 @@ fun BaseLayoutModel.toViewBinder(): ViewBinder {
                |${absent.joinToString("\n|") { " - ${it.directory}" }}
                """.trimMargin()
         }
-        RootNode.Merge
-    } else {
-        val rootViewType = variations
-            // Create a set of root node view types for all variations.
-            .mapTo(LinkedHashSet()) { parseLayoutClassName(it.rootNodeViewType) }
-            // If all of the variations agree on the type, use it.
-            .singleOrNull()
-            // Otherwise fall back to View.
-            ?: ANDROID_VIEW
-
-        RootNode.View(rootViewType)
+        return RootNode.Merge
     }
 
-    return ViewBinder(
-        generatedTypeName = ClassName.get(bindingClassPackage, bindingClassName),
-        layoutReference = ResourceReference(rClassName, "layout", baseFileName),
-        bindings = sortedTargets.filter { it.id != null }.map { it.toBinding() },
-        rootNode = rootNode
-    )
+    if (variations.any { it.rootNodeViewId != null }) {
+        // If anyone has a root ID, everyone must agree on it.
+        val uniqueIds = variations.mapTo(HashSet()) { it.rootNodeViewId }
+        check(uniqueIds.size == 1) {
+            buildString {
+                append("Configurations for $baseFileName.xml must agree on the root element's ID.")
+                uniqueIds.sortedWith(nullsFirst(naturalOrder())).forEach { id ->
+                    append("\n\n${id ?: "Missing ID"}:\n")
+                    val matching = variations.filter { it.rootNodeViewId == id }
+                    append(matching.joinToString("\n") { " - ${it.directory}" })
+                }
+            }
+        }
+        // All variation's root nodes agree on the ID.
+        val idName = uniqueIds.single()!!
+        val id = idName.parseXmlResourceReference().toResourceReference(rClassName)
+
+        // Check to make sure that the ID matches a binding. Ignored tags like <merge> or <fragment>
+        // might have an ID but not have an actual binding. Only use ID if a match was found.
+        val rootBinding = bindings.singleOrNull { it.id == id }
+        if (rootBinding != null) {
+            return RootNode.Binding(rootBinding)
+        }
+    }
+
+    val rootViewType = variations
+        // Create a set of root node view types for all variations.
+        .mapTo(LinkedHashSet()) { parseLayoutClassName(it.rootNodeViewType) }
+        // If all of the variations agree on the type, use it.
+        .singleOrNull()
+        // Otherwise fall back to View.
+        ?: ANDROID_VIEW
+    return RootNode.View(rootViewType)
 }
 
 private fun XmlResourceReference.toResourceReference(moduleRClass: ClassName): ResourceReference {

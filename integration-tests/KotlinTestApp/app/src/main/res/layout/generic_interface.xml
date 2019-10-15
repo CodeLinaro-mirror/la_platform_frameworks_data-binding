@@ -17,11 +17,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
-
+        <import type="android.view.View"/>
         <variable
             name="model"
             type="androidx.databinding.kotlintestapp.GenericModel" />
-
+        <variable
+            name="genericWithOut"
+            type="androidx.databinding.kotlintestapp.GenericWithOutput" />
         <!-- Test using generic classes with / without specifying types -->
         <variable
             name="listWithoutType"
@@ -45,6 +47,14 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             app:genericList="@{model.observable}" />
+
+        <TextView
+            android:id="@+id/genericWithOutTxt"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="@{genericWithOut.data == null ? View.VISIBLE : View.GONE}"
+            android:text="@{genericWithOut.txt}" />
 
         <TextView
             android:id="@+id/textLiveData"

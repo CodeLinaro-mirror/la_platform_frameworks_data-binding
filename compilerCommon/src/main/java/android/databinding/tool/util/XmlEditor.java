@@ -79,7 +79,7 @@ public class XmlEditor {
         List<? extends ElementContext> layoutNodes =
                 excludeNodesByName("data", childrenOfRoot);
         if (layoutNodes.size() != 1) {
-            L.e("Only one layout element and one data element are allowed. %s has %d",
+            L.e("Only one layout element with 1 view child is allowed. %s has %d",
                     f.getAbsolutePath(), layoutNodes.size());
         }
 

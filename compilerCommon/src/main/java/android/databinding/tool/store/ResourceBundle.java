@@ -610,6 +610,10 @@ public class ResourceBundle implements Serializable {
         @XmlAttribute(name = "rootNodeType")
         private String mRootNodeViewType = "android.view.View";
 
+        @Nullable
+        @XmlAttribute(name = "rootNodeViewId")
+        private String mRootNodeViewId;
+
         private LocationScopeProvider mClassNameLocationProvider;
 
         // for XML binding
@@ -631,11 +635,12 @@ public class ResourceBundle implements Serializable {
             mIsMerge = other.mIsMerge;
             mIsBindingData = other.mIsBindingData;
             mRootNodeViewType = other.mRootNodeViewType;
+            mRootNodeViewId = other.mRootNodeViewId;
         }
 
         public LayoutFileBundle(@NonNull RelativizableFile file, @NonNull String fileName,
                 @NonNull String directory, @NonNull String modulePackage, boolean isMerge,
-                boolean isBindingData, @NonNull String rootViewType) {
+                boolean isBindingData, @NonNull String rootViewType, @Nullable String rootViewId) {
             // We prefer relative path over absolute path as we don't want to break caching across
             // machines---see bug 121288180.
             if (file.getRelativeFile() != null) {
@@ -649,6 +654,7 @@ public class ResourceBundle implements Serializable {
             mIsMerge = isMerge;
             mIsBindingData = isBindingData;
             mRootNodeViewType = qualifyViewNodeName(rootViewType);
+            mRootNodeViewId = rootViewId;
         }
 
         public LocationScopeProvider getClassNameLocationProvider() {
@@ -727,6 +733,11 @@ public class ResourceBundle implements Serializable {
         @NonNull
         public String getRootNodeViewType() {
             return mRootNodeViewType;
+        }
+
+        @Nullable
+        public String getRootNodeViewId() {
+            return mRootNodeViewId;
         }
 
         public String getBindingClassName() {

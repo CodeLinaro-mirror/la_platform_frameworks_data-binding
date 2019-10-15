@@ -18,6 +18,7 @@ package android.databinding.tool.reflection.annotation;
 
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelMethod;
+import android.databinding.tool.reflection.RecursiveResolutionStack;
 import android.databinding.tool.reflection.TypeUtil;
 
 import java.util.List;
@@ -39,6 +40,8 @@ import javax.lang.model.type.WildcardType;
 
 public class AnnotationTypeUtil extends TypeUtil {
     javax.lang.model.util.Types mTypes;
+    // used to avoid recursion in toJava
+    private RecursiveResolutionStack mToJavaResolutionStack = new RecursiveResolutionStack();
 
     public AnnotationTypeUtil(
             AnnotationAnalyzer annotationAnalyzer) {
@@ -122,51 +125,65 @@ public class AnnotationTypeUtil extends TypeUtil {
      * "java.util.Set&lt;java.lang.String&gt;"
      */
     public String toJava(TypeMirror typeMirror) {
-        switch (typeMirror.getKind()) {
-            case BOOLEAN:
-                return "boolean";
-            case BYTE:
-                return "byte";
-            case SHORT:
-                return "short";
-            case INT:
-                return "int";
-            case LONG:
-                return "long";
-            case CHAR:
-                return "char";
-            case FLOAT:
-                return "float";
-            case DOUBLE:
-                return "double";
-            case VOID:
-                return "void";
-            case NULL:
-                return "null";
-            case ARRAY:
-                return toJava((ArrayType) typeMirror);
-            case DECLARED:
-                return toJava((DeclaredType) typeMirror);
-            case TYPEVAR:
-                return toJava((TypeVariable) typeMirror);
-            case WILDCARD:
-                return toJava((WildcardType) typeMirror);
-            case NONE:
-            case PACKAGE:
-                return toJava(mTypes.asElement(typeMirror));
-            case EXECUTABLE:
-                return toJava((ExecutableType) typeMirror);
-            case UNION:
-                return toJava((UnionType) typeMirror);
-            case INTERSECTION:
-                return toJava((IntersectionType) typeMirror);
-            case ERROR:
-                return mTypes.asElement(typeMirror).getSimpleName().toString();
-            case OTHER:
-                throw new IllegalArgumentException(
-                  "Unexpected TypeMirror kind " + typeMirror.getKind() + ": " + typeMirror);
-        }
-        throw new AssertionError(typeMirror.getKind());
+        return mToJavaResolutionStack.visit(
+                typeMirror,
+                current -> {
+                    switch (current.getKind()) {
+                        case BOOLEAN:
+                            return "boolean";
+                        case BYTE:
+                            return "byte";
+                        case SHORT:
+                            return "short";
+                        case INT:
+                            return "int";
+                        case LONG:
+                            return "long";
+                        case CHAR:
+                            return "char";
+                        case FLOAT:
+                            return "float";
+                        case DOUBLE:
+                            return "double";
+                        case VOID:
+                            return "void";
+                        case NULL:
+                            return "null";
+                        case ARRAY:
+                            return toJava((ArrayType) current);
+                        case DECLARED:
+                            return toJava((DeclaredType) current);
+                        case TYPEVAR:
+                            return toJava((TypeVariable) current);
+                        case WILDCARD:
+                            return toJava((WildcardType) current);
+                        case NONE:
+                        case PACKAGE:
+                            return toJava(mTypes.asElement(current));
+                        case EXECUTABLE:
+                            return toJava((ExecutableType) current);
+                        case UNION:
+                            return toJava((UnionType) current);
+                        case INTERSECTION:
+                            return toJava((IntersectionType) current);
+                        case ERROR:
+                            return mTypes.asElement(current).getSimpleName().toString();
+                        case OTHER:
+                            throw new IllegalArgumentException(
+                                    "Unexpected TypeMirror kind " + current.getKind() + ": " + current);
+                    }
+                    throw new AssertionError(current.getKind());
+                },
+                recursed -> {
+                    if (recursed instanceof WildcardType) {
+                        return ((WildcardType) recursed).getExtendsBound().toString();
+                    } if (recursed instanceof TypeVariable) {
+                        return "?";
+                    } else {
+                        return recursed.toString();
+                    }
+                }
+        );
     }
 
     private String toJava(ArrayType arrayType) {

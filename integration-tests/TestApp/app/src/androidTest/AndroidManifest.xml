@@ -11,16 +11,13 @@
   ~ limitations under the License.
   -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="android.databinding.testapp">
-    <uses-sdk android:minSdkVersion="14" tools:overrideLibrary="android.support.test,
-                      android.app, android.support.test.rule, android.support.test.espresso,
-                      android.support.test.espresso.idling"/>
-    <application android:allowBackup="true">
-        <activity android:name=".TestActivity"
-                  android:screenOrientation="portrait"/>
-        <activity android:name=".LandscapeActivity"
-                  android:screenOrientation="landscape"/>
-    </application>
+    xmlns:tools="http://schemas.android.com/tools"
+    package="android.databinding.testapp">
 
+    <uses-sdk
+        android:minSdkVersion="14"
+        tools:overrideLibrary="android.support.test,
+                      android.app, android.support.test.rule, android.support.test.espresso,
+                      android.support.test.espresso.idling" />
+    <application android:allowBackup="true"/>
 </manifest>

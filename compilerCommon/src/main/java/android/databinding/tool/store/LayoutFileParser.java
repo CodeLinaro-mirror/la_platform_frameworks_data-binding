@@ -159,10 +159,12 @@ public final class LayoutFileParser {
                 return null;
             }
 
+            String rootViewType = getViewName(rootView);
+            String rootViewId = attributeMap(rootView).get("android:id");
             ResourceBundle.LayoutFileBundle bundle =
                 new ResourceBundle.LayoutFileBundle(
                     originalFile, xmlNoExtension, original.getParentFile().getName(), pkg,
-                    isMerge, isBindingData, getViewName(rootView));
+                    isMerge, isBindingData, rootViewType, rootViewId);
 
             final String newTag = original.getParentFile().getName() + '/' + xmlNoExtension;
             parseData(original, data, bundle);

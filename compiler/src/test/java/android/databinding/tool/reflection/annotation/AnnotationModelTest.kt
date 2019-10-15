@@ -84,6 +84,45 @@ class AnnotationModelTest {
         )
     }
 
+    @Test
+    fun parseGeneric_accessingGenericField() {
+        val code = JavaFileObjects.forSourceString("com.example.Owner",
+                """
+                    package com.example;
+                    public abstract class Owner<T> {
+                        public T value;
+                    }
+                """.trimIndent())
+        runProcessorTest(tmpFolder, code) { _, _ ->
+            val ownerModel = ModelAnalyzer.getInstance()
+                    .findClass("com.example.Owner", ImportBag.EMPTY) as AnnotationClass
+            val valueField = ownerModel.allFields.first {
+                it.name == "value"
+            }
+            assertThat(valueField.fieldType.toDeclarationCode()).isEqualTo("java.lang.Object")
+        }
+    }
+
+    @Test
+    fun parseGeneric_accessingBoundGeneric() {
+        val code = JavaFileObjects.forSourceString("com.example.Owner",
+                """
+                    package com.example;
+                    import java.util.List;
+                    public abstract class Owner<T extends List> {
+                        public T value;
+                    }
+                """.trimIndent())
+        runProcessorTest(tmpFolder, code) { _, _ ->
+            val ownerModel = ModelAnalyzer.getInstance()
+                    .findClass("com.example.Owner", ImportBag.EMPTY) as AnnotationClass
+            val valueField = ownerModel.allFields.first {
+                it.name == "value"
+            }
+            assertThat(valueField.fieldType.toDeclarationCode()).isEqualTo("java.util.List")
+        }
+    }
+
     private fun runTest(
             code: String,
             ownerXMLDeclaration: String,

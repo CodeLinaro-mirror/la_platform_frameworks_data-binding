@@ -16,7 +16,7 @@
 package android.databinding.tool.reflection
 
 class MutableImportBag : ImportBag() {
-    open fun put(alias : String, qName : String) {
+    fun put(alias : String, qName : String) {
         imports.putIfAbsent(alias, qName)
     }
 }

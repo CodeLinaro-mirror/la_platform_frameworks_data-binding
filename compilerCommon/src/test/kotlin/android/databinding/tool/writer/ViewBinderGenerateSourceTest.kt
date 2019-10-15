@@ -568,6 +568,91 @@ class ViewBinderGenerateSourceTest {
         }
     }
 
+    @Test fun rootNodeAgreeingOnIdDoesNotCallFindViewById() {
+        layouts.write("example", "layout", """
+            <View
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/root"
+                />
+        """.trimIndent())
+
+        val model = layouts.parse().getValue("example")
+        model.toViewBinder().toJavaFile().assert {
+            contains("View root = rootView;")
+        }
+    }
+
+    @Test fun rootNodeAgreeingOnIdDoesNotCallFindViewByIdAndCastsWhenNeeded() {
+        layouts.write("example", "layout", """
+            <FrameLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/root"
+                />
+        """.trimIndent())
+
+        val model = layouts.parse().getValue("example")
+        model.toViewBinder().toJavaFile().assert {
+            contains("FrameLayout root = (FrameLayout) rootView;")
+        }
+    }
+
+    @Test fun rootNodeDisagreeingOnIdFails() {
+        layouts.write("example", "layout", """
+            <FrameLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/one"
+                />
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <FrameLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/two"
+                />
+        """.trimIndent())
+
+        val model = layouts.parse().getValue("example")
+        try {
+            model.toViewBinder()
+        } catch (e: IllegalStateException) {
+            assertThat(e).hasMessageThat().isEqualTo("""
+                Configurations for example.xml must agree on the root element's ID.
+
+                @+id/one:
+                 - layout
+
+                @+id/two:
+                 - layout-land
+                """.trimIndent()
+            )
+        }
+    }
+
+    @Test fun rootNodePartialIdFails() {
+        layouts.write("example", "layout", """
+            <FrameLayout
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/partial"
+                />
+        """.trimIndent())
+        layouts.write("example", "layout-land", "<FrameLayout/>")
+
+        val model = layouts.parse().getValue("example")
+        try {
+            model.toViewBinder()
+        } catch (e: IllegalStateException) {
+            assertThat(e).hasMessageThat().isEqualTo("""
+                Configurations for example.xml must agree on the root element's ID.
+
+                Missing ID:
+                 - layout-land
+
+                @+id/partial:
+                 - layout
+                """.trimIndent()
+            )
+        }
+    }
+
     @Test fun fragmentNodesAreNotExposed() {
         layouts.write("as_root", "layout", """
             <fragment

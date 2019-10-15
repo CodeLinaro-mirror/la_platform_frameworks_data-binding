@@ -22,6 +22,8 @@ import android.databinding.tool.processing.scopes.LocationScopeProvider;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.ModelMethod;
+import android.databinding.tool.reflection.RecursionTracker;
+import android.databinding.tool.reflection.RecursiveResolutionStack;
 import android.databinding.tool.solver.ExecutionPath;
 import android.databinding.tool.store.Location;
 import android.databinding.tool.util.L;
@@ -29,6 +31,7 @@ import android.databinding.tool.util.Preconditions;
 import android.databinding.tool.writer.KCode;
 import android.databinding.tool.writer.LayoutBinderWriterKt;
 
+import kotlin.Unit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -115,6 +118,9 @@ abstract public class Expr implements VersionProvider, LocationScopeProvider {
     private boolean mIsUsed = false;
     private boolean mIsUsedInCallback = false;
     private boolean mUnwrapObservableFields = true;
+
+    // used to prevent infinite loops when resolving recursive data structures
+    private static RecursiveResolutionStack sResolveTypeStack = new RecursiveResolutionStack();
 
     Expr(Iterable<Expr> children) {
         for (Expr expr : children) {
@@ -357,21 +363,30 @@ abstract public class Expr implements VersionProvider, LocationScopeProvider {
     }
 
     public final ModelClass getResolvedType() {
-        if (mResolvedType == null) {
-            if (mUnwrapObservableFields) {
-                unwrapObservableFieldChildren();
-                mUnwrapObservableFields = false;
+        if (mResolvedType != null) {
+            return mResolvedType;
+        }
+        try {
+            Scope.enter(this);
+            mResolvedType = sResolveTypeStack.visit(
+                    this,
+                    currentType -> {
+                        if (mUnwrapObservableFields) {
+                            unwrapObservableFieldChildren();
+                            mUnwrapObservableFields = false;
+                        }
+                        return resolveType(ModelAnalyzer.getInstance());
+                    },
+                    recursedType -> {
+                        // solve without unwrapping observables
+                        return resolveType(ModelAnalyzer.getInstance());
+                    }
+            );
+            if (mResolvedType == null) {
+                L.e(ErrorMessages.CANNOT_RESOLVE_TYPE, this);
             }
-            // TODO not get instance
-            try {
-                Scope.enter(this);
-                mResolvedType = resolveType(ModelAnalyzer.getInstance());
-                if (mResolvedType == null) {
-                    L.e(ErrorMessages.CANNOT_RESOLVE_TYPE, this);
-                }
-            } finally {
-                Scope.exit();
-            }
+        } finally {
+            Scope.exit();
         }
         return mResolvedType;
     }
@@ -863,9 +878,19 @@ abstract public class Expr implements VersionProvider, LocationScopeProvider {
     }
 
     public Expr unwrapObservableField() {
+        final RecursionTracker<ModelClass> recursionTracker = new RecursionTracker<>(recursed -> {
+            if (recursed.isObservable()) {
+                L.e(ErrorMessages.RECURSIVE_OBSERVABLE, recursed);
+            } else {
+                L.w("Observable field resolved into another observable, skipping resolution. %s", recursed);
+            }
+            return Unit.INSTANCE;
+        });
+
         Expr expr = this;
         String simpleGetterName;
-        while ((simpleGetterName = expr.getResolvedType().getObservableGetterName()) != null) {
+        while ((simpleGetterName = expr.getResolvedType().getObservableGetterName()) != null
+                && recursionTracker.pushIfNew(expr.getResolvedType())) {
             Expr unwrapped = mModel.methodCall(expr, simpleGetterName, Collections.EMPTY_LIST);
             mModel.bindingExpr(unwrapped);
             unwrapped.setUnwrapObservableFields(false);
@@ -891,26 +916,25 @@ abstract public class Expr implements VersionProvider, LocationScopeProvider {
      * @param type The expected type or null if the child should be fully unwrapped.
      */
     protected void unwrapChildTo(int childIndex, @Nullable ModelClass type) {
+        final RecursionTracker<ModelClass> recursionTracker = new RecursionTracker<>(recursed -> {
+            if (recursed.isObservable()) {
+                L.e(ErrorMessages.RECURSIVE_OBSERVABLE, this);
+            } else {
+                L.d("Recursed while resolving %s, will stop resolution.", recursed);
+            }
+            return Unit.INSTANCE;
+        });
         final Expr child = mChildren.get(childIndex);
         Expr unwrapped = null;
         Expr expr = child;
         String simpleGetterName;
         while ((simpleGetterName = expr.getResolvedType().getObservableGetterName()) != null
+                && recursionTracker.pushIfNew(expr.getResolvedType())
                 && shouldUnwrap(type, expr.getResolvedType())) {
             unwrapped = mModel.methodCall(expr, simpleGetterName, Collections.EMPTY_LIST);
-            if (unwrapped == this) {
-                if (type != null) {
-                    if (type.isObservableField()) {
-                        L.w(ErrorMessages.OBSERVABLE_FIELD_GET, this);
-                    }
-                    else if (type.isLiveData()) {
-                        L.w(ErrorMessages.LIVEDATA_FIELD_GETVALUE, this);
-                    }
-                }
-                return; // This was already unwrapped!
-            }
             unwrapped.setUnwrapObservableFields(false);
             expr = unwrapped;
+
         }
         if (unwrapped != null) {
             child.getParents().remove(this);

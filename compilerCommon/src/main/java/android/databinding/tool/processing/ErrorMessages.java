@@ -94,11 +94,11 @@ public class ErrorMessages {
             "Expected: %d\n" +
             "Found: %d";
 
-    public static final String OBSERVABLE_FIELD_GET =
-            "The call to 'get' is unnecessary for Observable field '%s' and should be removed";
-
-    public static final String LIVEDATA_FIELD_GETVALUE =
-            "The call to 'getValue' is unnecessary for LiveData field '%s' and should be removed";
+    public static final String RECURSIVE_OBSERVABLE =
+            "Observable fields (LiveData, Observable etc) cannot contain a value type of themselves: %s .\n" +
+            "\n" +
+            "This would create a situation where data binding would need to unwrap an observable indefinitely." +
+            "(e.g. unwrapping a class like `Foo extends Observable<Foo>` would result into another `Foo`)";
 
     public static final String DUPLICATE_VIEW_OR_INCLUDE_ID =
             "<%s id='%s'> conflicts with another tag that has the same ID";

@@ -12,15 +12,19 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="android.databinding.testapp">
+    package="android.databinding.testapp">
 
-    <application android:allowBackup="true"
-                 android:icon="@drawable/ic_launcher"
-            >
-        <activity android:name=".TestActivity"
-                android:screenOrientation="portrait"/>
-        <activity android:name=".LandscapeActivity"
-                  android:screenOrientation="landscape"/>
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher">
+        <activity
+            android:name=".TestActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/noAnimTheme" />
+        <activity
+            android:name=".LandscapeActivity"
+            android:screenOrientation="landscape"
+            android:theme="@style/noAnimTheme"/>
     </application>
 
 </manifest>

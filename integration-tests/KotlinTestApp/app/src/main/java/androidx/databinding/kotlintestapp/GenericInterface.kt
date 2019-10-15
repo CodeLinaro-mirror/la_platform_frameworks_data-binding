@@ -30,8 +30,9 @@ interface Generic<T> {
 // implementation of it
 class GenericImpl(val data: String) : Generic<String> {
     override fun getValue() = data
-
 }
+
+data class GenericWithOutput<out T>(val data: T?, val txt:String)
 
 // model with nested generic data
 class GenericModel {

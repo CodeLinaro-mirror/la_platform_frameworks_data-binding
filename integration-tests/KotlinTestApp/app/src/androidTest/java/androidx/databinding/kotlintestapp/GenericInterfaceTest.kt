@@ -45,6 +45,10 @@ class GenericInterfaceTest {
             rule.binding.unspecifiedGenericModel = GenericModelWithNonGenericField<Any>().also {
                 it.specifiedGenericField.value = View.INVISIBLE
             }
+            rule.binding.genericWithOut = GenericWithOutput(
+                data = "foo",
+                txt = "bar"
+            )
             rule.executePendingBindings()
         }
         onView(withId(R.id.textObservable))
@@ -53,5 +57,9 @@ class GenericInterfaceTest {
             .check(matches(withText("c-d")))
         onView(withId(R.id.unspecifiedGenericBinding))
             .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.INVISIBLE)))
+        onView(withId(R.id.genericWithOutTxt))
+            .check(matches(withEffectiveVisibility(ViewMatchers.Visibility.GONE)))
+        onView(withId(R.id.genericWithOutTxt))
+            .check(matches(withText("bar")))
     }
 }
