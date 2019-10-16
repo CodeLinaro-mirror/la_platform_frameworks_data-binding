@@ -31,6 +31,8 @@ import android.databinding.tool.expr.localizeGlobalVariables
 import android.databinding.tool.expr.shouldLocalizeInCallbacks
 import android.databinding.tool.expr.toCode
 import android.databinding.tool.ext.br
+import android.databinding.tool.ext.capitalizeUS
+import android.databinding.tool.ext.decapitalizeUS
 import android.databinding.tool.ext.lazyProp
 import android.databinding.tool.ext.parseXmlResourceReference
 import android.databinding.tool.ext.stripNonJava
@@ -91,7 +93,7 @@ class ExprModelExt {
         var candidateBase = base
         var candidate = candidateBase
         if (scope == Scope.CALLBACK || scope == Scope.EXECUTE_PENDING_METHOD) {
-            candidate = candidate.decapitalize()
+            candidate = candidate.decapitalizeUS()
         }
         val checkFields = scope != Scope.METHOD
         var i = 0
@@ -178,7 +180,7 @@ val Expr.readableName by lazyProp { expr: Expr ->
 }
 
 val Expr.fieldName by lazyProp { expr: Expr ->
-    expr.model.getUniqueFieldName("m${expr.readableName.capitalize()}", false)
+    expr.model.getUniqueFieldName("m${expr.readableName.capitalizeUS()}", false)
 }
 
 val InverseBinding.fieldName by lazyProp { inverseBinding: InverseBinding ->
@@ -192,7 +194,7 @@ val Expr.listenerClassName by lazyProp { expr: Expr ->
 }
 
 val Expr.oldValueName by lazyProp { expr: Expr ->
-    expr.model.getUniqueFieldName("mOld${expr.readableName.capitalize()}", false)
+    expr.model.getUniqueFieldName("mOld${expr.readableName.capitalizeUS()}", false)
 }
 
 fun Expr.scopedName() : String = when(Scope.currentScope) {
@@ -211,15 +213,15 @@ val Expr.executePendingLocalName by lazyProp { expr: Expr ->
 }
 
 val Expr.setterName by lazyProp { expr: Expr ->
-    expr.model.getUniqueMethodName("set${expr.readableName.capitalize()}", true)
+    expr.model.getUniqueMethodName("set${expr.readableName.capitalizeUS()}", true)
 }
 
 val Expr.onChangeName by lazyProp { expr: Expr ->
-    expr.model.getUniqueMethodName("onChange${expr.readableName.capitalize()}", false)
+    expr.model.getUniqueMethodName("onChange${expr.readableName.capitalizeUS()}", false)
 }
 
 val Expr.getterName by lazyProp { expr: Expr ->
-    expr.model.getUniqueMethodName("get${expr.readableName.capitalize()}", true)
+    expr.model.getUniqueMethodName("get${expr.readableName.capitalizeUS()}", true)
 }
 
 fun Expr.isVariable() = this is IdentifierExpr && this.isDynamic

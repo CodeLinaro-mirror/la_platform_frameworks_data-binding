@@ -19,7 +19,9 @@ import com.squareup.javapoet.ArrayTypeName
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
+import java.util.Locale
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.collections.ArrayList
 import kotlin.properties.ReadOnlyProperty
 import kotlin.reflect.KProperty
 
@@ -153,7 +155,7 @@ data class XmlResourceReference(
 fun String.toCamelCase(): String {
     val split = this.split("_")
     if (split.size == 0) return ""
-    if (split.size == 1) return split[0].capitalize()
+    if (split.size == 1) return split[0].capitalizeUS()
     return split.joinToCamelCase()
 }
 
@@ -162,6 +164,20 @@ fun String.toCamelCaseAsVar(): String {
     if (split.isEmpty()) return ""
     if (split.size == 1) return split[0]
     return split.joinToCamelCaseAsVar()
+}
+
+// TODO replace with String.capitalize(Locale) from standard library once it is not experimental.
+fun String.capitalizeUS() = if (isEmpty()) {
+    ""
+} else {
+    substring(0, 1).toUpperCase(Locale.US) + substring(1)
+}
+
+// TODO replace with String.decapitalize(Locale) from standard library once it is not experimental.
+fun String.decapitalizeUS() = if (isEmpty()) {
+    ""
+} else {
+    substring(0, 1).toLowerCase(Locale.US) + substring(1)
 }
 
 fun String.br(): String =

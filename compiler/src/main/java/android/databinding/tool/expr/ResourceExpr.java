@@ -25,7 +25,8 @@ import android.databinding.tool.writer.LayoutBinderWriterKt;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static android.databinding.tool.ext.ExtKt.capitalizeUS;
 
 public class ResourceExpr extends Expr {
 
@@ -204,8 +205,7 @@ public class ResourceExpr extends Expr {
         if ("transition".equals(mResourceType)) return "android.transition.TransitionInflater.from(" + context + ").inflateTransition(" + resourceName + ")";
         if ("text".equals(mResourceType)) return resources + ".getText(" + resourceName + ")";
         if ("typedArray".equals(mResourceType)) return resources + ".obtainTypedArray(" + resourceName + ")";
-        final String property = Character.toUpperCase(mResourceType.charAt(0)) +
-                mResourceType.substring(1);
+        final String property = capitalizeUS(mResourceType);
         return resources + ".get" + property + "(" + resourceName + ")";
 
     }

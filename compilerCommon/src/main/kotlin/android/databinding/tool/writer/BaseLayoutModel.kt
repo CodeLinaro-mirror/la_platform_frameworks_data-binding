@@ -16,6 +16,7 @@
 
 package android.databinding.tool.writer
 
+import android.databinding.tool.ext.capitalizeUS
 import android.databinding.tool.ext.mapEach
 import android.databinding.tool.ext.parseXmlResourceReference
 import android.databinding.tool.ext.stripNonJava
@@ -145,7 +146,7 @@ class BaseLayoutModel(val variations: List<LayoutFileBundle>) {
     }
 
     private fun readableName(variable: ResourceBundle.VariableDeclaration) : String {
-        return variable.name.stripNonJava().capitalize()
+        return variable.name.stripNonJava().capitalizeUS()
     }
 
     private fun indexFromTag(tag: String): kotlin.Int {
