@@ -20,6 +20,7 @@ import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.ScopedErrorReport;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.store.Location;
+import com.android.annotations.NonNull;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import org.apache.commons.io.FileUtils;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -129,8 +131,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
             String extract = extract(targetFile, loc);
             assertEquals(scopedException.getMessage(), expectedExtract, extract);
         }
-        final File errorFile = new File(report.getFilePath());
-        assertTrue(errorFile.exists());
+        final File errorFile = requireErrorFile(report);
         assertEquals(new File(testFolder, targetFile).getCanonicalFile(),
                 errorFile.getCanonicalFile());
         if (errorMessage != null) {
@@ -170,7 +171,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         File invalidSetter = new File(testFolder, "/app/src/main/res/layout/invalid_setter.xml");
         for (ScopedException exception : bindingExceptions) {
             ScopedErrorReport report = exception.getScopedErrorReport();
-            final File errorFile = new File(report.getFilePath());
+            final File errorFile = requireErrorFile(report);
             String message = null;
             String expectedErrorFile = null;
             if (errorFile.getCanonicalPath().equals(broken.getCanonicalPath())) {
@@ -378,8 +379,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(result.error, 1, errors.size());
         final ScopedException ex = errors.get(0);
         final ScopedErrorReport report = ex.getScopedErrorReport();
-        final File errorFile = new File(report.getFilePath());
-        assertTrue(errorFile.exists());
+        final File errorFile = requireErrorFile(report);
         assertEquals(
                 new File(testFolder, "/app/src/main/res/layout/merge_include.xml")
                         .getCanonicalFile(),
@@ -398,8 +398,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(result.error, 1, errors.size());
         final ScopedException ex = errors.get(0);
         final ScopedErrorReport report = ex.getScopedErrorReport();
-        final File errorFile = new File(report.getFilePath());
-        assertTrue(errorFile.exists());
+        final File errorFile = requireErrorFile(report);
         assertEquals(new File(testFolder,
                 "/app/src/main/res/layout/layout_with_two_way_event_attribute.xml")
                         .getCanonicalFile(),
@@ -424,8 +423,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(result.error, 1, errors.size());
         final ScopedException ex = errors.get(0);
         final ScopedErrorReport report = ex.getScopedErrorReport();
-        final File errorFile = new File(report.getFilePath());
-        assertTrue(errorFile.exists());
+        final File errorFile = requireErrorFile(report);
         assertEquals(new File(testFolder,
                         "/app/src/main/res/layout/layout_with_dependency.xml")
                         .getCanonicalFile(),
@@ -451,8 +449,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(result.error, 1, errors.size());
         final ScopedException ex = errors.get(0);
         final ScopedErrorReport report = ex.getScopedErrorReport();
-        final File errorFile = new File(report.getFilePath());
-        assertTrue(errorFile.exists());
+        final File errorFile = requireErrorFile(report);
         assertEquals(new File(testFolder,
                         "/app/src/main/res/layout/layout_with_dependency.xml")
                         .getCanonicalFile(),
@@ -478,7 +475,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals(result.error, 1, errors.size());
         final ScopedException ex = errors.get(0);
         final ScopedErrorReport report = ex.getScopedErrorReport();
-        final File errorFile = new File(report.getFilePath());
+        final File errorFile = requireErrorFile(report);
         assertTrue(errorFile.exists());
         assertEquals(new File(testFolder,
                         "/app/src/main/res/layout/layout_with_dependency.xml")

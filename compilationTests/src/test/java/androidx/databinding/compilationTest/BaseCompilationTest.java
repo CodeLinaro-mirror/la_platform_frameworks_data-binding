@@ -16,6 +16,7 @@
 
 package androidx.databinding.compilationTest;
 
+import android.databinding.tool.processing.ScopedErrorReport;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -358,6 +359,26 @@ public class BaseCompilationTest {
             }
         }
         return toolsFolder;
+    }
+
+    /**
+     * Finds the error file referenced in the given error report.
+     * Handles possibly relative paths.
+     *
+     * Throws an assertion exception if the error file reported cannot be found.
+     */
+    @NonNull
+    File requireErrorFile(ScopedErrorReport report) {
+        String path = report.getFilePath();
+        assertNotNull(path);
+        File file = new File(path);
+        if (file.exists()) {
+            return file;
+        }
+        // might be relative, try in test project folder
+        file = new File(testFolder, path);
+        assertTrue("required error file is missing in " + file.getAbsolutePath(), file.exists());
+        return file;
     }
 
     /**
