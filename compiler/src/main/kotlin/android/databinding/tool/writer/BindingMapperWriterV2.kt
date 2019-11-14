@@ -36,9 +36,27 @@ import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import java.util.HashMap
 import java.util.Locale
+import java.util.HashMap
 import javax.lang.model.element.Modifier
+import kotlin.collections.ArrayList
+import kotlin.collections.List
+import kotlin.collections.MutableSet
+import kotlin.collections.chunked
+import kotlin.collections.emptyList
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.flatMap
+import kotlin.collections.forEach
+import kotlin.collections.forEachIndexed
+import kotlin.collections.getOrPut
+import kotlin.collections.isNotEmpty
+import kotlin.collections.map
+import kotlin.collections.mapIndexed
+import kotlin.collections.mutableMapOf
+import kotlin.collections.plus
+import kotlin.collections.sortedBy
+import kotlin.collections.sumBy
 
 class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                             compilerArgs: CompilerArguments,
@@ -68,8 +86,20 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
         @JvmStatic
         fun createMapperQName(modulePackage: String) = "$modulePackage.$IMPL_CLASS_NAME"
 
-        // how we divide layouts into methods
-        private const val CHUNK_SIZE = 50
+        /**
+         * The method that converts a local layout id into a view binding might get fairly large
+         * due to the switch statement. This constant controls how many layouts are handled in each
+         * function. The main entry point basically finds which function can respond to a given
+         * id and calls it directly.
+         */
+        private const val GET_VIEW_BINDING_CHUNK_SIZE = 50
+
+        /**
+         * Java has a limit on the # of lines in a code block (function). This constant controls
+         * how many statements we add into a code block. [addChunkedStaticBlock] method uses
+         * it to divide long static statement blocks into smaller methods if necessary.
+         */
+        private const val METHOD_BODY_CHUNK_SIZE = 500
     }
 
     private val rClassMap = mutableMapOf<String, ClassName>()
@@ -133,7 +163,7 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                     getLocalizedLayoutId(it.key, it.value)
                 }
                 .sortedBy { it.localId }
-        chunkedMappings = allMappings.chunked(CHUNK_SIZE)
+        chunkedMappings = allMappings.chunked(GET_VIEW_BINDING_CHUNK_SIZE)
     }
 
     val qualifiedName = "$pkg.$className"
@@ -203,12 +233,13 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                     .initializer("new $T($L)", lookupType, allMappings.size)
                     .build()
             addField(lookupField)
-            addStaticBlock(CodeBlock.builder().apply {
-                allMappings.forEach {
-                    addStatement("$N.put($L.layout.$L, $N)", lookupField,
-                            getRClass(it.genClass.modulePackage), it.layoutName, it.localIdField)
-                }
-            }.build())
+            addChunkedStaticBlock(
+                    methodPrefix = "internalPopulateLayoutIdLookup",
+                    items = allMappings
+            ) {
+                addStatement("$N.put($L.layout.$L, $N)", lookupField,
+                        getRClass(it.genClass.modulePackage), it.layoutName, it.localIdField)
+            }
         }
     }
 
@@ -231,14 +262,15 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                     initializer("new $T($L)", keysTypeName, brValueLookup.size)
                 }.build()
                 addField(keysField)
-                addStaticBlock(CodeBlock.builder().apply {
-                    brValueLookup.props.forEach {
-                        addStatement("$N.put($L, $S)",
-                                keysField,
-                                it.second,
-                                it.first)
-                    }
-                }.build())
+                addChunkedStaticBlock(
+                        methodPrefix = "internalPopulateBRLookup",
+                        items = brValueLookup.props
+                ) {
+                    addStatement("$N.put($L, $S)",
+                            keysField,
+                            it.second,
+                            it.first)
+                }
             }.build()
 
     private fun generateConvertBrIdToString() = MethodSpec
@@ -275,17 +307,22 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                             allMappings.sumBy { it.genClass.implementations.size })
                 }.build()
                 addField(keysField)
-                addStaticBlock(CodeBlock.builder().apply {
-                    allMappings.forEach { mapping ->
-                        val rClass = getRClass(mapping.genClass.modulePackage)
-                        mapping.genClass.implementations.forEach { impl ->
-                            addStatement("$N.put($S, $L)",
-                                    keysField,
-                                    "${impl.tag}_0",
-                                    "$rClass.layout.${mapping.layoutName}")
-                        }
+                val items = allMappings.flatMap { mapping ->
+                    val rClass = getRClass(mapping.genClass.modulePackage)
+                    mapping.genClass.implementations.map { impl ->
+                        Triple(mapping, rClass, impl)
                     }
-                }.build())
+                }
+                addChunkedStaticBlock(
+                        methodPrefix = "internalPopulateLayoutIdLookup",
+                        items = items
+                ) {
+                    val (mapping, rClass, impl) = it
+                    addStatement("$N.put($S, $L)",
+                            keysField,
+                            "${impl.tag}_0",
+                            "$rClass.layout.${mapping.layoutName}")
+                }
             }.build()
 
     private fun generateGetLayoutId() = MethodSpec.methodBuilder("getLayoutId").apply {
@@ -422,7 +459,7 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                             TypeName.INT,
                             methodIndexField,
                             localizedLayoutId,
-                            CHUNK_SIZE)
+                            GET_VIEW_BINDING_CHUNK_SIZE)
                     beginControlFlow("switch($N)", methodIndexField).apply {
                         chunks.forEachIndexed { index, methodSpec ->
                             beginControlFlow("case $L:", index).apply {
@@ -540,5 +577,75 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
             }
             addStatement("return result")
         }.build()
+    }
+
+    /**
+     * Helper function to generate static code blocks that avoid java method limit.
+     * Based on the given chunk size, this either generates a code section like:
+     *
+     * static {
+     *    // handle item 1
+     *    // handle item 2 ...
+     * }
+     *
+     * or if the list if bigger than [chunkSize], it generates something like:
+     *
+     * private static void prefix1() {
+     *    // handle item 1
+     *    // handle item 2
+     *    ...
+     * }
+     *
+     * private static void prefix2() {
+     *    // handle item 1000
+     *    // handle item 1001
+     *    ...
+     * }
+     *
+     * static {
+     *     prefix1()
+     *     prefix2()
+     *     ...
+     * }
+     */
+    private fun <T> TypeSpec.Builder.addChunkedStaticBlock(
+            methodPrefix:String,
+            chunkSize : Int = METHOD_BODY_CHUNK_SIZE,
+            items: List<T>,
+            addItem : CodeBlock.Builder.(T) -> Unit
+    ) {
+        if (items.isEmpty()) {
+            return
+        }
+        if (items.size <= chunkSize) {
+            // dont create any methods
+            addStaticBlock(CodeBlock.builder()
+                    .apply {
+                        items.forEach {
+                            this.addItem(it)
+                        }
+                    }.build())
+        } else {
+            // divide it into methods to avoid java method size limit
+            val methods = items.chunked(chunkSize).mapIndexed { index, chunk ->
+                MethodSpec.methodBuilder("$methodPrefix$index")
+                        .addModifiers(Modifier.STATIC, Modifier.PRIVATE)
+                        .addCode(CodeBlock.builder().apply {
+                            chunk.forEach {
+                                this.addItem(it)
+                            }
+                        }.build())
+                        .build()
+            }
+            methods.forEach {
+                this.addMethod(it)
+            }
+            // add 1 static block to call all
+            addStaticBlock(CodeBlock.builder().apply {
+                methods.forEach {
+                    addStatement("$N()", it)
+                }
+            }.build())
+        }
     }
 }

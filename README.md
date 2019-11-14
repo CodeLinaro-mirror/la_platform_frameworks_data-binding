@@ -67,6 +67,8 @@ Now you can open extensions in Android Studio.
 Some of data binding tests are only in AGP. To run them:
 
 `./gradlew :base:build-system:integration-test:databinding:te`
+or filter them like:
+`./gradlew :base:build-system:integration-test:databinding:te --tests DataBindingWithDaggerTest`
 
 You can run data binding unit tests via:
 `bazel test //tools/data-binding/...`
