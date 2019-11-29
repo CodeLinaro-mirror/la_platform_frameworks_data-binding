@@ -68,6 +68,13 @@ abstract class ModelAnalyzer protected constructor(@JvmField val libTypes: LibTy
     }
 
     /**
+     * If present, rely on it for fetching resources when possible.
+     */
+    val appCompatResourcesType by lazy(LazyThreadSafetyMode.NONE) {
+        findClass(libTypes.appCompatResources, null)
+    }
+
+    /**
      * If it is present, we annotate generated classes with @Generated.
      */
     val hasGeneratedAnnotation by lazy(LazyThreadSafetyMode.NONE) {

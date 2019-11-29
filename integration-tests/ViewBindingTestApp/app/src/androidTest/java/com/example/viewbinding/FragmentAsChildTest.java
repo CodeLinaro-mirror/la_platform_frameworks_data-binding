@@ -21,16 +21,21 @@ import static org.junit.Assert.assertSame;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
+import android.support.test.rule.ActivityTestRule;
 import android.view.LayoutInflater;
 import com.example.viewbinding.databinding.FragmentAsChildBinding;
+import org.junit.Rule;
 import org.junit.Test;
 
 public final class FragmentAsChildTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
-    private final LayoutInflater inflater = LayoutInflater.from(context);
+    @Rule public final ActivityTestRule<EmptyActivity> activityRule =
+            new ActivityTestRule<>(EmptyActivity.class);
 
+    @UiThreadTest
     @Test public void inflate() {
+        LayoutInflater inflater = activityRule.getActivity().getLayoutInflater();
         FragmentAsChildBinding binding = FragmentAsChildBinding.inflate(inflater);
-        assertNotNull(binding); // Nothing really to validate aside from that it compiled.
+        assertNotNull(binding.one);
     }
 }

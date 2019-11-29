@@ -170,22 +170,36 @@ public class ResourceExpr extends Expr {
         final String context = "getRoot().getContext()";
         final String viewName = requiresView() ? LayoutBinderWriterKt.getFieldName(mTarget) :
                 "getRoot()";
+        final String viewContext = viewName + ".getContext()";
         final String resources = viewName + ".getResources()";
         final String resourceName = mPackage + "R." + getResourceObject() + "." + mResourceId;
         if ("anim".equals(mResourceType)) return "android.view.animation.AnimationUtils.loadAnimation(" + context + ", " + resourceName + ")";
         if ("animator".equals(mResourceType)) return "android.animation.AnimatorInflater.loadAnimator(" + context + ", " + resourceName + ")";
         if ("bool".equals(mResourceType)) return resources + ".getBoolean(" + resourceName + ")";
         if ("color".equals(mResourceType)) return "getColorFromResource(" + viewName + ", " + resourceName + ")";
-        if ("colorStateList".equals(mResourceType)) return "getColorStateListFromResource(" + viewName + ", " + resourceName + ")";
+        if ("colorStateList".equals(mResourceType)) {
+            ModelClass appCompatResources = ModelAnalyzer.getInstance().getAppCompatResourcesType();
+            if (appCompatResources != null) {
+                return appCompatResources.getCanonicalName() + ".getColorStateList(" + viewContext + ", " + resourceName + ")";
+            } else {
+                return "getColorStateListFromResource(" + viewName + ", " + resourceName + ")";
+            }
+        }
         if ("dimen".equals(mResourceType)) return resources + ".getDimension(" + resourceName + ")";
         if ("dimenOffset".equals(mResourceType)) return resources + ".getDimensionPixelOffset(" + resourceName + ")";
         if ("dimenSize".equals(mResourceType)) return resources + ".getDimensionPixelSize(" + resourceName + ")";
-        if ("drawable".equals(mResourceType)) return "getDrawableFromResource(" + viewName + ", " + resourceName + ")";
+        if ("drawable".equals(mResourceType)) {
+            ModelClass appCompatResources = ModelAnalyzer.getInstance().getAppCompatResourcesType();
+            if (appCompatResources != null) {
+                return appCompatResources.getCanonicalName() + ".getDrawable(" + viewContext + ", " + resourceName + ")";
+            } else {
+                return "getDrawableFromResource(" + viewName + ", " + resourceName + ")";
+            }
+        }
         if ("fraction".equals(mResourceType)) {
             String base = getChildCode(0, "1");
             String pbase = getChildCode(1, "1");
-            return resources + ".getFraction(" + resourceName + ", " + base + ", " + pbase +
-                    ")";
+            return resources + ".getFraction(" + resourceName + ", " + base + ", " + pbase + ")";
         }
         if ("id".equals(mResourceType)) return resourceName;
         if ("intArray".equals(mResourceType)) return resources + ".getIntArray(" + resourceName + ")";

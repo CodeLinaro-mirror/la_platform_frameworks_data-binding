@@ -215,6 +215,7 @@ class ViewBinderGenerateSourceTest {
                 <TextView android:id="@+id/root_view" />
                 <TextView android:id="@+id/missing_id" />
                 <View android:id="@+id/other_binding" />
+                <View android:id="@+id/id" />
                 <include layout="@layout/other" android:id="@+id/other"/>
             </LinearLayout>
             """.trimIndent())
@@ -242,6 +243,9 @@ class ViewBinderGenerateSourceTest {
                 |  private final LinearLayout rootView_;
                 |
                 |  @NonNull
+                |  public final View id;
+                |
+                |  @NonNull
                 |  public final TextView missingId;
                 |
                 |  @NonNull
@@ -253,9 +257,11 @@ class ViewBinderGenerateSourceTest {
                 |  @NonNull
                 |  public final TextView rootView;
                 |
-                |  private ExampleBinding(@NonNull LinearLayout rootView_, @NonNull TextView missingId,
-                |      @NonNull OtherBinding other, @NonNull View otherBinding, @NonNull TextView rootView) {
+                |  private ExampleBinding(@NonNull LinearLayout rootView_, @NonNull View id,
+                |      @NonNull TextView missingId, @NonNull OtherBinding other,
+                |      @NonNull View otherBinding, @NonNull TextView rootView) {
                 |    this.rootView_ = rootView_;
+                |    this.id = id;
                 |    this.missingId = missingId;
                 |    this.other = other;
                 |    this.otherBinding = otherBinding;
@@ -285,34 +291,46 @@ class ViewBinderGenerateSourceTest {
                 |
                 |  @NonNull
                 |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    String missingId;
+                |    int id;
                 |    missingId: {
-                |      TextView missingId_ = rootView.findViewById(R.id.missing_id);
-                |      if (missingId_ == null) {
-                |        missingId = "missingId";
+                |      id = R.id.id;
+                |      View id_ = rootView.findViewById(id);
+                |      if (id_ == null) {
                 |        break missingId;
                 |      }
-                |      View other = rootView.findViewById(R.id.other);
+                |
+                |      id = R.id.missing_id;
+                |      TextView missingId = rootView.findViewById(id);
+                |      if (missingId == null) {
+                |        break missingId;
+                |      }
+                |
+                |      id = R.id.other;
+                |      View other = rootView.findViewById(id);
                 |      if (other == null) {
-                |        missingId = "other";
                 |        break missingId;
                 |      }
                 |      OtherBinding otherBinding = OtherBinding.bind(other);
-                |      View otherBinding_ = rootView.findViewById(R.id.other_binding);
+                |
+                |      id = R.id.other_binding;
+                |      View otherBinding_ = rootView.findViewById(id);
                 |      if (otherBinding_ == null) {
-                |        missingId = "otherBinding";
                 |        break missingId;
                 |      }
-                |      TextView rootView_ = rootView.findViewById(R.id.root_view);
+                |
+                |      id = R.id.root_view;
+                |      TextView rootView_ = rootView.findViewById(id);
                 |      if (rootView_ == null) {
-                |        missingId = "rootView";
                 |        break missingId;
                 |      }
-                |      return new ExampleBinding((LinearLayout) rootView, missingId_, otherBinding,
-                |          otherBinding_, rootView_);
+                |
+                |      return new ExampleBinding((LinearLayout) rootView, id_, missingId,
+                |          otherBinding, otherBinding_, rootView_);
                 |    }
+                |
+                |    String missingId_ = rootView.getResources().getResourceName(id);
                 |    throw new NullPointerException(
-                |        "Missing required view with ID: ".concat(missingId));
+                |        "Missing required view with ID: ".concat(missingId_));
                 |  }
                 |}
             """.trimMargin())
@@ -639,6 +657,7 @@ class ViewBinderGenerateSourceTest {
         val model = layouts.parse().getValue("example")
         try {
             model.toViewBinder()
+            fail()
         } catch (e: IllegalStateException) {
             assertThat(e).hasMessageThat().isEqualTo("""
                 Configurations for example.xml must agree on the root element's ID.
@@ -650,6 +669,21 @@ class ViewBinderGenerateSourceTest {
                  - layout
                 """.trimIndent()
             )
+        }
+    }
+
+    @Test fun invalidNodeNameFailsWithNiceMessage() {
+        layouts.write("example", "layout", """
+            <layer-list xmlns:android="http://schemas.android.com/apk/res/android"/>
+        """.trimIndent())
+
+        val model = layouts.parse().getValue("example")
+        try {
+            model.toViewBinder()
+            fail()
+        } catch (e: IllegalArgumentException) {
+            assertThat(e).hasMessageThat()
+                .isEqualTo("Unable to parse \"android.widget.layer-list\" as class in example.xml")
         }
     }
 

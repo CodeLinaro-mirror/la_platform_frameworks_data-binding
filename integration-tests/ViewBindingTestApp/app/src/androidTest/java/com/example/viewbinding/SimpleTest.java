@@ -17,36 +17,41 @@
 package com.example.viewbinding;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.view.LayoutInflater;
-import android.view.View;
-import com.example.viewbinding.databinding.RootWithIdBinding;
+import android.view.ViewGroup;
+import com.example.viewbinding.databinding.SimpleBinding;
 import org.junit.Test;
 
-public final class RootWithIdTest {
+public final class SimpleTest {
     private final Context context = InstrumentationRegistry.getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
-    @Test public void inflate() {
-        RootWithIdBinding binding = RootWithIdBinding.inflate(inflater);
-        View rootView = binding.rootId;
-        assertSame(rootView, binding.getRoot());
-    }
+    @Test public void missingUserIdError() {
+        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.simple, null, false);
+        root.removeViewAt(0);
 
-    @Test public void bindNullThrows() {
-        // Improper generated logic might rely on the non-zero binding count and
-        // assume a rootView.findViewById call was implicitly performing a null
-        // check. But since the only binding is the root view which should be a
-        // simple cast, ensure that null is not allowed to propagate.
         try {
-            RootWithIdBinding.bind(null);
+            SimpleBinding.bind(root);
             fail();
         } catch (NullPointerException e) {
-            assertEquals("rootView", e.getMessage());
+            assertEquals(
+                "Missing required view with ID: com.example.viewbinding:id/one", e.getMessage());
+        }
+    }
+
+    @Test public void missingAndroidIdError() {
+        ViewGroup root = (ViewGroup) inflater.inflate(R.layout.simple, null, false);
+        root.removeViewAt(1);
+
+        try {
+            SimpleBinding.bind(root);
+            fail();
+        } catch (NullPointerException e) {
+            assertEquals("Missing required view with ID: android:id/text2", e.getMessage());
         }
     }
 }

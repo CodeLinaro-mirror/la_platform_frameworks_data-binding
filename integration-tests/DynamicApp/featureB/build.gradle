@@ -34,8 +34,8 @@ android {
             proguardFiles 'proguard-rules.pro'
         }
     }
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        dataBinding = true
     }
 }
 

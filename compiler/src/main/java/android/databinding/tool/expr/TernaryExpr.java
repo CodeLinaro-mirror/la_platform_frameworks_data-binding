@@ -24,12 +24,22 @@ import android.databinding.tool.writer.KCode;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Objects;
 
 public class TernaryExpr extends Expr {
 
-    TernaryExpr(Expr pred, Expr ifTrue, Expr ifFalse) {
+    /**
+     * The data binding compiler converts "a && b" to "a ? b : false" and "a || b" to "a ? a : b",
+     * which works logically but in practice can cause an issue if b is nullable (as the expression
+     * returns null instead of false). If we're a ternary expression that's really a logical expression,
+     * we should always return a boolean result.
+     *
+     * See: https://issuetracker.google.com/issues/144246528#comment3 for details.
+     */
+    private final Type mType;
+
+    TernaryExpr(Expr pred, Expr ifTrue, Expr ifFalse, Type type) {
         super(pred, ifTrue, ifFalse);
+        mType = type;
     }
 
     public Expr getPred() {
@@ -100,6 +110,10 @@ public class TernaryExpr extends Expr {
 
     @Override
     protected ModelClass resolveType(ModelAnalyzer modelAnalyzer) {
+        if (mType == Type.LOGICAL_EXPRESSION) {
+            // && or || expressions always resolve to primitive boolean
+            return modelAnalyzer.getInstance().loadPrimitive("boolean");
+        }
         final Expr ifTrue = getIfTrue();
         final Expr ifFalse = getIfFalse();
         if (isNullLiteral(ifTrue)) {
@@ -173,13 +187,22 @@ public class TernaryExpr extends Expr {
         final Expr pred = getPred().cloneToModel(model);
         final Expr ifTrue = getIfTrue().generateInverse(model, value, bindingClassName);
         final Expr ifFalse = getIfFalse().generateInverse(model, value, bindingClassName);
-        return model.ternary(pred, ifTrue, ifFalse);
+        return model.register(new TernaryExpr(
+                pred,
+                ifTrue,
+                ifFalse,
+                mType
+        ));
     }
 
     @Override
     public Expr cloneToModel(ExprModel model) {
-        return model.ternary(getPred().cloneToModel(model), getIfTrue().cloneToModel(model),
-                getIfFalse().cloneToModel(model));
+        return model.register(new TernaryExpr(
+                getPred().cloneToModel(model),
+                getIfTrue().cloneToModel(model),
+                getIfFalse().cloneToModel(model),
+                mType
+        ));
     }
 
     @Override
@@ -190,5 +213,18 @@ public class TernaryExpr extends Expr {
     @Override
     public String toString() {
         return getPred().toString() + " ? " + getIfTrue() + " : " + getIfFalse();
+    }
+
+    public enum Type {
+        /**
+         * A general ternary expression that can return one of two values.
+         */
+        LAYOUT_EXPRESSION,
+        /**
+         * A ternary expression that represents a logical comparison.
+         *
+         * Note: The data binding compiler converts "a && b" to "a ? b : false" and "a || b" to "a ? true : b".
+         */
+        LOGICAL_EXPRESSION,
     }
 }

@@ -201,7 +201,7 @@ public class ExprModel {
     }
 
     public TernaryExpr ternary(Expr pred, Expr ifTrue, Expr ifFalse) {
-        return register(new TernaryExpr(pred, ifTrue, ifFalse));
+        return register(new TernaryExpr(pred, ifTrue, ifFalse, TernaryExpr.Type.LAYOUT_EXPRESSION));
     }
 
     public IdentifierExpr identifier(String name) {
@@ -313,11 +313,19 @@ public class ExprModel {
         if ("&&".equals(op)) {
             // left && right
             // left ? right : false
-            return register(new TernaryExpr(left, right, symbol("false", boolean.class)));
+            return register(new TernaryExpr(
+                    left,
+                    right,
+                    symbol("false", boolean.class),
+                    TernaryExpr.Type.LOGICAL_EXPRESSION));
         } else {
             // left || right
             // left ? true : right
-            return register(new TernaryExpr(left, symbol("true", boolean.class), right));
+            return register(new TernaryExpr(
+                    left,
+                    symbol("true", boolean.class),
+                    right,
+                    TernaryExpr.Type.LOGICAL_EXPRESSION));
         }
     }
 

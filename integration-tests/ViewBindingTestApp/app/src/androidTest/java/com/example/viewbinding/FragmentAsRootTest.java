@@ -20,18 +20,22 @@ import static org.junit.Assert.assertNotNull;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.annotation.UiThreadTest;
+import android.support.test.rule.ActivityTestRule;
 import android.view.LayoutInflater;
 import android.view.View;
 import com.example.viewbinding.databinding.FragmentAsRootBinding;
+import org.junit.Rule;
 import org.junit.Test;
 
 public final class FragmentAsRootTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
-    private final LayoutInflater inflater = LayoutInflater.from(context);
+    @Rule public final ActivityTestRule<EmptyActivity> activityRule =
+            new ActivityTestRule<>(EmptyActivity.class);
 
+    @UiThreadTest
     @Test public void inflate() {
+        LayoutInflater inflater = activityRule.getActivity().getLayoutInflater();
         FragmentAsRootBinding binding = FragmentAsRootBinding.inflate(inflater);
-        View root = binding.getRoot();
-        assertNotNull(root);
+        assertNotNull(binding.getRoot());
     }
 }

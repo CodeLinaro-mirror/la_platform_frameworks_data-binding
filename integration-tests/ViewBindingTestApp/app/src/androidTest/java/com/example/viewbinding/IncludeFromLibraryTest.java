@@ -28,15 +28,16 @@ import org.junit.Test;
 
 public final class IncludeFromLibraryTest {
     private final Context context = InstrumentationRegistry.getTargetContext();
+    private final LayoutInflater inflater = LayoutInflater.from(context);
 
-    @Test public void bind() {
-        LayoutInflater inflater = LayoutInflater.from(context);
-
-        View root = inflater.inflate(R.layout.include, null, false);
-        IncludeFromLibraryBinding binding = IncludeFromLibraryBinding.bind(root);
+    @Test public void inflate() {
+        IncludeFromLibraryBinding binding = IncludeFromLibraryBinding.inflate(inflater);
 
         SimpleWithViewBindingBinding with = binding.with;
         assertNotNull(with);
+        // Ensure the children of the included binding were also bound.
+        assertNotNull(with.one);
+        assertNotNull(with.two);
 
         View without = binding.without;
         assertNotNull(without);

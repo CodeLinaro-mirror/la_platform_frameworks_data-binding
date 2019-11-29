@@ -27,8 +27,10 @@ android {
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
+    buildFeatures {
+        dataBinding = true
+    }
     dataBinding {
-        enabled = true
         enabledForTests = true
     }
     buildTypes {

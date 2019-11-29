@@ -22,28 +22,37 @@ import org.junit.Test
 
 class ParseLayoutClassNameTest {
     @Test fun simple() {
-        assertThat(parseLayoutClassName("com.example.Simple")).isEqualTo(
+        assertThat(parseLayoutClassName("com.example.Simple", "foo")).isEqualTo(
             ClassName.get("com.example", "Simple"))
     }
 
     @Test fun nesting() {
-        assertThat(parseLayoutClassName("com.example.Simple\$Nested")).isEqualTo(
+        assertThat(parseLayoutClassName("com.example.Simple\$Nested", "foo")).isEqualTo(
             ClassName.get("com.example", "Simple", "Nested"))
-        assertThat(parseLayoutClassName("com.example.Simple\$Nested\$Very\$Deeply")).isEqualTo(
+        assertThat(parseLayoutClassName("com.example.Simple\$Nested\$Very\$Deeply", "foo")).isEqualTo(
             ClassName.get("com.example", "Simple", "Nested", "Very", "Deeply"))
     }
 
     @Test fun defaultPackage() {
-        assertThat(parseLayoutClassName("DefaultPackage")).isEqualTo(
+        assertThat(parseLayoutClassName("DefaultPackage", "foo")).isEqualTo(
             ClassName.get("", "DefaultPackage"))
-        assertThat(parseLayoutClassName("DefaultPackage\$Nested")).isEqualTo(
+        assertThat(parseLayoutClassName("DefaultPackage\$Nested", "foo")).isEqualTo(
             ClassName.get("", "DefaultPackage", "Nested"))
     }
 
     @Test fun weirdCasing() {
-        assertThat(parseLayoutClassName("com.Titlecase.UPPERCASE.camelCase.Simple")).isEqualTo(
+        assertThat(parseLayoutClassName("com.Titlecase.UPPERCASE.camelCase.Simple", "foo")).isEqualTo(
             ClassName.get("com.Titlecase.UPPERCASE.camelCase", "Simple"))
-        assertThat(parseLayoutClassName("com.Titlecase.UPPERCASE.camelCase.Simple\$lowercase\$UPPERCASE\$camelCase")).isEqualTo(
+        assertThat(parseLayoutClassName("com.Titlecase.UPPERCASE.camelCase.Simple\$lowercase\$UPPERCASE\$camelCase", "foo")).isEqualTo(
             ClassName.get("com.Titlecase.UPPERCASE.camelCase", "Simple", "lowercase", "UPPERCASE", "camelCase"))
+    }
+
+    @Test fun failureThrows() {
+        try {
+            parseLayoutClassName("layer-list", "foo")
+        } catch (e: IllegalArgumentException) {
+            assertThat(e).hasMessageThat()
+                .isEqualTo("Unable to parse \"layer-list\" as class in foo.xml")
+        }
     }
 }

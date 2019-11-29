@@ -166,6 +166,10 @@ class LibTypes(val useAndroidX: Boolean) {
         else -> android.databinding.Untaggable::class.java
     }
 
+    val appCompatResources by lazy(LazyThreadSafetyMode.NONE) {
+        convert("android.support.v7.content.res.AppCompatResources")
+    }
+
     /**
      * Convert from support to androidX
      */

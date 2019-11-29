@@ -62,12 +62,18 @@ fun fieldSpec(
 fun String.toClassName(): ClassName = ClassName.bestGuess(this)
 
 /**
- * Parse [value] as a qualified layout XML class name. Unlike normal qualified class name
+ * Try to parse [value] as a qualified layout XML class name. Unlike normal qualified class name
  * references, nested classes are separated by dollar signs ('$') instead of periods ('.').
+ *
+ * @throws IllegalArgumentException if [value] fails to parse
  */
-fun parseLayoutClassName(value: String): ClassName {
-    val lastDot = value.lastIndexOf('.')
-    val packageName = if (lastDot == -1) "" else value.substring(0, lastDot)
-    val simpleNames = value.substring(lastDot + 1).split('$')
-    return ClassName.get(packageName, simpleNames.first(), *simpleNames.drop(1).toTypedArray())
+fun parseLayoutClassName(value: String, filename: String): ClassName {
+    return try {
+        val lastDot = value.lastIndexOf('.')
+        val packageName = if (lastDot == -1) "" else value.substring(0, lastDot)
+        val simpleNames = value.substring(lastDot + 1).split('$')
+        ClassName.get(packageName, simpleNames.first(), *simpleNames.drop(1).toTypedArray())
+    } catch (e: Exception) {
+        throw IllegalArgumentException("Unable to parse \"$value\" as class in $filename.xml", e)
+    }
 }

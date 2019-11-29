@@ -14,25 +14,17 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.library'
+package com.example.viewbinding;
 
-android {
-    compileSdkVersion rootProject.latestCompileSdk
+import android.app.Fragment;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
-    defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion rootProject.latestCompileSdk
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+public final class EmptyFragment extends Fragment {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
+        return new View(getContext());
     }
-
-    // Set up data binding and Robolectric
-    buildFeatures.dataBinding = true
-    testOptions.unitTests.includeAndroidResources = true
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:4.2.1'
 }

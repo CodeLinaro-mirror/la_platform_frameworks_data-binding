@@ -14,25 +14,9 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.android.library'
+package com.example.viewbinding;
 
-android {
-    compileSdkVersion rootProject.latestCompileSdk
+import android.app.Activity;
 
-    defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion rootProject.latestCompileSdk
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    // Set up data binding and Robolectric
-    buildFeatures.dataBinding = true
-    testOptions.unitTests.includeAndroidResources = true
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.0.2'
-
-    testImplementation 'junit:junit:4.12'
-    testImplementation 'org.robolectric:robolectric:4.2.1'
+public final class EmptyActivity extends Activity {
 }

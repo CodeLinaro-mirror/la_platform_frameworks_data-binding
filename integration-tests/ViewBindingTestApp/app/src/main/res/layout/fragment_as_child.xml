@@ -14,14 +14,18 @@
   ~ See the License for the specific language governing permissions and
   ~ limitations under the License.
  -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content"
+  >
     <View
         android:id="@+id/one"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         />
     <fragment
-        class="android.app.Fragment"
+        class="com.example.viewbinding.EmptyFragment"
         android:id="@+id/two"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

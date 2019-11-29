@@ -21,12 +21,7 @@ import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.reflection.TypeUtil;
 import android.databinding.tool.util.L;
-import com.google.auto.common.MoreElements;
 import com.google.auto.common.MoreTypes;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
@@ -35,6 +30,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AnnotationAnalyzer extends ModelAnalyzer {
 
@@ -86,7 +84,7 @@ public class AnnotationAnalyzer extends ModelAnalyzer {
         if (primitive != null) {
             return addDimension(primitive.typeMirror, numDimensions);
         }
-        if ("void".equals(className.toLowerCase())) {
+        if ("void".equals(className)) {
             return addDimension(typeUtils.getNoType(TypeKind.VOID), numDimensions);
         }
         int templateOpenIndex = className.indexOf('<');

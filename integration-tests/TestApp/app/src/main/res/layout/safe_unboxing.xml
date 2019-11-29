@@ -19,6 +19,13 @@
         <variable name="aLong" type="java.lang.Long"/>
         <variable name="aBoolean" type="java.lang.Boolean"/>
         <variable name="anArray" type="int[]"/>
+        <variable
+            name="liveData1"
+            type="androidx.lifecycle.LiveData&lt;Boolean>" />
+        <variable
+            name="liveData2"
+            type="androidx.lifecycle.LiveData&lt;Boolean>" />
+
     </data>
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="match_parent"
@@ -55,5 +62,11 @@
         <android.databinding.testapp.view.LoggingView
             android:id="@+id/nullable_inequality" android:layout_width="wrap_content"
             android:layout_height="wrap_content" app:booleanField="@{anInt != null}"/>
+        <android.databinding.testapp.view.LoggingView
+            android:id="@+id/ternary_and" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" app:booleanField="@{liveData1 &amp;&amp; liveData2}"/>
+        <android.databinding.testapp.view.LoggingView
+            android:id="@+id/ternary_or" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" app:booleanField="@{liveData1 || liveData2}"/>
     </LinearLayout>
 </layout>

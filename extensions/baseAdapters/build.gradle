@@ -18,8 +18,10 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion dataBindingConfig.compileSdkVersion
     buildToolsVersion dataBindingConfig.buildToolsVersion
+    buildFeatures {
+        dataBinding = true
+    }
     dataBinding {
-        enabled = true
         addDefaultAdapters = false
     }
     defaultConfig {

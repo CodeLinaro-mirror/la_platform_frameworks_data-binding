@@ -17,8 +17,18 @@ import android.databinding.testapp.databinding.SafeUnboxingBinding;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.runner.AndroidJUnit4;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.LifecycleRegistry;
+import androidx.lifecycle.MutableLiveData;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -128,5 +138,27 @@ public class SafeUnboxingTest extends BaseDataBinderTest<SafeUnboxingBinding> {
         mBinder.executePendingBindings();
         assertEquals(Boolean.FALSE, mBinder.nullableEquality.booleanField);
         assertEquals(Boolean.TRUE, mBinder.nullableInequality.booleanField);
+    }
+
+    @Test
+    @UiThreadTest
+    public void ternary() {
+        mBinder.setLifecycleOwner(getActivity());
+        MutableLiveData<Boolean> liveData1 = new MutableLiveData<>();
+        MutableLiveData<Boolean> liveData2 = new MutableLiveData<>();
+        mBinder.setLiveData1(liveData1);
+        mBinder.setLiveData2(liveData2);
+        List<Boolean> options = Arrays.asList(null, true, false);
+        for(Boolean value1 : options) {
+            for(Boolean value2 : options) {
+                liveData1.setValue(value1);
+                liveData2.setValue(value2);
+                mBinder.executePendingBindings();
+                boolean v1 = value1 == null ? false : value1;
+                boolean v2 = value2 == null ? false : value2;
+                assertEquals(value1 + " && " + value2,v1 && v2, mBinder.ternaryAnd.booleanField);
+                assertEquals(value1 + " || " + value2,v1 || v2, mBinder.ternaryOr.booleanField);
+            }
+        }
     }
 }
