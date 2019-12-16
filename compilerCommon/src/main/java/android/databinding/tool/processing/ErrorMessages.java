@@ -102,4 +102,11 @@ public class ErrorMessages {
 
     public static final String DUPLICATE_VIEW_OR_INCLUDE_ID =
             "<%s id='%s'> conflicts with another tag that has the same ID";
+
+    public static final String GETTER_ON_OBSERVABLE =
+            "Calling `%s` is not allowed.\n" +
+            "\n" +
+            "Data binding will automatically listen to observable fields (e.g. a LiveData or an Observable subclass) " +
+            "and update the UI automatically. Please strip the method call from the expression, " +
+            "e.g. `foo.get()` -> `foo`.";
 }

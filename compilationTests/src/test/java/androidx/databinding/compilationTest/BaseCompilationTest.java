@@ -92,6 +92,14 @@ public class BaseCompilationTest {
         copyResourceTo(name, new File(testFolder, path));
     }
 
+    protected void writeFile(String path, String contents) throws IOException {
+        File targetFile = new File(testFolder, path);
+        FileUtils.forceMkdir(targetFile.getParentFile());
+        try(FileOutputStream fos = new FileOutputStream(targetFile)) {
+            IOUtils.write(contents, fos);
+        }
+    }
+
     protected void copyResourceTo(String name, String path, Map<String, String> replacements)
             throws IOException {
         copyResourceTo(name, new File(testFolder, path), replacements);

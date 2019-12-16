@@ -16,15 +16,21 @@
 
 package com.example.viewbinding;
 
-import android.app.Fragment;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import static org.junit.Assert.assertNotNull;
 
-public final class EmptyFragment extends Fragment {
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle savedInstanceState) {
-        return new View(getActivity());
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import com.example.viewbinding.test.databinding.SimpleInTestModuleBinding;
+import org.junit.Test;
+
+public final class SimpleInTestModuleTest {
+    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final LayoutInflater inflater = LayoutInflater.from(context);
+
+    @Test public void inflateWithParent() {
+        SimpleInTestModuleBinding binding = SimpleInTestModuleBinding.inflate(inflater);
+        assertNotNull(binding);
     }
 }

@@ -1,3 +1,4 @@
 include ':app'
+include ':app-test'
 include ':lib-with-view-binding'
 include ':lib-without-view-binding'
