@@ -30,8 +30,7 @@ import java.io.File
  * `AppCompatResources` is found in the classpath or not.
  */
 @RunWith(Parameterized::class)
-class AppCompatResourcesTest(private val addAppCompatDependency: Boolean)
-    : BaseCompilationTest(true) {
+class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) : BaseCompilationTest() {
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "Add support dependency: {0}")

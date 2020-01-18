@@ -21,10 +21,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 
 apply plugin: 'kotlin-kapt'
-
 android {
     compileSdkVersion rootProject.latestCompileSdk
-    buildToolsVersion rootProject.buildToolsVersion
     defaultConfig {
         applicationId "androidx.databinding.kotlintestapp"
         minSdkVersion 14

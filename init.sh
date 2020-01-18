@@ -4,14 +4,24 @@ if [ ! -e 'integration-tests' ] || [ ! -e 'extensions' ]; then
   echo "must run this under {src}/tools/data-binding"
   exit 1
 fi
+OLD_GRADLE="https\://services.gradle.org/distributions/gradle-5.6.4-bin.zip"
 tools_dir="$current_dir/..";
 copy_gradle() {
+  project_name=${PWD##*/}
+  echo "PROJECT NAME:${project_name}"
   extra_dots=$1
     echo "copying $PWD"
   rm -rf gradle
   rm -rf gradlew
   cp -R "$tools_dir/gradle" .
-  sed -i -e "s#distributionUrl\=#distributionUrl=$extra_dots/#g" gradle/wrapper/gradle-wrapper.properties
+  if  [[ $project_name == LibCompileWith* ]] ;
+  then
+    echo "copy old gradle"
+    sed -i "/distributionUrl=/c\distributionUrl=$OLD_GRADLE" gradle/wrapper/gradle-wrapper.properties
+  else
+    echo "copy latest gradle"
+    sed -i -e "s#distributionUrl\=#distributionUrl=$extra_dots/#g" gradle/wrapper/gradle-wrapper.properties
+  fi
   cp "$tools_dir/gradlew" .
 }
 OIFS="$IFS"

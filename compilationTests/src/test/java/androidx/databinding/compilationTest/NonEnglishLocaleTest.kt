@@ -27,7 +27,7 @@ import java.lang.AssertionError
 import java.util.Locale
 
 @RunWith(JUnit4::class)
-class NonEnglishLocaleTest : BaseCompilationTest(true) {
+class NonEnglishLocaleTest : BaseCompilationTest() {
     @Test
     fun turkishICapitalization() {
         prepareProject()

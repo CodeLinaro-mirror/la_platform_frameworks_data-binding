@@ -38,3 +38,6 @@ extensions-support/library/library.iml
 extensions-support/*/build
 extensions/*/build
 data-binding.iml
+*.classpath
+*.project
+*.settings

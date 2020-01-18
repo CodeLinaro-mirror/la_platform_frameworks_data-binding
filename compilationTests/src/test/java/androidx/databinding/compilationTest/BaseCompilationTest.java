@@ -80,13 +80,7 @@ public class BaseCompilationTest {
     public TemporaryBuildFolder tmpBuildFolder =
             new TemporaryBuildFolder(new File("./build", "build-test"), false);
 
-    protected final boolean mEnableV2;
-
     File testFolder;
-
-    public BaseCompilationTest(boolean enableV2) {
-        mEnableV2 = enableV2;
-    }
 
     protected void copyResourceTo(String name, String path) throws IOException {
         copyResourceTo(name, new File(testFolder, path));
@@ -284,8 +278,7 @@ public class BaseCompilationTest {
         File pathToExecutable = new File(testFolder, "gradlew");
         List<String> args = new ArrayList<String>();
         args.add(pathToExecutable.getAbsolutePath());
-        args.add("-P" + PRINT_ENCODED_ERRORS_PROPERTY + "=true");
-        args.add("-P" + ENABLE_V2_PROPERTY + "=" + mEnableV2);
+        args.add("-P" + PRINT_ENCODED_ERRORS_PROPERTY + "=true");;
         args.add("-P" + USE_ANDROID_X_PROPERTY + "=true");
         args.add("--no-daemon");
         if ("true".equals(System.getProperties().getProperty("useReleaseVersion", "false"))) {
