@@ -305,5 +305,15 @@
             android:layout_height="wrap_content"
             android:text="@={obj.text}"
             android:afterTextChanged="@{() -> obj.doSomething(withLambda.text)}"/>
+        <EditText
+            android:id="@+id/nestedInt"
+            android:text="@={obj.convertFromInt(obj.nested.observableInt)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/nestedField"
+            android:text="@={obj.convertFromInt(obj.nested.observableField)}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 </layout>

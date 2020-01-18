@@ -15,10 +15,9 @@
  */
 package androidx.databinding.compilationTest
 
-import android.databinding.tool.processing.ErrorMessages
-import org.hamcrest.CoreMatchers.not
+import org.apache.commons.lang3.StringEscapeUtils
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
@@ -26,17 +25,33 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 class ObservableGetDetectionTest(
         private val type: String,
+        private val resolvedType: String, // e..g if it is ObservableInt, resolvedType is Int
         private val getter: String
 ) : BaseCompilationTest() {
     @Test
     fun detectGetterCallsOnObservables() {
+        // this used to be disallowed on user code since 3.6 but causes issues w/ two way binding
+        // which generates the same code. Now we instead support it but IDE will still show an
+        // error to discourage developers.
         prepareProject()
+        // add an adapter so that it is settable on TextView
+        writeFile("/app/src/main/java/com/example/MyAdapter.java",
+                """
+                    package com.example;
+                    import androidx.databinding.*;
+                    import android.widget.TextView;
+                    public class MyAdapter {
+                        @BindingAdapter("android:text")
+                        public static void mySet(TextView textView, $resolvedType value) {
+                        }
+                    }
+                """.trimIndent())
         writeFile("/app/src/main/res/layout/observable_get.xml",
                 """
                     <layout xmlns:android="http://schemas.android.com/apk/res/android"
                         xmlns:bind="http://schemas.android.com/apk/res-auto">
                     <data>
-                        <variable name="myVariable" type="$type"/>
+                        <variable name="myVariable" type="${type.escapeXml()}"/>
                     </data>
                     <TextView
                             android:layout_width="wrap_content"
@@ -45,30 +60,93 @@ class ObservableGetDetectionTest(
                 </layout>
                 """.trimIndent())
         val result = runGradle("assembleDebug")
-        assertThat(result.error, result.resultCode, not(0))
-        val expected = ErrorMessages.GETTER_ON_OBSERVABLE.format("myVariable.$getter")
-        assertTrue(result.error, result.bindingExceptions.any {
-            it.createHumanReadableMessage().contains(expected)
-        })
+        assertThat(result.error, result.resultCode, `is`(0))
     }
+
+    @Test
+    fun nestedObservable() {
+        prepareProject()
+        writeFile("/app/src/main/java/com/example/MyClass.java",
+                """
+                    package com.example;
+                    import androidx.databinding.*;
+                    public class MyClass {
+                        public final $type value = new $type();
+                    }
+                """.trimIndent())
+        writeFile("/app/src/main/res/layout/observable_get.xml",
+                """
+                    <layout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:bind="http://schemas.android.com/apk/res-auto">
+                    <data>
+                        <variable name="myVariable" type="com.example.MyClass"/>
+                    </data>
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{``+myVariable.value}"/>
+                </layout>
+                """.trimIndent())
+        val result = runGradle("assembleDebug")
+        assertThat(result.error, result.resultCode, `is`(0))
+    }
+
+    @Test
+    fun twoWayNested() {
+        prepareProject()
+
+        writeFile("/app/src/main/java/com/example/MyClass.java",
+                """
+                    package com.example;
+                    import androidx.databinding.*;
+                    public class MyClass {
+                        public final $type value = new $type();
+                        @InverseMethod("fromString")
+                        public static String convertToString($resolvedType value) {
+                            throw new RuntimeException("");
+                        }
+                        public static $resolvedType fromString(String value) {
+                            throw new RuntimeException("");
+                        }
+                    }
+                """.trimIndent())
+        writeFile("/app/src/main/res/layout/observable_get.xml",
+                """
+                    <layout xmlns:android="http://schemas.android.com/apk/res/android"
+                        xmlns:bind="http://schemas.android.com/apk/res-auto">
+                    <data>
+                        <import type="com.example.MyClass"/>
+                        <variable name="myVariable" type="androidx.databinding.ObservableField&lt;MyClass>"/>
+                    </data>
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@={MyClass.convertToString(myVariable.value)}"/>
+                </layout>
+                """.trimIndent())
+        val result = runGradle("assembleDebug")
+        assertThat(result.error, result.resultCode, `is`(0))
+    }
+
+    private fun String.escapeXml() = StringEscapeUtils.escapeXml11(this)
 
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun params() = arrayOf(
-                "ObservableByte",
-                "ObservableBoolean",
-                "ObservableChar",
-                "ObservableShort",
-                "ObservableInt",
-                "ObservableLong",
-                "ObservableFloat",
-                "ObservableDouble",
-                "ObservableField&lt;String>",
-                "ObservableParcelable").map {
-            arrayOf("androidx.databinding.$it", "get()")
+                arrayOf("ObservableByte", "byte"),
+                arrayOf("ObservableBoolean", "boolean"),
+                arrayOf("ObservableChar", "char"),
+                arrayOf("ObservableShort", "short"),
+                arrayOf("ObservableInt", "int"),
+                arrayOf("ObservableLong", "long"),
+                arrayOf("ObservableFloat", "float"),
+                arrayOf("ObservableDouble", "double"),
+                arrayOf("ObservableField<String>", "String")
+        ).map {
+            arrayOf("androidx.databinding.${it[0]}", it[1], "get()")
         } + arrayOf(
-                arrayOf("androidx.lifecycle.LiveData&lt;String>", "getValue()")
+                arrayOf("androidx.lifecycle.MutableLiveData<String>", "String", "getValue()")
         )
     }
 }

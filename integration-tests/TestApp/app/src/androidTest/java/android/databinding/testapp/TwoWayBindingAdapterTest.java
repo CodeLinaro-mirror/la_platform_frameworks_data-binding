@@ -19,6 +19,7 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.databinding.testapp.databinding.TwoWayBinding;
 import android.databinding.testapp.vo.TwoWayBindingObject;
+import android.databinding.testapp.vo.TwoWayBindingObject.NestedObservableHolder;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
@@ -66,6 +67,30 @@ public class TwoWayBindingAdapterTest extends BaseDataBinderTest<TwoWayBinding> 
                 getBinder().executePendingBindings();
             }
         });
+    }
+
+    @Test
+    public void nestedObservables() {
+        NestedObservableHolder nested = new NestedObservableHolder();
+        mBindingObject.nested.set(nested);
+        executePendingBindings();
+        assertEquals(0, nested.observableField.get().intValue());
+        assertEquals(0, nested.observableInt.get());
+        nested.observableField.set(1);
+        nested.observableInt.set(2);
+        executePendingBindings();
+        assertEquals("1", mBinder.nestedField.getText().toString());
+        assertEquals("2", mBinder.nestedInt.getText().toString());
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mBinder.nestedField.setText("3");
+                mBinder.nestedInt.setText("4");
+            }
+        });
+        executePendingBindings();
+        assertEquals(3, nested.observableField.get().intValue());
+        assertEquals(4, nested.observableInt.get());
     }
 
     @Test
