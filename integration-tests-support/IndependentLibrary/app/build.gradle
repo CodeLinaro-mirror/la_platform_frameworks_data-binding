@@ -56,10 +56,10 @@ dependencies {
 uploadArchives {
     doFirst {
         uploadArchives.repositories.mavenDeployer {
-            if (!project.hasProperty('test_maven_repo')) {
-                throw new GradleException("must provide -Ptest_maven_repo")
+            if (!project.hasProperty('maven_repo')) {
+                throw new GradleException("must provide -Pmaven_repo")
             }
-            repository(url: "file://${project.getProperty('test_maven_repo')}")
+            repository(url: "file://${project.getProperty('maven_repo')}")
             pom.artifactId = 'independent-library'
             pom.version = "1.0"
             pom.groupId = "com.android.databinding.test"

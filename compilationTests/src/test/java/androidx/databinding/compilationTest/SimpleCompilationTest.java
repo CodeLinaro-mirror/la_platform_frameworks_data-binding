@@ -32,6 +32,7 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
@@ -54,18 +55,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class SimpleCompilationTest extends BaseCompilationTest {
-
-    @Parameterized.Parameters(name = "useV2_{0}")
-    public static Object[] getParams() {
-        return new Object[]{false, true};
-    }
-
-    public SimpleCompilationTest(boolean enableV2) {
-        super(enableV2);
-    }
-
     @Test
     public void listTasks() throws IOException, URISyntaxException, InterruptedException {
         prepareProject();

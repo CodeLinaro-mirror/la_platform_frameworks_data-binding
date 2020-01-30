@@ -18,6 +18,7 @@ package androidx.databinding.compilationTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
@@ -29,18 +30,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class InverseMethodTest extends BaseCompilationTest {
-
-    @Parameterized.Parameters(name = "useV2_{0}")
-    public static Object[] getParams() {
-        return new Object[]{false, true};
-    }
-
-    public InverseMethodTest(boolean enableV2) {
-        super(enableV2);
-    }
-
     @Test
     public void testInverseMethodWrongParameterType() throws Throwable {
         testErrorForMethod("InverseMethod_WrongParameterType", 23, "Could not find inverse " +

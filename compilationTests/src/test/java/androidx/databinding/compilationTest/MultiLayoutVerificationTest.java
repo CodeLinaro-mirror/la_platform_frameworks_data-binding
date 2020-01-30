@@ -18,6 +18,7 @@ package androidx.databinding.compilationTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 
 import android.databinding.tool.processing.ErrorMessages;
@@ -36,17 +37,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-@RunWith(Parameterized.class)
+@RunWith(JUnit4.class)
 public class MultiLayoutVerificationTest extends BaseCompilationTest {
-    @Parameterized.Parameters(name = "useV2_{0}")
-    public static Object[] getParams() {
-        return new Object[]{false, true};
-    }
-
-    public MultiLayoutVerificationTest(boolean enableV2) {
-        super(enableV2);
-    }
-
     @Test
     public void testMultipleLayoutFilesWithNameMismatch()
             throws IOException, URISyntaxException, InterruptedException {
@@ -255,6 +247,4 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
         assertTrue(result.error, foundNormal);
         assertTrue(result.error, foundLandscape);
     }
-
-
 }

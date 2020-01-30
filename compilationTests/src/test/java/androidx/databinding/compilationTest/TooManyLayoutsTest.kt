@@ -24,7 +24,7 @@ import org.junit.runners.JUnit4
  * Stress test that creates many layouts and hopes that we don't choke compiler
  */
 @RunWith(JUnit4::class)
-class TooManyLayoutsTest : BaseCompilationTest(true) {
+class TooManyLayoutsTest : BaseCompilationTest() {
     @Test
     fun tooManyLayouts() {
         prepareProject()

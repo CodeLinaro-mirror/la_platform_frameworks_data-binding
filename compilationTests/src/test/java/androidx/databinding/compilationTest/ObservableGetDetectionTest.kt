@@ -27,7 +27,7 @@ import org.junit.runners.Parameterized
 class ObservableGetDetectionTest(
         private val type: String,
         private val getter: String
-) : BaseCompilationTest(true) {
+) : BaseCompilationTest() {
     @Test
     fun detectGetterCallsOnObservables() {
         prepareProject()

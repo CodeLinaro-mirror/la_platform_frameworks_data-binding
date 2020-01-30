@@ -45,10 +45,10 @@ android {
     }
 }
 
-if(project.hasProperty('test_maven_repo')) {
+if(project.hasProperty('maven_repo')) {
     repositories {
         maven {
-            url "file://${project.getProperty("test_maven_repo")}"
+            url "file://${project.getProperty("maven_repo")}"
         }
     }
 }

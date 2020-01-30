@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class RecursiveObservableTest : BaseCompilationTest(true) {
+class RecursiveObservableTest : BaseCompilationTest() {
     @Test
     fun recursiveObservableUsed() {
         prepareProject()
