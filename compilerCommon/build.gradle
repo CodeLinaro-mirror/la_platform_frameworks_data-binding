@@ -54,6 +54,8 @@ dependencies {
     compile libs.javapoet
     compile libs.kotlin_stdlib
     compile libs.gson
+    // specify a jaxb runtime for j11 compatibility
+    compile libs.jaxb_runtime
     compile findProject(':base:annotations') ?: 'com.android.tools:annotations:24.5.0'
     compile libs.jetifier_core
     testImplementation libs.junit
