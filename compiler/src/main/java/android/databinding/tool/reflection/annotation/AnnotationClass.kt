@@ -57,7 +57,8 @@ class AnnotationClass(
     override fun toDeclarationCode(): String {
         if (typeMirror is TypeVariable) {
             // if it is a type var, use upper bound
-            return AnnotationTypeUtil.getInstance().toJava(typeMirror.upperBound)
+            // see b/144300600 for the fallback to typeMirror itself
+            return AnnotationTypeUtil.getInstance().toJava(typeMirror.upperBound ?: typeMirror)
         }
         return AnnotationTypeUtil.getInstance().toJava(typeMirror)
     }
@@ -275,7 +276,8 @@ class AnnotationClass(
     }
 
     private val computedCanonicalName by lazy(LazyThreadSafetyMode.NONE) {
-        AnnotationTypeUtil.getInstance().toJava(typeUtils.erasure(typeMirror))
+        // see b/144300600 for the fallback to typeMirror itself
+        AnnotationTypeUtil.getInstance().toJava(typeUtils.erasure(typeMirror) ?: typeMirror)
     }
 
     override val canonicalName: String = computedCanonicalName

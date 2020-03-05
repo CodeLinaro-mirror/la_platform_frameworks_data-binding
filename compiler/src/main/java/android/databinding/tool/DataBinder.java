@@ -16,6 +16,7 @@
 
 package android.databinding.tool;
 
+import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.Scope;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.store.ResourceBundle;
@@ -142,6 +143,10 @@ public class DataBinder {
                 mFileWriter.writeToFile(canonicalName, layoutBinder.writeViewBinder(minSdk));
             } catch (ScopedException ex) {
                 Scope.defer(ex);
+            } catch (Throwable t) {
+                // if an unexpected error happens, wrap it in a deferred exception so that we can
+                // know what happened
+                L.e(t, ErrorMessages.UNEXPECTED_ERROR_IN_LAYOUT, layoutBinder.getLayoutname());
             } finally {
                 Scope.exit();
             }

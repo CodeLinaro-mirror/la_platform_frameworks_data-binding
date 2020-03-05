@@ -21,6 +21,7 @@ import android.databinding.tool.reflection.ModelMethod;
 import android.databinding.tool.reflection.RecursiveResolutionStack;
 import android.databinding.tool.reflection.TypeUtil;
 
+import com.android.annotations.NonNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,7 +125,7 @@ public class AnnotationTypeUtil extends TypeUtil {
      * Returns the java representation of a TypeMirror type. For example, this may return
      * "java.util.Set&lt;java.lang.String&gt;"
      */
-    public String toJava(TypeMirror typeMirror) {
+    public String toJava(@NonNull TypeMirror typeMirror) {
         return mToJavaResolutionStack.visit(
                 typeMirror,
                 current -> {
@@ -265,6 +266,10 @@ public class AnnotationTypeUtil extends TypeUtil {
     private String toJava(TypeVariable typeVariable) {
         StringBuilder sb = new StringBuilder("?");
         TypeMirror upperBound = typeVariable.getUpperBound();
+        if (upperBound == null) {
+            // see b/144300600 about his fallback
+            upperBound = typeVariable;
+        }
         String upperBoundString = toJava(upperBound);
         if (!"java.lang.Object".equals(upperBoundString)) {
             sb.append(" extends ").append(upperBoundString);
