@@ -17,6 +17,8 @@
 package android.databinding.tool.processing;
 
 public class ErrorMessages {
+    private static final String BUGANIZER_URL =
+            "https://issuetracker.google.com/issues/new?component=192721&template=1096850";
 
     public static final String INCLUDE_INSIDE_MERGE =
             "<include> elements are not supported as direct children of <merge> elements";
@@ -103,10 +105,8 @@ public class ErrorMessages {
     public static final String DUPLICATE_VIEW_OR_INCLUDE_ID =
             "<%s id='%s'> conflicts with another tag that has the same ID";
 
-    public static final String GETTER_ON_OBSERVABLE =
-            "Calling `%s` is not allowed.\n" +
+    public static final String UNEXPECTED_ERROR_IN_LAYOUT =
+            "Unexpected error while processing layout file: %s.xml\n" +
             "\n" +
-            "Data binding will automatically listen to observable fields (e.g. a LiveData or an Observable subclass) " +
-            "and update the UI automatically. Please strip the method call from the expression, " +
-            "e.g. `foo.get()` -> `foo`.";
+            "Please file a bug on " + BUGANIZER_URL + " with a sample project that reproduces the problem.";
 }

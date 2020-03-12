@@ -95,7 +95,7 @@ public class L {
                 throw ex;
             }
         }
-        ScopedException ex = new ScopedException(fullMessage);
+        ScopedException ex = new ScopedException(t, fullMessage);
         if (ex.isValid()) {
             throw ex;
         }

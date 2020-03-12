@@ -16,6 +16,10 @@
 package android.databinding.testapp.vo;
 
 import android.content.Context;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.SpinnerAdapter;
+
 import androidx.databinding.InverseMethod;
 import androidx.databinding.ObservableArrayList;
 import androidx.databinding.ObservableArrayMap;
@@ -28,18 +32,10 @@ import androidx.databinding.ObservableFloat;
 import androidx.databinding.ObservableInt;
 import androidx.databinding.ObservableLong;
 import androidx.databinding.ObservableShort;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListAdapter;
-import android.widget.SpinnerAdapter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
-import java.util.StringTokenizer;
 import java.util.concurrent.CountDownLatch;
 
 public class TwoWayBindingObject {
@@ -77,6 +73,7 @@ public class TwoWayBindingObject {
             new ObservableField<List<String>>(new ArrayList<String>());
     public final ObservableField<String> pigLatin = new ObservableField<String>();
     public final ObservableField<int[]> anotherArray = new ObservableField<int[]>();
+    public final ObservableField<NestedObservableHolder> nested = new ObservableField<>();
     public int text1Changes;
     public int text2Changes;
     public CountDownLatch textLatch;
@@ -217,5 +214,10 @@ public class TwoWayBindingObject {
 
     public void doSomething(String text) {
         intField.set(text == null ? 0 : text.length());
+    }
+
+    public static class NestedObservableHolder {
+        public ObservableInt observableInt = new ObservableInt(0);
+        public ObservableField<Integer> observableField = new ObservableField<>(0);
     }
 }

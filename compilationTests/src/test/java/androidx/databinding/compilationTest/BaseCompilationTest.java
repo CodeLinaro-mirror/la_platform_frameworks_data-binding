@@ -295,6 +295,8 @@ public class BaseCompilationTest {
             builder.environment().put("JAVA_HOME", javaHome);
         }
         builder.environment().put("ANDROID_SDK_HOME", new File(testFolder, "/android_sdk_home").getAbsolutePath());
+        // to debug uncomment the next line
+        // builder.environment().put("GRADLE_OPTS", "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5006");
         builder.directory(testFolder);
         Process process = builder.start();
         String output = collect(process.getInputStream());

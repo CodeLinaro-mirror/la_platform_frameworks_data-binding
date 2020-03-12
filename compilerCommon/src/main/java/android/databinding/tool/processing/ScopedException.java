@@ -20,6 +20,7 @@ package android.databinding.tool.processing;
 import android.databinding.tool.store.Location;
 import android.databinding.tool.util.L;
 import com.android.annotations.NonNullByDefault;
+import com.android.annotations.Nullable;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
@@ -79,8 +80,13 @@ public class ScopedException extends RuntimeException {
     }
 
     public ScopedException(String message, Object... args) {
+        this(null, message, args);
+    }
+
+    public ScopedException(@Nullable Throwable cause, String message, Object... args) {
         super(message == null ? "unknown data binding exception" :
-                args.length == 0 ? message : String.format(message, args));
+                args.length == 0 ? message : String.format(message, args),
+                cause);
         mScopedErrorReport = Scope.createReport();
         mScopeLog = L.isDebugEnabled() ? Scope.produceScopeLog() : null;
     }
