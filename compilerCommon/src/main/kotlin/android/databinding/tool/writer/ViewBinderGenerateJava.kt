@@ -292,7 +292,7 @@ private class JavaFileGenerator(
             val constructorParam = when (binding.form) {
                 ViewBinding.Form.View -> viewName
                 ViewBinding.Form.Binder -> {
-                    val binderName = localNames.newName("${binding.name}Binding")
+                    val binderName = localNames.newName("binding_${binding.name}")
                     if (binding.isRequired) {
                         addStatement("$1T $binderName = $1T.bind($viewName)", binding.type)
                     } else {

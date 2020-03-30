@@ -23,7 +23,7 @@ import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 
-class ViewBinderGenerateSourceTest {
+class ViewBinderGenerateJavaTest {
     @get:Rule val layouts = LayoutResourceRule()
 
     @Test fun nullableFieldsJavadocTheirConfigurations() {
@@ -214,9 +214,7 @@ class ViewBinderGenerateSourceTest {
             <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
                 <TextView android:id="@+id/root_view" />
                 <TextView android:id="@+id/missing_id" />
-                <View android:id="@+id/other_binding" />
                 <View android:id="@+id/id" />
-                <include layout="@layout/other" android:id="@+id/other"/>
             </LinearLayout>
             """.trimIndent())
 
@@ -249,22 +247,13 @@ class ViewBinderGenerateSourceTest {
                 |  public final TextView missingId;
                 |
                 |  @NonNull
-                |  public final OtherBinding other;
-                |
-                |  @NonNull
-                |  public final View otherBinding;
-                |
-                |  @NonNull
                 |  public final TextView rootView;
                 |
                 |  private ExampleBinding(@NonNull LinearLayout rootView_, @NonNull View id,
-                |      @NonNull TextView missingId, @NonNull OtherBinding other,
-                |      @NonNull View otherBinding, @NonNull TextView rootView) {
+                |      @NonNull TextView missingId, @NonNull TextView rootView) {
                 |    this.rootView_ = rootView_;
                 |    this.id = id;
                 |    this.missingId = missingId;
-                |    this.other = other;
-                |    this.otherBinding = otherBinding;
                 |    this.rootView = rootView;
                 |  }
                 |
@@ -305,19 +294,6 @@ class ViewBinderGenerateSourceTest {
                 |        break missingId;
                 |      }
                 |
-                |      id = R.id.other;
-                |      View other = rootView.findViewById(id);
-                |      if (other == null) {
-                |        break missingId;
-                |      }
-                |      OtherBinding otherBinding = OtherBinding.bind(other);
-                |
-                |      id = R.id.other_binding;
-                |      View otherBinding_ = rootView.findViewById(id);
-                |      if (otherBinding_ == null) {
-                |        break missingId;
-                |      }
-                |
                 |      id = R.id.root_view;
                 |      TextView rootView_ = rootView.findViewById(id);
                 |      if (rootView_ == null) {
@@ -325,7 +301,7 @@ class ViewBinderGenerateSourceTest {
                 |      }
                 |
                 |      return new ExampleBinding((LinearLayout) rootView, id_, missingId,
-                |          otherBinding, otherBinding_, rootView_);
+                |          rootView_);
                 |    }
                 |
                 |    String missingId_ = rootView.getResources().getResourceName(id);
@@ -579,7 +555,7 @@ class ViewBinderGenerateSourceTest {
         model.toViewBinder().toJavaFile().assert {
             contains("""
                 |    View other = rootView.findViewById(R.id.other);
-                |    OtherBinding otherBinding = other != null
+                |    OtherBinding binding_other = other != null
                 |        ? OtherBinding.bind(other)
                 |        : null;
             """.trimMargin())
