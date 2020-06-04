@@ -112,7 +112,9 @@ public class SdkUtil {
             InputStream inputStream = null;
             try {
                 if (apiFile == null || !apiFile.exists()) {
-                    inputStream = getClass().getClassLoader().getResourceAsStream("api-versions.xml");
+                    // Use getResource().openStream() instead of getResourceAsStream() to avoid
+                    // concurrency issue (see http://issuetracker.google.com/137929327 for details)
+                    inputStream = getClass().getClassLoader().getResource("api-versions.xml").openStream();
                 } else {
                     inputStream = FileUtils.openInputStream(apiFile);
                 }
