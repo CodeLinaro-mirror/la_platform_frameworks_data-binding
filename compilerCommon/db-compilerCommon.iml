@@ -12,6 +12,16 @@
       <excludeFolder url="file://$MODULE_DIR$/../../../out/build/dataBinding/compilerCommon/build" />
       <excludeFolder url="file://$MODULE_DIR$/.gradle" />
     </content>
+    <orderEntry type="module-library">
+      <library name="antlr4-runtime" type="repository">
+        <properties maven-id="org.antlr:antlr4-runtime:4.5.3" />
+        <CLASSES>
+          <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr4-runtime/4.5.3/antlr4-runtime-4.5.3.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="db-baseLibrary" exported="" />
@@ -30,16 +40,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" scope="TEST" name="JUnit4" level="project" />
-    <orderEntry type="module-library">
-      <library name="antlr4-runtime" type="repository">
-        <properties maven-id="org.antlr:antlr4-runtime:4.5.3" />
-        <CLASSES>
-          <root url="jar://$MAVEN_REPOSITORY$/org/antlr/antlr4-runtime/4.5.3/antlr4-runtime-4.5.3.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="library" name="Guava" level="project" />
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
