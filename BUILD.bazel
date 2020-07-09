@@ -162,6 +162,7 @@ kotlin_library(
         "//tools/base/third_party:com.googlecode.juniversalchardet_juniversalchardet",
         "//tools/base/third_party:com.squareup_javapoet",
         "//tools/base/third_party:commons-io_commons-io",
+        "//tools/base/third_party:jakarta.xml.bind_jakarta.xml.bind-api",
         "//tools/base/third_party:org.antlr_antlr4",
         "//tools/base/third_party:org.jetbrains.kotlin_kotlin-stdlib",
     ],
@@ -234,6 +235,7 @@ iml_module(
         "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:jar",
         "//tools/idea/.idea/libraries:compile-testing[test]",
         "//tools/idea/.idea/libraries:truth[test]",
+        "//tools/idea/.idea/libraries:jaxb-api",
     ],
 )
 
@@ -256,6 +258,7 @@ kotlin_library(
         "//tools/base/third_party:com.google.guava_guava",
         "//tools/base/third_party:com.squareup_javapoet",
         "//tools/base/third_party:commons-io_commons-io",
+        "//tools/base/third_party:jakarta.xml.bind_jakarta.xml.bind-api",
         "//tools/base/third_party:org.antlr_antlr4",
         "//tools/base/third_party:org.jetbrains.kotlin_kotlin-stdlib",
     ],
@@ -428,4 +431,127 @@ merge_jars(
         "//tools/data-binding:data_binding_runtime_androidx.zip",
     ],
     visibility = ["//visibility:public"],
+)
+
+# managed by go/iml_to_build [unb]
+iml_module(
+    name = "unb.studio.baseLibrarySupport",
+    srcs = ["baseLibrarySupport/src/main/java"],
+    iml_files = ["baseLibrarySupport/db-baseLibrarySupport.iml"],
+    tags = [
+        "manual",
+        "unb",
+    ],
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:jar[test]",
+        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:jar[test]",
+    ],
+)
+
+# managed by go/iml_to_build [unb]
+iml_module(
+    name = "unb.studio.baseLibrary",
+    srcs = ["baseLibrary/src/main/java"],
+    iml_files = ["baseLibrary/db-baseLibrary.iml"],
+    tags = [
+        "manual",
+        "unb",
+    ],
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:jar[test]",
+        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:jar[test]",
+    ],
+)
+
+# managed by go/iml_to_build [unb]
+iml_module(
+    name = "unb.studio.compilerCommon",
+    # do not sort: must match IML order
+    srcs = [
+        "compilerCommon/src/main/java",
+        "compilerCommon/src/main/kotlin",
+        "compilerCommon/src/main/xml-gen",
+        "compilerCommon/src/main/grammar-gen",
+    ],
+    iml_files = ["compilerCommon/db-compilerCommon.iml"],
+    tags = [
+        "manual",
+        "unb",
+    ],
+    test_srcs = [
+        "compilerCommon/src/test/java",
+        "compilerCommon/src/test/kotlin",
+    ],
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    exports = [
+        "//tools/data-binding:unb.studio.baseLibrary",
+        "//tools/data-binding:unb.studio.baseLibrarySupport",
+    ],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/data-binding:unb.studio.baseLibrary[module]",
+        "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
+        "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:jar",
+        "//tools/adt/idea/.idea/libraries:unb.Guava",
+        "//tools/adt/idea/.idea/libraries:unb.kotlin-stdlib-jdk8",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:jar",
+        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:jar",
+        "//tools/adt/idea/.idea/libraries:unb.compile-testing[test]",
+        "//tools/adt/idea/.idea/libraries:unb.truth[test]",
+    ],
+)
+
+# managed by go/iml_to_build [unb]
+iml_module(
+    name = "unb.studio.compiler",
+    # do not sort: must match IML order
+    srcs = [
+        "compiler/src/main/java",
+        "compiler/src/main/kotlin",
+    ],
+    iml_files = ["compiler/db-compiler.iml"],
+    resources = ["compiler/src/main/resources"],
+    tags = [
+        "manual",
+        "unb",
+    ],
+    test_data = [
+        "//prebuilts/studio/sdk:platforms/android-24",
+        "//prebuilts/studio/sdk:platform-tools",
+    ],
+    test_srcs = ["compiler/src/test/java"],
+    visibility = ["//visibility:public"],
+    # do not sort: must match IML order
+    exports = [
+        "//tools/data-binding:unb.studio.baseLibrary",
+        "//tools/data-binding:unb.studio.baseLibrarySupport",
+    ],
+    # do not sort: must match IML order
+    deps = [
+        "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/data-binding:unb.studio.baseLibrary[module]",
+        "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
+        "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
+        "//tools/data-binding:unb.studio.compilerCommon[module]",
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:jar",
+        "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:jar",
+        "//tools/adt/idea/.idea/libraries:unb.Guava",
+        "//tools/adt/idea/.idea/libraries:unb.mockito[test]",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:jar",
+        "//tools/adt/idea/.idea/libraries:unb.kotlin-stdlib-jdk8",
+        "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:jar",
+        "//tools/adt/idea/.idea/libraries:unb.compile-testing[test]",
+        "//tools/adt/idea/.idea/libraries:unb.truth[test]",
+    ],
 )

@@ -47,10 +47,10 @@ public class TabHostBindingAdapter {
     }
 
     @BindingAdapter("android:currentTab")
-    @SuppressWarnings("ReferenceEquality")
     public static void setCurrentTabTag(TabHost view, String tabTag) {
-        //noinspection StringEquality
-        if (view.getCurrentTabTag() != tabTag) {
+        String currentTag = view.getCurrentTabTag();
+        if ((currentTag != null && !currentTag.equals(tabTag))
+            || (currentTag == null && tabTag != null)) {
             view.setCurrentTabByTag(tabTag);
         }
     }

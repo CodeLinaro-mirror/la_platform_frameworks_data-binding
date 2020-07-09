@@ -1143,7 +1143,7 @@ public class TwoWayBindingAdapterTest extends BaseDataBinderTest<TwoWayBinding> 
                 }
             });
             Thread.sleep(1);
-        } while (SystemClock.uptimeMillis() < timeout && !val[0]);
+        } while (SystemClock.uptimeMillis() < timeout && val[0]);
     }
 
     /**

@@ -51,6 +51,7 @@ public class TwoWayBindingObject {
     public final ObservableFloat rating = new ObservableFloat(1);
     public final ObservableInt progress = new ObservableInt(1);
     public final ObservableInt currentTab = new ObservableInt();
+    public final ObservableField<String> currentTabTag = new ObservableField<>();
     public final ObservableField<String> text = new ObservableField<>();
     public final ObservableInt hour = new ObservableInt();
     public final ObservableInt minute = new ObservableInt();
