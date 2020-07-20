@@ -446,8 +446,8 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:jar[test]",
-        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:jar[test]",
+        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:unb.junit-4.12[test]",
+        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:unb.hamcrest-core-1.3[test]",
     ],
 )
 
@@ -464,8 +464,8 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:jar[test]",
-        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:jar[test]",
+        "//prebuilts/tools/common/m2/repository/junit/junit/4.12:unb.junit-4.12[test]",
+        "//prebuilts/tools/common/m2/repository/org/hamcrest/hamcrest-core/1.3:unb.hamcrest-core-1.3[test]",
     ],
 )
 
@@ -478,6 +478,12 @@ iml_module(
         "compilerCommon/src/main/kotlin",
         "compilerCommon/src/main/xml-gen",
         "compilerCommon/src/main/grammar-gen",
+    ],
+    bundled_deps = [
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:unb.javapoet",
+        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:unb.jetifier-core",
     ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
     tags = [
@@ -496,16 +502,16 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/data-binding:unb.studio.baseLibrary[module]",
         "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
         "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
-        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:jar",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
         "//tools/adt/idea/.idea/libraries:unb.Guava",
         "//tools/adt/idea/.idea/libraries:unb.kotlin-stdlib-jdk8",
-        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:jar",
-        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:jar",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:unb.javapoet",
+        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:unb.jetifier-core",
         "//tools/adt/idea/.idea/libraries:unb.compile-testing[test]",
         "//tools/adt/idea/.idea/libraries:unb.truth[test]",
     ],
@@ -518,6 +524,13 @@ iml_module(
     srcs = [
         "compiler/src/main/java",
         "compiler/src/main/kotlin",
+    ],
+    bundled_deps = [
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
+        "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:unb.commons-lang",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:unb.javapoet",
+        "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:unb.auto-common",
     ],
     iml_files = ["compiler/db-compiler.iml"],
     resources = ["compiler/src/main/resources"],
@@ -543,14 +556,14 @@ iml_module(
         "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
         "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
         "//tools/data-binding:unb.studio.compilerCommon[module]",
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
-        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:jar",
-        "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:jar",
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
+        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
+        "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:unb.commons-lang",
         "//tools/adt/idea/.idea/libraries:unb.Guava",
         "//tools/adt/idea/.idea/libraries:unb.mockito[test]",
-        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:jar",
+        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:unb.javapoet",
         "//tools/adt/idea/.idea/libraries:unb.kotlin-stdlib-jdk8",
-        "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:jar",
+        "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:unb.auto-common",
         "//tools/adt/idea/.idea/libraries:unb.compile-testing[test]",
         "//tools/adt/idea/.idea/libraries:unb.truth[test]",
     ],
