@@ -29,24 +29,45 @@ class JavaClassTest {
   fun getAllMethods() {
     val modelClass = ModelAnalyzer.getInstance().findClass("java.lang.String", null)!!
     val methods = modelClass.allMethods
-    // public methods
-    assertTrue(methods.any { it.name == "charAt" })
-    assertTrue(methods.any { it.name == "startsWith" })
-    // private methods
-    assertTrue(methods.any { it.name == "lastIndexOfSupplementary" })
-    // static methods
-    assertTrue(methods.any { it.name == "checkBounds" })
-    // methods from super class
-    assertTrue(methods.any { it.name == "wait" })
+
+    // NOTE: We don't care about any particular method that we're testing against here; we're just
+    // sampling to make sure that methods are being exposed with expected metadata.
+    methods
+      .filter { it.isPublic }
+      .let { publicMethods ->
+        // instance methods
+        assertTrue(publicMethods.any { it.name == "charAt" })
+        assertTrue(publicMethods.any { it.name == "startsWith" })
+        // methods from base class
+        assertTrue(publicMethods.any { it.name == "getClass" })
+        assertTrue(publicMethods.any { it.name == "wait" })
+        // static methods
+        assertTrue(publicMethods.any { it.name == "format" })
+        assertTrue(publicMethods.any { it.name == "valueOf" })
+      }
+
+    // private methods exist
+    assertTrue(methods.any { !it.isPublic && !it.isProtected })
   }
 
   @Test
   fun getAllFields() {
-    val modelClass = ModelAnalyzer.getInstance().findClass("java.math.BigDecimal", null)!!
+    val modelClass = ModelAnalyzer.getInstance().findClass("java.awt.Rectangle", null)!!
     val fields = modelClass.allFields
-    // private fields
-    assertTrue(fields.any { it.name == "intVal" })
-    // static fields
-    assertTrue(fields.any { it.name == "ONE" })
+
+    // NOTE: We don't care about any particular field that we're testing against here; we're just
+    // sampling to make sure that fields are being exposed with expected metadata.
+    fields
+      .filter { it.isPublic }
+      .let { publicFields ->
+        // instance
+        assertTrue(publicFields.any { it.name == "width"})
+        assertTrue(publicFields.any { it.name == "height"})
+        // static
+        assertTrue(publicFields.any { it.name == "OUT_LEFT" })
+      }
+
+    // private fields exist
+    assertTrue(fields.any { !it.isPublic })
   }
 }

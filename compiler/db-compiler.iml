@@ -82,5 +82,6 @@
     <orderEntry type="library" scope="TEST" name="compile-testing" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="library" name="jaxb-api" level="project" />
+    <orderEntry type="library" name="javax.activation" level="project" />
   </component>
 </module>

@@ -114,6 +114,7 @@ iml_module(
         "//tools/idea/.idea/libraries:truth[test]",
         "//tools/idea/.idea/libraries:jaxb-api",
         "//tools/idea/.idea/libraries:jaxb-runtime",
+        "//tools/idea/.idea/libraries:javax.activation",
     ],
 )
 
@@ -164,6 +165,7 @@ kotlin_library(
         "//tools/base/third_party:commons-io_commons-io",
         "//tools/base/third_party:jakarta.xml.bind_jakarta.xml.bind-api",
         "//tools/base/third_party:org.antlr_antlr4",
+        "//tools/base/third_party:org.glassfish.jaxb_jaxb-runtime",
         "//tools/base/third_party:org.jetbrains.kotlin_kotlin-stdlib",
     ],
 )
@@ -236,6 +238,7 @@ iml_module(
         "//tools/idea/.idea/libraries:compile-testing[test]",
         "//tools/idea/.idea/libraries:truth[test]",
         "//tools/idea/.idea/libraries:jaxb-api",
+        "//tools/idea/.idea/libraries:javax.activation",
     ],
 )
 
