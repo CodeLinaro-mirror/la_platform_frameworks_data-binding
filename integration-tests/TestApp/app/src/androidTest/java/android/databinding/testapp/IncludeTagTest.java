@@ -136,11 +136,11 @@ public class IncludeTagTest extends BaseDataBinderTest<LayoutWithIncludeBinding>
         mBinder.setOuterObject(vo);
 
         waitForUISync();
-
         // Make sure that a rebind hasn't been requested again after executePendingBindings
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
+                mBinder.executePendingBindings();
                 try {
                     Field field = ViewDataBinding.class.getDeclaredField("mPendingRebind");
                     field.setAccessible(true);

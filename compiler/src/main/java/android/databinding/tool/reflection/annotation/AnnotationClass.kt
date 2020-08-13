@@ -245,7 +245,40 @@ class AnnotationClass(
             return true
         }
         val thatAnnotationClass = other as? AnnotationClass ?: return false
-        return typeUtils.isAssignable(thatAnnotationClass.typeMirror, this.typeMirror)
+        if (typeUtils.isAssignable(thatAnnotationClass.typeMirror, this.typeMirror)) {
+            return true
+        }
+        // If this is incomplete, java typeUtils won't be able to detect assignments like
+        // List <- List<String> because we'll resolve List as List<T>.
+        // To handle those cases, we run a custom assignability as well :/
+        if (isIncomplete || other.isIncomplete) {
+            if (this.isTypeVar) {
+                // if this is a type var and resolved as a type var, accept it.
+                // This allows assigning List<Foo> to List (List<?> is internal representation so
+                // technically it is assigning Foo to ?)
+                // Java does also accept assigning List<?> to List<Foo> but we'll not accept it
+                // as it creates really weird assignability cases like ? being assignable to
+                // LiveData if ? is resolved from a generic. For instance:
+                // data class Foo<T>(val value : T)
+                // the type of `foo.value` will be `?` so checking LiveData isAssignableFrom
+                // `foo.value` would return true (which we don't want).
+                return true
+            }
+            val myTypeArguments = typeArguments ?: return false
+            val otherTypeArguments = other.typeArguments ?: return false
+            val myErasure = erasure()
+            val otherErasure = other.erasure()
+            if (myTypeArguments.size == otherTypeArguments.size &&
+                myErasure.isAssignableFrom(otherErasure)) {
+                myTypeArguments.forEachIndexed { index, myTypeArgument ->
+                    if (!myTypeArgument.isAssignableFrom(otherTypeArguments[index])) {
+                        return false
+                    }
+                }
+                return true;
+            }
+        }
+        return false
     }
 
     override val allMethods by lazy(LazyThreadSafetyMode.NONE) {
