@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 sourceCompatibility = dataBindingConfig.javaTargetCompatibility
 targetCompatibility = dataBindingConfig.javaSourceCompatibility
@@ -37,19 +37,32 @@ dependencies {
 }
 
 group = "com.android.databinding"
-archivesBaseName = "baseLibrary"
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = 'baseLibrary'
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+
+if (dataBindingConfig.isIndependent) {
+    archivesBaseName = "baseLibrary"
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.artifactId = 'baseLibrary'
+                pom.project {
+                    licenses {
+                        license {
+                            name dataBindingConfig.licenseName
+                            url dataBindingConfig.licenseUrl
+                            distribution dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
+            }
+        }
+    }
+} else {
+    enablePublishing(this, true)
+
+    publishing {
+        publications {
+            withType(MavenPublication) {
+                artifactId = 'baseLibrary'
             }
         }
     }
@@ -70,4 +83,3 @@ javadoc {
 
 project.ext.pomName = 'Data Binding Base Library'
 project.ext.pomDesc = 'Shared library between Data Binding runtime lib and compiler'
-enablePublishing(this, true)

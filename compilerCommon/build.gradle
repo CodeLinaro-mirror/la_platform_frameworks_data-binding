@@ -16,7 +16,7 @@
 
 import org.gradle.internal.jvm.Jvm
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 buildscript {
@@ -111,4 +111,15 @@ tasks['exportBuildVersions'].dependsOn('processResources')
 archivesBaseName = "databinding-compiler-common"
 project.ext.pomName = 'Data Binding Compiler Common'
 project.ext.pomDesc = 'Common library that can be shared between different build tools'
-enablePublishing(this, true)
+
+if (!dataBindingConfig.isIndependent) {
+    enablePublishing(this, true)
+
+    publishing {
+        publications {
+            withType(MavenPublication) {
+                artifactId = 'databinding-compiler-common'
+            }
+        }
+    }
+}

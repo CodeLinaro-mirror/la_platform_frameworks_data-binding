@@ -66,10 +66,7 @@ subprojects {
 
 def enablePublishing(p, addJavadoc) {
     if (!dataBindingConfig.isIndependent) {
-        p.apply from: "$dataBindingRootFolder/../buildSrc/base/publish.gradle"
-        if (addJavadoc) {
-            p.apply from: "$dataBindingRootFolder/../buildSrc/base/javadoc.gradle"
-        }
+        p.plugins.apply('com.android.tools.publish')
     }
 }
 ext.enablePublishing = this.&enablePublishing

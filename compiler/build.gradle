@@ -15,7 +15,7 @@ import org.gradle.internal.jvm.Jvm
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 sourceCompatibility = dataBindingConfig.compilerJavaTargetCompatibility
@@ -52,30 +52,41 @@ dependencies {
     }
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = 'compiler'
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+archivesBaseName = "databinding-compiler"
+
+if (dataBindingConfig.isIndependent) {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.artifactId = 'compiler'
+                pom.project {
+                    licenses {
+                        license {
+                            name dataBindingConfig.licenseName
+                            url dataBindingConfig.licenseUrl
+                            distribution dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
             }
         }
     }
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+} else {
+    enablePublishing(this, true)
+
+    publishing {
+        publications {
+            withType(MavenPublication) {
+                artifactId = 'databinding-compiler'
+            }
+        }
+    }
 }
 
-javadoc {
-   options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-archivesBaseName = "databinding-compiler"
 project.ext.pomName = 'Data Binding Annotation Processor'
 project.ext.pomDesc = 'The annotation processor for Data Binding. Generates binding classes for runtime.'
-enablePublishing(this, true)
 fullJar(project)
 test.enabled = !System.getProperty("java.version").startsWith("1.6")

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 
 sourceCompatibility = dataBindingConfig.javaTargetCompatibility
 targetCompatibility = dataBindingConfig.javaSourceCompatibility
@@ -36,18 +36,34 @@ dependencies {
     testCompile rootProject.ext.libs.junit
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = 'baseLibrary'
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+if (dataBindingConfig.isIndependent) {
+    uploadArchives {
+        repositories {
+            mavenDeployer {
+                pom.artifactId = 'baseLibrary'
+                pom.project {
+                    licenses {
+                        license {
+                            name dataBindingConfig.licenseName
+                            url dataBindingConfig.licenseUrl
+                            distribution dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
+            }
+        }
+    }
+    javadoc {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+    archivesBaseName = "databinding-common"
+} else {
+    enablePublishing(this, true)
+
+    publishing {
+        publications {
+            withType(MavenPublication) {
+                artifactId = 'databinding-common'
             }
         }
     }
@@ -62,11 +78,5 @@ task prebuildJar(type : Copy) {
     }
 }
 
-javadoc {
-   options.addStringOption('Xdoclint:none', '-quiet')
-}
-
-archivesBaseName = "databinding-common"
 project.ext.pomName = 'Data Binding Base Library'
 project.ext.pomDesc = 'Shared library between Data Binding runtime lib and compiler'
-enablePublishing(this, true)

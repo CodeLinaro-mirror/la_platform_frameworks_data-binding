@@ -10,20 +10,22 @@ buildscript {
 subprojects {
     if (dataBindingConfig.isIndependent) {
         apply plugin: 'maven'
+        if (it.name != "compilationTests") {
+            uploadArchives {
+                repositories {
+                    mavenDeployer {
+                        repository(url: "file://${dataBindingConfig.mavenRepoDir}")
+                    }
+                }
+            }
+        }
     } else {
-        apply from: "${project.projectDir}/../../buildSrc/base/baseJava.gradle"
+        apply plugin: 'com.android.tools.java-library'
     }
 
     if (it.name != "compilationTests") {
         group = dataBindingConfig.group
         version = dataBindingConfig.version
-        uploadArchives {
-            repositories {
-                mavenDeployer {
-                    repository(url: "file://${dataBindingConfig.mavenRepoDir}")
-                }
-            }
-        }
     }
 }
 

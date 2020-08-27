@@ -438,13 +438,10 @@ merge_jars(
 
 # managed by go/iml_to_build [unb]
 iml_module(
-    name = "unb.studio.baseLibrarySupport",
+    name = "studio.baseLibrarySupport",
     srcs = ["baseLibrarySupport/src/main/java"],
     iml_files = ["baseLibrarySupport/db-baseLibrarySupport.iml"],
-    tags = [
-        "manual",
-        "unb",
-    ],
+    project = "unb",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
@@ -456,13 +453,10 @@ iml_module(
 
 # managed by go/iml_to_build [unb]
 iml_module(
-    name = "unb.studio.baseLibrary",
+    name = "studio.baseLibrary",
     srcs = ["baseLibrary/src/main/java"],
     iml_files = ["baseLibrary/db-baseLibrary.iml"],
-    tags = [
-        "manual",
-        "unb",
-    ],
+    project = "unb",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
@@ -474,7 +468,7 @@ iml_module(
 
 # managed by go/iml_to_build [unb]
 iml_module(
-    name = "unb.studio.compilerCommon",
+    name = "studio.compilerCommon",
     # do not sort: must match IML order
     srcs = [
         "compilerCommon/src/main/java",
@@ -489,10 +483,7 @@ iml_module(
         "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:unb.jetifier-core",
     ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
-    tags = [
-        "manual",
-        "unb",
-    ],
+    project = "unb",
     test_srcs = [
         "compilerCommon/src/test/java",
         "compilerCommon/src/test/kotlin",
@@ -500,16 +491,16 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     exports = [
-        "//tools/data-binding:unb.studio.baseLibrary",
-        "//tools/data-binding:unb.studio.baseLibrarySupport",
+        "//tools/data-binding:studio.baseLibrary",
+        "//tools/data-binding:studio.baseLibrarySupport",
     ],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//tools/data-binding:unb.studio.baseLibrary[module]",
-        "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
-        "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
+        "//tools/data-binding:studio.baseLibrary[module]",
+        "//tools/data-binding:studio.baseLibrarySupport[module]",
+        "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
         "//tools/adt/idea/.idea/libraries:unb.Guava",
         "//tools/adt/idea/.idea/libraries:unb.kotlin-stdlib-jdk8",
@@ -522,7 +513,7 @@ iml_module(
 
 # managed by go/iml_to_build [unb]
 iml_module(
-    name = "unb.studio.compiler",
+    name = "studio.compiler",
     # do not sort: must match IML order
     srcs = [
         "compiler/src/main/java",
@@ -536,11 +527,8 @@ iml_module(
         "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:unb.auto-common",
     ],
     iml_files = ["compiler/db-compiler.iml"],
+    project = "unb",
     resources = ["compiler/src/main/resources"],
-    tags = [
-        "manual",
-        "unb",
-    ],
     test_data = [
         "//prebuilts/studio/sdk:platforms/android-24",
         "//prebuilts/studio/sdk:platform-tools",
@@ -549,16 +537,16 @@ iml_module(
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     exports = [
-        "//tools/data-binding:unb.studio.baseLibrary",
-        "//tools/data-binding:unb.studio.baseLibrarySupport",
+        "//tools/data-binding:studio.baseLibrary",
+        "//tools/data-binding:studio.baseLibrarySupport",
     ],
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//tools/data-binding:unb.studio.baseLibrary[module]",
-        "//tools/data-binding:unb.studio.baseLibrarySupport[module]",
-        "//tools/base/annotations:unb.studio.android.sdktools.android-annotations[module]",
-        "//tools/data-binding:unb.studio.compilerCommon[module]",
+        "//tools/data-binding:studio.baseLibrary[module]",
+        "//tools/data-binding:studio.baseLibrarySupport[module]",
+        "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
+        "//tools/data-binding:studio.compilerCommon[module]",
         "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
         "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
         "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:unb.commons-lang",
