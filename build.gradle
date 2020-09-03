@@ -21,10 +21,6 @@ subprojects {
         }
     } else {
         apply plugin: 'com.android.tools.java-library'
-        Project includedProject = it
-        includedProject.plugins.withId('kotlin') {
-            includedProject.plugins.apply('com.android.tools.kotlin')
-        }
     }
 
     if (it.name != "compilationTests") {
