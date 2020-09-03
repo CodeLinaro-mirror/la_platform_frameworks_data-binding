@@ -11,12 +11,6 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/gradle" />
     </content>
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="db-baseLibrary" exported="" />
-    <orderEntry type="module" module-name="db-baseLibrarySupport" exported="" />
-    <orderEntry type="module" module-name="android.sdktools.android-annotations"/>
-    <orderEntry type="module" module-name="db-compilerCommon" />
     <orderEntry type="module-library">
       <library name="antlr4-runtime" type="repository">
         <properties maven-id="org.antlr:antlr4-runtime:4.5.3" />
@@ -27,6 +21,12 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="db-baseLibrary" exported="" />
+    <orderEntry type="module" module-name="db-baseLibrarySupport" exported="" />
+    <orderEntry type="module" module-name="android.sdktools.android-annotations" />
+    <orderEntry type="module" module-name="db-compilerCommon" />
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="module-library">
       <library name="juniversalchardet" type="repository">

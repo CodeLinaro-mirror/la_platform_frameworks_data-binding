@@ -218,11 +218,11 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
         "//tools/data-binding:studio.baseLibrary[module]",
         "//tools/data-binding:studio.baseLibrarySupport[module]",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/data-binding:studio.compilerCommon[module]",
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:jar",
         "//tools/idea/.idea/libraries:commons-io",
         "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:jar",
         "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:jar",
@@ -542,12 +542,12 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
+        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/data-binding:studio.baseLibrary[module]",
         "//tools/data-binding:studio.baseLibrarySupport[module]",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
         "//tools/data-binding:studio.compilerCommon[module]",
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:unb.antlr4-runtime",
         "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:unb.juniversalchardet",
         "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:unb.commons-lang",
         "//tools/adt/idea/.idea/libraries:unb.Guava",
