@@ -238,7 +238,14 @@ class ExpressionVisitor extends BindingExpressionBaseVisitor<Expr> {
             Class classType;
             switch (type) {
                 case BindingExpressionParser.IntegerLiteral:
-                    classType = int.class;
+                    String text = node.getText();
+                    // type suffix is declared as a fragment in the grammar hence we
+                    // have to check for it here.
+                    if (text != null && (text.endsWith("L") || text.endsWith("l"))) {
+                        classType = long.class;
+                    } else {
+                        classType = int.class;
+                    }
                     break;
                 case BindingExpressionParser.FloatingPointLiteral:
                     classType = float.class;

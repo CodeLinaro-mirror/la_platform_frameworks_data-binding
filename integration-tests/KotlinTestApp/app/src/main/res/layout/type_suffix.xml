@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2020 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+                name="enabled"
+                type="boolean" />
+    </data>
+    <!-- Using a ternary operator to force data binding to create a local variable which triggers
+    the bug in b/167976837 -->
+    <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <TextView
+                android:id="@+id/longValueView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:longValue="@{enabled ? 500L : 0L}" />
+        <TextView
+                android:id="@+id/floatValueView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:floatValue="@{enabled ? 200f : 100f}" />
+        <TextView
+                android:id="@+id/binaryValueView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:intValue="@{enabled ? 0b100 : 0b10}" />
+        <TextView
+                android:id="@+id/hexValueView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:intValue="@{enabled ? 0xFF : 0xA0}" />
+    </LinearLayout>
+</layout>
+
