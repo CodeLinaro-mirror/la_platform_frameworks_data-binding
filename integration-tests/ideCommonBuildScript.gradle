@@ -1,7 +1,7 @@
 rootProject.buildscript {
     rootProject.ext.checkoutDir = "${rootProject.projectDir}/../../../.."
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
-    rootProject.ext.latestCompileSdk = 29
+    rootProject.ext.latestCompileSdk = 30
     rootProject.ext.buildToolsVersion = "29.0.2"
     rootProject.ext.kotlinVersion = '1.4.10'
 
