@@ -28,7 +28,6 @@
     <orderEntry type="module" module-name="db-baseLibrarySupport" exported="" />
     <orderEntry type="module" module-name="android.sdktools.android-annotations" />
     <orderEntry type="module" module-name="db-compilerCommon" />
-    <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="module-library">
       <library name="juniversalchardet" type="repository">
         <properties maven-id="com.googlecode.juniversalchardet:juniversalchardet:1.0.3" />
@@ -54,10 +53,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="Guava" level="project" />
-    <orderEntry type="library" name="gson" level="project" />
-    <orderEntry type="library" scope="TEST" name="JUnit4" level="project" />
     <orderEntry type="library" scope="TEST" name="mockito" level="project" />
-    <orderEntry type="library" scope="TEST" name="Objenesis" level="project" />
     <orderEntry type="module-library">
       <library name="javapoet" type="repository">
         <properties maven-id="com.squareup:javapoet:1.10.0" />
@@ -69,7 +65,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
-    <orderEntry type="library" name="jetbrains-annotations-java5" level="project" />
     <orderEntry type="module-library">
       <library name="auto-common" type="repository">
         <properties maven-id="com.google.auto:auto-common:0.10" />
@@ -82,7 +77,5 @@
     </orderEntry>
     <orderEntry type="library" scope="TEST" name="compile-testing" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
-    <orderEntry type="library" name="jaxb-api" level="project" />
-    <orderEntry type="library" name="javax.activation" level="project" />
   </component>
 </module>
