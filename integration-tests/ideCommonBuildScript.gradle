@@ -3,7 +3,7 @@ rootProject.buildscript {
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
     rootProject.ext.latestCompileSdk = 30
     rootProject.ext.buildToolsVersion = "29.0.2"
-    rootProject.ext.kotlinVersion = '1.4.10'
+    rootProject.ext.kotlinVersion = '1.4.20'
 
     repositories {
         maven { url "file://${rootProject.ext.checkoutDir}/out/repo/" }
