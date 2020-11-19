@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -62,7 +63,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         prepareProject();
         CompilationResult result = runGradle("tasks");
         assertEquals(0, result.resultCode);
-        assertTrue("there should not be any errors", StringUtils.isEmpty(result.error));
+        assertTrue("there should not be any errors", filterKnownWarnings(result).isEmpty());
         assertTrue("Test sanity, empty project tasks",
                 result.resultContainsText("Tasks runnable from root project"));
     }
@@ -73,7 +74,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         CompilationResult result = runGradle("assembleDebug");
         assertEquals(result.error, 0, result.resultCode);
         assertTrue("there should not be any errors " + result.error,
-                StringUtils.isEmpty(result.error));
+                filterKnownWarnings(result).isEmpty());
         assertTrue("Test sanity, should compile fine",
                 result.resultContainsText("BUILD SUCCESSFUL"));
     }
@@ -475,5 +476,20 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals("Bindable annotation with property names is only supported on methods. " +
                 "Field 'androidx.databinding.compilationTest.badJava.MyObservable.field' has " +
                 "@Bindable(\"otherField\")", ex.getBareMessage());
+    }
+
+    private List<String> filterKnownWarnings(CompilationResult result) {
+        ArrayList<String> unexpectedErrors = new ArrayList<>();
+        for (String line : result.error.split(System.lineSeparator())) {
+            if (line.startsWith("WARNING: An illegal reflective access operation has occurred")
+                    || line.startsWith("WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass")
+                    || line.startsWith("WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass")
+                    || line.startsWith("WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations")
+                    || line.startsWith("WARNING: All illegal access operations will be denied in a future release")) {
+                continue;
+            }
+            unexpectedErrors.add(line);
+        }
+        return unexpectedErrors;
     }
 }

@@ -18,6 +18,8 @@ dependencies {
     testCompile 'commons-codec:commons-codec:1.10'
     testCompile project(':dataBinding:compilerCommon')
     testCompile project(':dataBinding:compiler')
+    testCompile 'com.android.tools:annotations:24.5.0'
+    testCompile libs.guava
     testCompile libs.kotlin_stdlib
 }
 

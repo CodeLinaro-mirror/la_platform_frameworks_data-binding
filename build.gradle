@@ -302,7 +302,7 @@ def getFullSdkPath() {
 }
 
 def createExtensionsBuildTask(folder, taskName) {
-    def buildRuntimeLibrary = tasks.create(name : taskName, type : Exec) {
+    def buildRuntimeLibrary = tasks.create(name: taskName, type: Exec) {
         def libBuild = file("${dataBindingRootFolder}/$folder")
         workingDir libBuild.getAbsolutePath()
         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
@@ -318,7 +318,7 @@ def createExtensionsBuildTask(folder, taskName) {
         def fullSdkPath = getFullSdkPath()
         if (fullSdkPath.exists()) {
             environment ANDROID_HOME: fullSdkPath
-	}
+        }
     }
     return buildRuntimeLibrary
 }

@@ -19,6 +19,9 @@ import org.gradle.internal.jvm.Jvm
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
+sourceCompatibility = dataBindingConfig.compilerJavaTargetCompatibility
+targetCompatibility = dataBindingConfig.compilerJavaSourceCompatibility
+
 buildscript {
     dependencies {
         classpath libs.kotlin_gradle_plugin
@@ -45,19 +48,19 @@ sourceSets {
 
 // The libs object comes from buildSrc/base/version.gradle
 dependencies {
-    compile project(':dataBinding:baseLibrary')
-    compile project(':dataBinding:baseLibrarySupport')
-    compile libs.antlr4
-    compile libs.apache_commons_io
-    compile libs.juniversalchardet
-    compile libs.guava
-    compile libs.javapoet
-    compile libs.kotlin_stdlib
-    compile libs.gson
+    implementation project(':dataBinding:baseLibrary')
+    implementation project(':dataBinding:baseLibrarySupport')
+    implementation libs.antlr4
+    implementation libs.apache_commons_io
+    implementation libs.juniversalchardet
+    implementation libs.guava
+    implementation libs.javapoet
+    implementation libs.kotlin_stdlib
+    implementation libs.gson
     // specify a jaxb runtime for j11 compatibility
-    compile libs.jaxb_runtime
-    compile findProject(':base:annotations') ?: 'com.android.tools:annotations:24.5.0'
-    compile libs.jetifier_core
+    implementation libs.jaxb_runtime
+    implementation findProject(':base:annotations') ?: 'com.android.tools:annotations:24.5.0'
+    implementation libs.jetifier_core
     testImplementation libs.junit
     testImplementation libs.compile_testing
     testImplementation libs.truth

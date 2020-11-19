@@ -2,7 +2,7 @@
 
 readonly script_dir="$(dirname $0)"
 
-export JAVA_HOME="$(realpath "${script_dir}"/../../prebuilts/studio/jdk/linux)"
+export JAVA_HOME="$(realpath "${script_dir}"/../../prebuilts/studio/jdk/jdk11/linux)"
 
 (cd "${script_dir}"/.. && ./gradlew :publishLocal) || exit $?
 (cd "${script_dir}" && ./gradlew :dataBinding:compilationTests:testClasses) || exit $?

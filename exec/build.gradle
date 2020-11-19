@@ -26,9 +26,12 @@ buildscript {
 }
 
 dependencies {
-    testCompile libs.junit
-    compile libs.jcommander
-    compile project(':dataBinding:compiler')
+    testImplementation libs.junit
+    implementation libs.jcommander
+    implementation libs.kotlin_stdlib
+    implementation project(':dataBinding:compiler')
+    implementation project(':dataBinding:compilerCommon')
+    implementation libs.apache_commons_io
 }
 
 compileJava {

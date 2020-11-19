@@ -43,6 +43,7 @@ def localRepositories = ["${root}/../../prebuilts/tools/common/offline-m2",
                          "${root}/../../prebuilts/maven_repo/android",
                          databindingProperties.artifactOutFolder]
 ext.dataBindingConfig.localRepositories = localRepositories
+ext.dataBindingConfig.mavenRepoDir = rootProject.file("${databindingProperties.mavenRepoDir}").absolutePath
 def addRepos(RepositoryHandler handler) {
     dataBindingConfig.localRepositories.each { repo ->
         handler.maven {
