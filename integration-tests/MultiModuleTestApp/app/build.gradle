@@ -59,10 +59,10 @@ dependencies {
     implementation project(':testlibrary1')
     implementation project(':testlibrary2')
     implementation "com.android.databinding.test:independent-library:1.0"
-    androidTestCompile ('androidx.test:runner:1.1.0') {
+    androidTestImplementation ('androidx.test:runner:1.1.0') {
         exclude module: 'support-annotations'
     }
-    androidTestCompile ('androidx.test.espresso:espresso-core:3.1.0') {
+    androidTestImplementation ('androidx.test.espresso:espresso-core:3.1.0') {
         exclude module: 'support-annotations'
     }
 }
