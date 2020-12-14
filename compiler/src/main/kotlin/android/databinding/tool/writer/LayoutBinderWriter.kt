@@ -754,7 +754,7 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                 block("public void ${it.setterName}(${if (it.resolvedType.isPrimitive) "" else "@Nullable "}$argType ${it.readableName})") {
                     val used = it.isIsUsedInCallback || it.isUsed
                     if (used && it.isObservable) {
-                        nl("${it.updateRegistrationCall}(${it.id}, ${it.readableName});");
+                        nl(it.getUpdateRegistrationCall(it.id, it.readableName))
                     }
                     nl("this.${it.fieldName} = ${it.readableName};")
                     if (used) {
@@ -1098,7 +1098,7 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                             app("", assignment)
                         }
                         it.value.filter { it.isObservable }.forEach { expr: Expr ->
-                            tab("${expr.updateRegistrationCall}(${expr.id}, ${expr.executePendingLocalName});")
+                            tab(expr.getUpdateRegistrationCall(expr.id, expr.executePendingLocalName))
                         }
                     }
 

@@ -26,7 +26,8 @@ import org.junit.runners.Parameterized
 class ObservableGetDetectionTest(
         private val type: String,
         private val resolvedType: String, // e..g if it is ObservableInt, resolvedType is Int
-        private val getter: String
+        private val getter: String,
+        private val constructor: String
 ) : BaseCompilationTest() {
     @Test
     fun detectGetterCallsOnObservables() {
@@ -71,7 +72,7 @@ class ObservableGetDetectionTest(
                     package com.example;
                     import androidx.databinding.*;
                     public class MyClass {
-                        public final $type value = new $type();
+                        public final $type value = $constructor;
                     }
                 """.trimIndent())
         writeFile("/app/src/main/res/layout/observable_get.xml",
@@ -100,7 +101,7 @@ class ObservableGetDetectionTest(
                     package com.example;
                     import androidx.databinding.*;
                     public class MyClass {
-                        public final $type value = new $type();
+                        public final $type value = $constructor;
                         @InverseMethod("fromString")
                         public static String convertToString($resolvedType value) {
                             throw new RuntimeException("");
@@ -134,19 +135,31 @@ class ObservableGetDetectionTest(
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun params() = arrayOf(
-                arrayOf("ObservableByte", "byte"),
-                arrayOf("ObservableBoolean", "boolean"),
-                arrayOf("ObservableChar", "char"),
-                arrayOf("ObservableShort", "short"),
-                arrayOf("ObservableInt", "int"),
-                arrayOf("ObservableLong", "long"),
-                arrayOf("ObservableFloat", "float"),
-                arrayOf("ObservableDouble", "double"),
-                arrayOf("ObservableField<String>", "String")
+                arrayOf("androidx.databinding.ObservableByte", "byte"),
+                arrayOf("androidx.databinding.ObservableBoolean", "boolean"),
+                arrayOf("androidx.databinding.ObservableChar", "char"),
+                arrayOf("androidx.databinding.ObservableShort", "short"),
+                arrayOf("androidx.databinding.ObservableInt", "int"),
+                arrayOf("androidx.databinding.ObservableLong", "long"),
+                arrayOf("androidx.databinding.ObservableFloat", "float"),
+                arrayOf("androidx.databinding.ObservableDouble", "double"),
+                arrayOf("androidx.databinding.ObservableField<String>", "String")
         ).map {
-            arrayOf("androidx.databinding.${it[0]}", it[1], "get()")
+            arrayOf(it[0], it[1], "get()", "new ${it[0]}()")
         } + arrayOf(
-                arrayOf("androidx.lifecycle.MutableLiveData<String>", "String", "getValue()")
+                arrayOf(
+                        "androidx.lifecycle.MutableLiveData<String>",
+                        "String",
+                        "getValue()",
+                        "new androidx.lifecycle.MutableLiveData<String>()"
+                )
+        ) + arrayOf(
+                arrayOf(
+                        "kotlinx.coroutines.flow.MutableStateFlow<String>",
+                        "String",
+                        "getValue()",
+                        "kotlinx.coroutines.flow.StateFlowKt.MutableStateFlow(\"\")"
+                )
         )
     }
 }

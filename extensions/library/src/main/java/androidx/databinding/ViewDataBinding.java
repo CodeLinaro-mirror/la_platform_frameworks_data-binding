@@ -92,8 +92,13 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      */
     private static final CreateWeakListener CREATE_PROPERTY_LISTENER = new CreateWeakListener() {
         @Override
-        public WeakListener create(ViewDataBinding viewDataBinding, int localFieldId) {
-            return new WeakPropertyListener(viewDataBinding, localFieldId).getListener();
+        public WeakListener create(
+                ViewDataBinding viewDataBinding,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            return new WeakPropertyListener(viewDataBinding, localFieldId, referenceQueue)
+                    .getListener();
         }
     };
 
@@ -102,8 +107,13 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      */
     private static final CreateWeakListener CREATE_LIST_LISTENER = new CreateWeakListener() {
         @Override
-        public WeakListener create(ViewDataBinding viewDataBinding, int localFieldId) {
-            return new WeakListListener(viewDataBinding, localFieldId).getListener();
+        public WeakListener create(
+                ViewDataBinding viewDataBinding,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            return new WeakListListener(viewDataBinding, localFieldId, referenceQueue)
+                    .getListener();
         }
     };
 
@@ -112,8 +122,13 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      */
     private static final CreateWeakListener CREATE_MAP_LISTENER = new CreateWeakListener() {
         @Override
-        public WeakListener create(ViewDataBinding viewDataBinding, int localFieldId) {
-            return new WeakMapListener(viewDataBinding, localFieldId).getListener();
+        public WeakListener create(
+                ViewDataBinding viewDataBinding,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            return new WeakMapListener(viewDataBinding, localFieldId, referenceQueue)
+                    .getListener();
         }
     };
 
@@ -122,8 +137,13 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      */
     private static final CreateWeakListener CREATE_LIVE_DATA_LISTENER = new CreateWeakListener() {
         @Override
-        public WeakListener create(ViewDataBinding viewDataBinding, int localFieldId) {
-            return new LiveDataListener(viewDataBinding, localFieldId).getListener();
+        public WeakListener create(
+                ViewDataBinding viewDataBinding,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            return new LiveDataListener(viewDataBinding, localFieldId, referenceQueue)
+                    .getListener();
         }
     };
 
@@ -270,6 +290,14 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      * the change notification.
      */
     private boolean mInLiveDataRegisterObserver;
+
+    /**
+     * When StateFlow first collects for chances, it notifies immediately that there was a
+     * change. This flag identifies that we've just started observing StateFlow and we should ignore
+     * the change notification.
+     */
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    protected boolean mInStateFlowRegisterObserver;
 
     /**
      * Needed for backwards binary compatibility.
@@ -539,9 +567,10 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
         return mRoot;
     }
 
-    private void handleFieldChange(int mLocalFieldId, Object object, int fieldId) {
-        if (mInLiveDataRegisterObserver) {
-            // We're in LiveData registration, which always results in a field change
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    protected void handleFieldChange(int mLocalFieldId, Object object, int fieldId) {
+        if (mInLiveDataRegisterObserver || mInStateFlowRegisterObserver) {
+            // We're in LiveData or StateFlow registration, which always results in a field change
             // that we can ignore. The value will be read immediately after anyway, so
             // there is no need to be dirty.
             return;
@@ -602,7 +631,8 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
         return listener.getTarget();
     }
 
-    private boolean updateRegistration(int localFieldId, Object observable,
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    protected boolean updateRegistration(int localFieldId, Object observable,
             CreateWeakListener listenerCreator) {
         if (observable == null) {
             return unregisterFrom(localFieldId);
@@ -679,7 +709,7 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
         }
         WeakListener listener = mLocalFieldObservers[localFieldId];
         if (listener == null) {
-            listener = listenerCreator.create(this, localFieldId);
+            listener = listenerCreator.create(this, localFieldId, sReferenceQueue);
             mLocalFieldObservers[localFieldId] = listener;
             if (mLifecycleOwner != null) {
                 listener.setLifecycleOwner(mLifecycleOwner);
@@ -1374,66 +1404,16 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
         );
     }
 
-    private interface ObservableReference<T> {
-        WeakListener<T> getListener();
-        void addListener(T target);
-        void removeListener(T target);
-        void setLifecycleOwner(LifecycleOwner lifecycleOwner);
-    }
-
-    private static class WeakListener<T> extends WeakReference<ViewDataBinding> {
-        private final ObservableReference<T> mObservable;
-        protected final int mLocalFieldId;
-        private T mTarget;
-
-        public WeakListener(ViewDataBinding binder, int localFieldId,
-                ObservableReference<T> observable) {
-            super(binder, sReferenceQueue);
-            mLocalFieldId = localFieldId;
-            mObservable = observable;
-        }
-
-        public void setLifecycleOwner(LifecycleOwner lifecycleOwner) {
-            mObservable.setLifecycleOwner(lifecycleOwner);
-        }
-
-        public void setTarget(T object) {
-            unregister();
-            mTarget = object;
-            if (mTarget != null) {
-                mObservable.addListener(mTarget);
-            }
-        }
-
-        public boolean unregister() {
-            boolean unregistered = false;
-            if (mTarget != null) {
-                mObservable.removeListener(mTarget);
-                unregistered = true;
-            }
-            mTarget = null;
-            return unregistered;
-        }
-
-        public T getTarget() {
-            return mTarget;
-        }
-
-        protected ViewDataBinding getBinder() {
-            ViewDataBinding binder = get();
-            if (binder == null) {
-                unregister(); // The binder is dead
-            }
-            return binder;
-        }
-    }
-
     private static class WeakPropertyListener extends Observable.OnPropertyChangedCallback
             implements ObservableReference<Observable> {
         final WeakListener<Observable> mListener;
 
-        public WeakPropertyListener(ViewDataBinding binder, int localFieldId) {
-            mListener = new WeakListener<Observable>(binder, localFieldId, this);
+        public WeakPropertyListener(
+                ViewDataBinding binder,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            mListener = new WeakListener<Observable>(binder, localFieldId, this, referenceQueue);
         }
 
         @Override
@@ -1473,8 +1453,14 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
             implements ObservableReference<ObservableList> {
         final WeakListener<ObservableList> mListener;
 
-        public WeakListListener(ViewDataBinding binder, int localFieldId) {
-            mListener = new WeakListener<ObservableList>(binder, localFieldId, this);
+        public WeakListListener(
+                ViewDataBinding binder,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            mListener = new WeakListener<ObservableList>(
+                    binder, localFieldId, this, referenceQueue
+            );
         }
 
         @Override
@@ -1535,8 +1521,14 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
             implements ObservableReference<ObservableMap> {
         final WeakListener<ObservableMap> mListener;
 
-        public WeakMapListener(ViewDataBinding binder, int localFieldId) {
-            mListener = new WeakListener<ObservableMap>(binder, localFieldId, this);
+        public WeakMapListener(
+                ViewDataBinding binder,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            mListener = new WeakListener<ObservableMap>(
+                    binder, localFieldId, this, referenceQueue
+            );
         }
 
         @Override
@@ -1573,8 +1565,12 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
         final WeakListener<LiveData<?>> mListener;
         LifecycleOwner mLifecycleOwner;
 
-        public LiveDataListener(ViewDataBinding binder, int localFieldId) {
-            mListener = new WeakListener(binder, localFieldId, this);
+        public LiveDataListener(
+                ViewDataBinding binder,
+                int localFieldId,
+                ReferenceQueue<ViewDataBinding> referenceQueue
+        ) {
+            mListener = new WeakListener(binder, localFieldId, this, referenceQueue);
         }
 
         @Override
@@ -1616,10 +1612,6 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
                 binder.handleFieldChange(mListener.mLocalFieldId, mListener.getTarget(), 0);
             }
         }
-    }
-
-    private interface CreateWeakListener {
-        WeakListener create(ViewDataBinding viewDataBinding, int localFieldId);
     }
 
     /**

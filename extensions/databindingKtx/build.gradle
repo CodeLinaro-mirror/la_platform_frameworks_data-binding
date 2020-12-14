@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,45 +14,41 @@
  * limitations under the License.
  */
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion dataBindingConfig.compileSdkVersion
     buildToolsVersion dataBindingConfig.buildToolsVersion
-    buildFeatures {
-        dataBinding = true
-    }
-    dataBinding {
-        addDefaultAdapters = false
-    }
+
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion dataBindingConfig.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
     compileOptions {
         sourceCompatibility dataBindingConfig.javaTargetCompatibility
         targetCompatibility dataBindingConfig.javaSourceCompatibility
     }
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
     packagingOptions {
-        exclude 'META-INF/services/javax.annotation.processing.Processor'
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
     }
 }
 
+configurations {
+    jarArchives
+}
+
 dependencies {
-    // we don't care about version of these because they are not listed as dependencies in the
-    // final maven artifact.
-    implementation project(":library")
-    compileOnly rootProject.ext.libs.android_support_cardview_v7
-    compileOnly rootProject.ext.libs.android_support_appcompat_v7
+    implementation project(':library')
+    implementation rootProject.ext.libs.kotlin_stdlib
+    implementation rootProject.ext.libs.coroutines
+    api rootProject.ext.libs.android_arch_lifecycle_extensions
+    api rootProject.ext.libs.android_arch_lifecycle_runtime_ktx
 }
 
 //create jar tasks
@@ -60,7 +56,7 @@ android.libraryVariants.all { variant ->
     def name = variant.buildType.name
 
     if (name.equals(com.android.builder.core.BuilderConstants.DEBUG)) {
-        return; // Skip debug builds.
+        return // Skip debug builds.
     }
     def suffix = name.capitalize()
 
@@ -71,11 +67,10 @@ android.libraryVariants.all { variant ->
 
     artifacts.add('archives', sourcesJarTask);
 }
-
 uploadArchives {
     repositories {
         mavenDeployer {
-            pom.artifactId = "databinding-adapters"
+            pom.artifactId = 'databinding-ktx'
             pom.project {
                 licenses {
                     license {
@@ -89,11 +84,11 @@ uploadArchives {
     }
 }
 
-task prebuild(type : Copy) {
+task prebuildAar(type : Copy) {
     dependsOn uploadArchives
-    from "$buildDir/outputs/aar/baseAdapters-release.aar"
+    from "$buildDir/outputs/aar/databinding-ktx-release.aar"
     into dataBindingConfig.prebuildFolder
     rename { String fileName ->
-        "databinding-adapters.aar"
+        "databinding-ktx.aar"
     }
 }

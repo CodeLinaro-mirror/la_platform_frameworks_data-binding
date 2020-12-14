@@ -21,6 +21,7 @@ dependencies {
     testCompile 'com.android.tools:annotations:24.5.0'
     testCompile libs.guava
     testCompile libs.kotlin_stdlib
+    testCompile 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.1'
 }
 
 afterEvaluate {

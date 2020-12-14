@@ -60,8 +60,20 @@ class LibTypes(val useAndroidX: Boolean) {
         convert("android.arch.lifecycle.MutableLiveData")
     }
 
+    val stateFlow by lazy(LazyThreadSafetyMode.NONE) {
+        "kotlinx.coroutines.flow.StateFlow"
+    }
+
+    val mutableStateFlow by lazy(LazyThreadSafetyMode.NONE) {
+        "kotlinx.coroutines.flow.MutableStateFlow"
+    }
+
     val dataBindingComponent by lazy(LazyThreadSafetyMode.NONE) {
         convert("android.databinding.DataBindingComponent")
+    }
+
+    val dataBindingKtx by lazy(LazyThreadSafetyMode.NONE) {
+        "androidx.databinding.ViewDataBindingKtx"
     }
 
     val dataBinderMapper by lazy(LazyThreadSafetyMode.NONE) {

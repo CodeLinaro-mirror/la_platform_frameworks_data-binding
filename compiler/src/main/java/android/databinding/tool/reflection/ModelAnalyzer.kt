@@ -53,6 +53,12 @@ abstract class ModelAnalyzer protected constructor(@JvmField val libTypes: LibTy
     val mutableLiveDataType  by lazy(LazyThreadSafetyMode.NONE) {
         loadClassErasure(libTypes.mutableLiveData)
     }
+    val stateFlowType  by lazy(LazyThreadSafetyMode.NONE) {
+        loadClassErasure(libTypes.stateFlow)
+    }
+    val mutableStateFlowDataType  by lazy(LazyThreadSafetyMode.NONE) {
+        loadClassErasure(libTypes.mutableStateFlow)
+    }
     val viewDataBindingType  by lazy(LazyThreadSafetyMode.NONE) {
         val klass = findClass(libTypes.viewDataBinding, null)
         Preconditions.checkNotNull(klass, "Cannot find %s class." +
@@ -139,6 +145,19 @@ abstract class ModelAnalyzer protected constructor(@JvmField val libTypes: LibTy
         } else {
             findClassInternal(className, imports)
         }
+    }
+
+    private val dataBindingKtxClass by lazy {
+        findClass(libTypes.dataBindingKtx, null)
+    }
+
+    fun checkDataBindingKtx() {
+        Preconditions.checkNotNull(
+                dataBindingKtxClass, """Data binding ktx is not enabled.
+                |
+                |Add dataBinding.addKtx = true to your build.gradle to enable it."""
+                .trimMargin()
+        )
     }
 
     fun findClass(className: String, imports: ImportBag?): ModelClass? {

@@ -191,14 +191,19 @@ abstract public class Expr implements VersionProvider, LocationScopeProvider {
         return getResolvedType().isObservable();
     }
 
-    public String getUpdateRegistrationCall() {
+    public String getUpdateRegistrationCall(int id, String value) {
         if (!isObservable()) {
             L.e("The expression isn't observable!");
         }
+        String lastParams = id + ", " + value + ");";
         if (getResolvedType().isLiveData()) {
-            return "updateLiveDataRegistration";
+            return "updateLiveDataRegistration(" + lastParams;
         }
-        return "updateRegistration";
+        if (getResolvedType().isStateFlow()) {
+            return "androidx.databinding.ViewDataBindingKtx."
+                    + "updateStateFlowRegistration(this, " + lastParams;
+        }
+        return "updateRegistration(" + lastParams;
     }
 
     public void setUnwrapObservableFields(boolean unwrapObservableFields) {

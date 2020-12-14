@@ -176,7 +176,8 @@ abstract class ModelClass {
             return modelAnalyzer.observableType.isAssignableFrom(this) ||
                     modelAnalyzer.observableListType.isAssignableFrom(this) ||
                     modelAnalyzer.observableMapType.isAssignableFrom(this) ||
-                    (modelAnalyzer.liveDataType?.isAssignableFrom(this) ?: false)
+                    (modelAnalyzer.liveDataType?.isAssignableFrom(this) ?: false) ||
+                    (modelAnalyzer.stateFlowType?.isAssignableFrom(this) ?: false)
         }
 
     /**
@@ -206,24 +207,43 @@ abstract class ModelClass {
     }
 
     /**
+     * @return whether or not this is a StateFlow
+     */
+    val isStateFlow by lazy(LazyThreadSafetyMode.NONE) {
+        val modelAnalyzer = ModelAnalyzer.getInstance()
+        val isStateFlow = modelAnalyzer.stateFlowType?.isAssignableFrom(erasure()) ?: false
+        if (isStateFlow) {
+            modelAnalyzer.checkDataBindingKtx()
+        }
+        isStateFlow
+    }
+
+    /**
+     * @return whether or not this is a MutableStateFlow
+     */
+    val isMutableStateFlow by lazy(LazyThreadSafetyMode.NONE) {
+        ModelAnalyzer.getInstance().mutableStateFlowDataType?.isAssignableFrom(erasure()) ?: false
+    }
+
+    /**
      * @return the name of the simple getter method when this is an ObservableField or LiveData or
-     * `null` for any other type
+     * Flow or `null` for any other type
      */
     val observableGetterName: String?
         get() = when {
             isObservableField -> "get"
-            isLiveData -> "getValue"
+            isLiveData || isStateFlow -> "getValue"
             else -> null
         }
 
     /**
      * @return the name of the simple setter method when this is an ObservableField or
-     * MutableLiveData or `null` for any other type.
+     * MutableLiveData or MutableStateFlow or `null` for any other type.
      */
     val observableSetterName: String?
         get() = when {
             isObservableField -> "set"
-            isMutableLiveData -> "setValue"
+            isMutableLiveData || isMutableStateFlow -> "setValue"
             else -> null
         }
 

@@ -27,6 +27,7 @@ rootProject.buildscript {
 
     dependencies {
         classpath "com.android.tools.build:gradle:${buildVersion}"
+        classpath libs.kotlin_gradle_plugin
     }
 }
 

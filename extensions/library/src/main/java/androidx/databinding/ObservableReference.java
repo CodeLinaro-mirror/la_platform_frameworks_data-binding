@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-/**
- * These are projects that requires a compiled version of data binding.
- */
-include ':library'
-include ':baseAdapters'
-include ':viewbinding'
-include ':databindingKtx'
-if (hasProperty("includeDoclava")) {
-    File externalRoot = new File(rootDir, '../../../external')
-    include ':doclava'
-    project(':doclava').projectDir = new File(externalRoot, 'doclava')
+package androidx.databinding;
+
+import androidx.annotation.RestrictTo;
+import androidx.lifecycle.LifecycleOwner;
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+interface ObservableReference<T> {
+    WeakListener<T> getListener();
+    void addListener(T target);
+    void removeListener(T target);
+    void setLifecycleOwner(LifecycleOwner lifecycleOwner);
 }
