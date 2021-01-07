@@ -23,8 +23,11 @@ import android.databinding.tool.reflection.TypeUtil
 import android.databinding.tool.reflection.annotation.AnnotationAnalyzer
 import android.databinding.tool.reflection.annotation.AnnotationLogger
 import android.databinding.tool.store.SetterStore
+import android.databinding.tool.util.EMPTY_RESOURCES
 import android.databinding.tool.util.GenerationalClassUtil
 import android.databinding.tool.util.L
+import android.databinding.tool.util.parseRTxtFiles
+import android.databinding.tool.util.Resources
 import javax.annotation.processing.ProcessingEnvironment
 
 /**
@@ -47,7 +50,7 @@ object Context {
         typeUtil = modelAnalyzer!!.createTypeUtil()
         setterStore = SetterStore.create(modelAnalyzer, generationalClassUtil)
         sdkUtil = SdkUtil.create(args.sdkDir, args.minApi)
-
+        resources = parseRTxtFiles(args.localR, args.dependenciesRFiles)
     }
 
     private fun discoverAndroidX(processingEnvironment: ProcessingEnvironment): Boolean {
@@ -96,6 +99,13 @@ object Context {
     var libTypes: LibTypes? = null
         private set
 
+    // Ordered list of resources defined in each package. Order matters as the closest to the
+    // current module should be chosen. Use when non-transitive R classes are enabled, and therefore
+    // each resource needs to be referenced through a class in a module it was defined in.
+    @JvmStatic
+    var resources: Resources = EMPTY_RESOURCES
+        private set
+
     @JvmStatic
     fun fullClear(processingEnvironment: ProcessingEnvironment) {
         logger.flushMessages(processingEnvironment)
@@ -105,6 +115,7 @@ object Context {
         typeUtil = null
         sdkUtil = null
         libTypes = null
+        resources = EMPTY_RESOURCES
         L.setClient(null)
         cleanLazyProps()
     }

@@ -17,6 +17,7 @@
 package android.databinding.tool
 
 import android.databinding.tool.util.Preconditions
+import com.google.common.base.Joiner
 import com.google.common.collect.Sets
 import java.io.File
 import java.util.TreeSet
@@ -70,7 +71,10 @@ data class CompilerArguments constructor(
     // comma separated list of package names for direct dependencies that are directly accessible in this compilation.
     // only passed by bazel to be able to distinguish which mappers in the classpath can be accessed
     // in generated code. Gradle removes such classes from classpath hence they are not necessary.
-    val directDependencyPackages : String? = null
+    val directDependencyPackages : String? = null,
+
+    val localR: File? = null,
+    val dependenciesRFiles: List<File>? = null
 ) {
     init {
         Preconditions.check(
@@ -149,6 +153,9 @@ data class CompilerArguments constructor(
         if (directDependencyPackages != null) {
             args[PARAM_DIRECT_DEPENDENCY_PKGS] = directDependencyPackages
         }
+        localR?.let { args[PARAM_LOCAL_R_FILE] = it.absolutePath}
+        dependenciesRFiles?.let { args[PARAM_DEPENDENCIES_R_FILES] = fileListToString(it)}
+
         return args
     }
 
@@ -191,6 +198,8 @@ data class CompilerArguments constructor(
         // it looks like [pkg1, pkg2]. Java does not distinguish between empty string vs null (absent) so we are
         // using [] as a wrapper around to easily distinguish between unspecified vs empty list
         private const val PARAM_DIRECT_DEPENDENCY_PKGS = PREFIX + "directDependencyPkgs"
+        private const val PARAM_LOCAL_R_FILE = PREFIX + "localResourceFile"
+        private const val PARAM_DEPENDENCIES_R_FILES = PREFIX + "dependenciesRFiles"
 
         @JvmField
         val ALL_PARAMS: Set<String> = Sets.newHashSet(
@@ -211,7 +220,9 @@ data class CompilerArguments constructor(
             PARAM_IS_TEST_VARIANT,
             PARAM_ENABLE_FOR_TESTS,
             PARAM_ENABLE_V2,
-            PARAM_DIRECT_DEPENDENCY_PKGS
+            PARAM_DIRECT_DEPENDENCY_PKGS,
+            PARAM_LOCAL_R_FILE,
+            PARAM_DEPENDENCIES_R_FILES
         )
 
         @JvmStatic
@@ -246,7 +257,11 @@ data class CompilerArguments constructor(
                 isEnabledForTests = stringToBoolean(options[PARAM_ENABLE_FOR_TESTS]),
                 isEnableV2 = stringToBoolean(options[PARAM_ENABLE_V2]),
                 // if specified, rely on it even if it is empty
-                directDependencyPackages = options[PARAM_DIRECT_DEPENDENCY_PKGS]
+                directDependencyPackages = options[PARAM_DIRECT_DEPENDENCY_PKGS],
+                localR = options[PARAM_LOCAL_R_FILE]?.let { File(it) },
+                dependenciesRFiles = options[PARAM_DEPENDENCIES_R_FILES]?.let {
+                    stringToFileList(it)
+                }
             )
         }
 
@@ -256,6 +271,16 @@ data class CompilerArguments constructor(
 
         private fun stringToBoolean(boolValue: String?): Boolean {
             return boolValue?.trim() == "1"
+        }
+
+        fun stringToFileList(fileListValue: String): List<File> {
+            return fileListValue.splitToSequence(File.pathSeparatorChar)
+                    .map { rFile -> File(rFile) }
+                    .toList()
+        }
+
+        fun fileListToString(fileList: List<File>): String {
+            return Joiner.on(File.pathSeparatorChar).join( fileList.map { it.absolutePath })
         }
     }
 }
