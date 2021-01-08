@@ -1,9 +1,13 @@
+
+String kotlinStdLibProperty = rootProject.ext['libs'].getProperty("kotlin_stdlib")
+String bundledKotlinVersion= kotlinStdLibProperty.substring(kotlinStdLibProperty.lastIndexOf(":")+1)
+
 rootProject.buildscript {
     rootProject.ext.checkoutDir = "${rootProject.projectDir}/../../../.."
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
     rootProject.ext.latestCompileSdk = 30
     rootProject.ext.buildToolsVersion = "29.0.2"
-    rootProject.ext.kotlinVersion = '1.4.21'
+    rootProject.ext.kotlinVersion = bundledKotlinVersion
 
     repositories {
         maven { url "file://${rootProject.ext.checkoutDir}/out/repo/" }

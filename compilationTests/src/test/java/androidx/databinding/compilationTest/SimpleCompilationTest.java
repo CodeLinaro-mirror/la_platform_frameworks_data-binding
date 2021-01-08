@@ -263,7 +263,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
 
     @Test
     public void testSingleModule() throws IOException, URISyntaxException, InterruptedException {
-        prepareApp(toMap(KEY_DEPENDENCIES, "compile project(':module1')",
+        prepareApp(toMap(KEY_DEPENDENCIES, "implementation project(':module1')",
                 KEY_SETTINGS_INCLUDES, "include ':app'\ninclude ':module1'"));
         prepareModule("module1", "com.example.module1", toMap());
         copyResourceTo("/layout/basic_layout.xml", "/module1/src/main/res/layout/module_layout.xml");
@@ -329,10 +329,10 @@ public class SimpleCompilationTest extends BaseCompilationTest {
     //@Test
     public void testModuleDependencyChange() throws IOException, URISyntaxException,
             InterruptedException {
-        prepareApp(toMap(KEY_DEPENDENCIES, "compile project(':module1')",
+        prepareApp(toMap(KEY_DEPENDENCIES, "implementation project(':module1')",
                 KEY_SETTINGS_INCLUDES, "include ':app'\ninclude ':module1'"));
         prepareModule("module1", "com.example.module1", toMap(
-                KEY_DEPENDENCIES, "compile 'com.android.support:appcompat-v7:23.1.1'"
+                KEY_DEPENDENCIES, "implementation 'com.android.support:appcompat-v7:23.1.1'"
         ));
         copyResourceTo("/layout/basic_layout.xml", "/module1/src/main/res/layout/module_layout.xml");
         copyResourceTo("/layout/basic_layout.xml", "/app/src/main/res/layout/app_layout.xml");
@@ -347,11 +347,11 @@ public class SimpleCompilationTest extends BaseCompilationTest {
 
     @Test
     public void testTwoLevelDependency() throws IOException, URISyntaxException, InterruptedException {
-        prepareApp(toMap(KEY_DEPENDENCIES, "compile project(':module1')",
+        prepareApp(toMap(KEY_DEPENDENCIES, "implementation project(':module1')",
                 KEY_SETTINGS_INCLUDES, "include ':app'\ninclude ':module1'\n"
                         + "include ':module2'"));
         prepareModule("module1", "com.example.module1", toMap(KEY_DEPENDENCIES,
-                "compile project(':module2')"));
+                "implementation project(':module2')"));
         prepareModule("module2", "com.example.module2", toMap());
         copyResourceTo("/layout/basic_layout.xml",
                 "/module2/src/main/res/layout/module2_layout.xml");

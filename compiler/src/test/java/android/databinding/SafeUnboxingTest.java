@@ -43,6 +43,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Map;
 
+@org.junit.Ignore("b/175036746")
 public class SafeUnboxingTest {
     ExprModel mExprModel;
     LayoutBinder mLayoutBinder;

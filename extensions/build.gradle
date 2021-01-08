@@ -34,13 +34,15 @@ class VersionFileWriterTask extends DefaultTask {
         writeVersionFile.version = version
         writeVersionFile.outputFile = artifactName
 
-        library.libraryVariants.all {
-            it.processJavaResources.dependsOn(writeVersionFile)
-        }
+        if (library != null) {
+            library.libraryVariants.all {
+                it.processJavaResources.dependsOn(writeVersionFile)
+            }
 
-        library.sourceSets.getByName("main").resources.srcDir(
+            library.sourceSets.getByName("main").resources.srcDir(
                 new File(project.buildDir, RESOURCE_DIRECTORY)
-        )
+            )
+        }
     }
 }
 
