@@ -135,7 +135,7 @@ public class LiveDataTest extends BaseDataBinderTest<PlainViewGroupBinding> {
         final LiveDataContainer liveDataContainer = new LiveDataContainer();
         final LiveDataBinding binding = LiveDataBinding.inflate(getActivity().getLayoutInflater(),
                 getBinder().container, true);
-        binding.setLiveData(liveDataObject);
+        binding.setLiveDataObject(liveDataObject);
         binding.setLiveDataContainer(liveDataContainer);
 
         binding.executePendingBindings();
@@ -149,6 +149,16 @@ public class LiveDataTest extends BaseDataBinderTest<PlainViewGroupBinding> {
         // No change -- there is no lifecycle owner
         assertEquals("", binding.textView1.getText().toString());
         assertEquals("", binding.textView2.getText().toString());
+
+        // now setting lifecycle owner should fix it
+        binding.setLifecycleOwner(getActivity());
+        binding.executePendingBindings();
+        assertEquals("Hello", binding.textView1.getText().toString());
+        assertEquals("World", binding.textView2.getText().toString());
+        // if we null owner, observers should disappear
+        binding.setLifecycleOwner(null);
+        assertEquals(liveDataObject.hasObservers(), false);
+        assertEquals(liveDataContainer.liveData.hasObservers(), false);
     }
 
     @Test

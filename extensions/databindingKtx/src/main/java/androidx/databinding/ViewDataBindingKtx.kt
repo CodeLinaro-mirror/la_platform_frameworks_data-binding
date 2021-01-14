@@ -23,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import java.lang.ref.ReferenceQueue
+import java.lang.ref.WeakReference
 
 /**
  * Helper methods for data binding Ktx features.
@@ -62,8 +63,9 @@ object ViewDataBindingKtx {
             localFieldId: Int,
             referenceQueue: ReferenceQueue<ViewDataBinding>
     ) : ObservableReference<Flow<Any?>> {
-
-        private var _lifecycleOwner : LifecycleOwner? = null
+        // keep this weak so that we don't end up leaking the lifecycle owner if the
+        // binding is GC'ed. (see: b/176886060)
+        private var _lifecycleOwnerRef : WeakReference<LifecycleOwner>? = null
         private var observerJob : Job? = null
         private val listener = WeakListener<Flow<Any?>>(
                 binder, localFieldId, this, referenceQueue
@@ -73,7 +75,7 @@ object ViewDataBindingKtx {
         }
 
         override fun addListener(target: Flow<Any?>?) {
-            val owner = _lifecycleOwner ?: return
+            val owner = _lifecycleOwnerRef?.get() ?: return
             if (target != null) {
                 startCollection(owner, target)
             }
@@ -94,13 +96,17 @@ object ViewDataBindingKtx {
         }
 
         override fun setLifecycleOwner(lifecycleOwner: LifecycleOwner?) {
-            if (_lifecycleOwner === lifecycleOwner) {
+            if (_lifecycleOwnerRef?.get() === lifecycleOwner) {
                 return
             }
             observerJob?.cancel()
-            _lifecycleOwner = lifecycleOwner
+            if (lifecycleOwner == null) {
+                _lifecycleOwnerRef = null
+                return
+            }
+            _lifecycleOwnerRef = WeakReference(lifecycleOwner)
             val target = listener.target
-            if (lifecycleOwner != null && target != null) {
+            if (target != null) {
                 startCollection(lifecycleOwner, target)
             }
         }

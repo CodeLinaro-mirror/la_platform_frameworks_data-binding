@@ -16,7 +16,6 @@
 
 package androidx.databinding.compilationTest;
 
-import android.databinding.tool.processing.ScopedErrorReport;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.util.StringUtils;
 
@@ -34,14 +33,6 @@ public class CompilationResult {
         this.resultCode = resultCode;
         this.output = output;
         this.error = error;
-    }
-
-    public boolean resultContainsText(String text) {
-        return resultCode == 0 && output.indexOf(text) > 0;
-    }
-
-    public boolean errorContainsText(String text) {
-        return resultCode != 0 && error.indexOf(text) > 0;
     }
 
     public ScopedException getBindingException() {
@@ -65,5 +56,9 @@ public class CompilationResult {
 
     public List<ScopedException> getBindingExceptions() {
         return ScopedException.extractErrors(error);
+    }
+
+    public boolean isBuildSuccessful() {
+        return resultCode == 0;
     }
 }

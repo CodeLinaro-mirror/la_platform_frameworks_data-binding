@@ -20,132 +20,29 @@ import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.ScopedErrorReport;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.store.Location;
-import com.android.annotations.NonNull;
-import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.NameFileFilter;
-import org.apache.commons.io.filefilter.PrefixFileFilter;
-import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static androidx.databinding.compilationTest.DataBindingCompilationTestUtilsKt.copyResourceWithReplacement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 @RunWith(JUnit4.class)
 public class SimpleCompilationTest extends BaseCompilationTest {
-    @Test
-    public void listTasks() throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        CompilationResult result = runGradle("tasks");
-        assertEquals(0, result.resultCode);
-        assertTrue("there should not be any errors", filterKnownWarnings(result).isEmpty());
-        assertTrue("Test sanity, empty project tasks",
-                result.resultContainsText("Tasks runnable from root project"));
-    }
-
-    @Test
-    public void testEmptyCompilation() throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        CompilationResult result = runGradle("assembleDebug");
-        assertEquals(result.error, 0, result.resultCode);
-        assertTrue("there should not be any errors " + result.error,
-                filterKnownWarnings(result).isEmpty());
-        assertTrue("Test sanity, should compile fine",
-                result.resultContainsText("BUILD SUCCESSFUL"));
-    }
-
-    @Test
-    public void testMultipleConfigs() throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo("/layout/basic_layout.xml",
-                "/app/src/main/res/layout/main.xml");
-        copyResourceTo("/layout/basic_layout.xml",
-                "/app/src/main/res/layout-sw100dp/main.xml");
-        CompilationResult result = runGradle("assembleDebug");
-        assertEquals(result.error, 0, result.resultCode);
-        File debugOut = new File(testFolder,
-                "app/build/intermediates/incremental/mergeDebugResources/stripped.dir");
-        Collection<File> layoutFiles = FileUtils.listFiles(debugOut, new NameFileFilter("main.xml"),
-                new PrefixFileFilter("layout"));
-        assertTrue("test sanity", layoutFiles.size() > 1);
-        for (File layout : layoutFiles) {
-            final String contents = FileUtils.readFileToString(layout);
-            if (layout.getParent().contains("sw100")) {
-                assertTrue("File has wrong tag:" + layout.getPath(),
-                        contents.indexOf("android:tag=\"layout-sw100dp/main_0\"") > 0);
-            } else {
-                assertTrue("File has wrong tag:" + layout.getPath() + "\n" + contents,
-                        contents.indexOf("android:tag=\"layout/main_0\"")
-                                > 0);
-            }
-        }
-    }
-
-    private ScopedException singleFileErrorTest(String resource, String targetFile,
-            String expectedExtract, String errorMessage)
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo(resource, targetFile);
-        CompilationResult result = runGradle("assembleDebug");
-        assertNotEquals(0, result.resultCode);
-        ScopedException scopedException = result.getBindingException();
-        assertNotNull(result.error, scopedException);
-        ScopedErrorReport report = scopedException.getScopedErrorReport();
-        assertNotNull(report);
-        assertEquals(1, report.getLocations().size());
-        Location loc = report.getLocations().get(0);
-        if (expectedExtract != null) {
-            String extract = extract(targetFile, loc);
-            assertEquals(scopedException.getMessage(), expectedExtract, extract);
-        }
-        final File errorFile = requireErrorFile(report);
-        assertEquals(new File(testFolder, targetFile).getCanonicalFile(),
-                errorFile.getCanonicalFile());
-        if (errorMessage != null) {
-            assertEquals(errorMessage, scopedException.getBareMessage());
-        }
-        return scopedException;
-    }
-
-    private void singleFileWarningTest(String resource, String targetFile,
-            String expectedMessage)
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo(resource, targetFile);
-        CompilationResult result = runGradle("assembleDebug");
-        assertEquals(0, result.resultCode);
-        final List<String> warnings = result.getBindingWarnings();
-        boolean found = false;
-        for (String warning : warnings) {
-            found |= warning.contains(expectedMessage);
-        }
-        assertTrue(Joiner.on("\n").join(warnings),found);
-    }
 
     @Test
     public void testMultipleExceptionsInDifferentFiles()
@@ -182,83 +79,6 @@ public class SimpleCompilationTest extends BaseCompilationTest {
             assertEquals("myVariable", extract);
             assertEquals(message, exception.getBareMessage());
         }
-    }
-
-    @Test
-    public void testBadSyntax() throws IOException, URISyntaxException, InterruptedException {
-        singleFileErrorTest("/layout/layout_with_bad_syntax.xml",
-                "/app/src/main/res/layout/broken.xml",
-                "myVar.length())",
-                String.format(ErrorMessages.SYNTAX_ERROR,
-                        "extraneous input ')' expecting {<EOF>, ',', '.', '::', '[', '+', '-', " +
-                                "'*', '/', '%', '<<', '>>>', '>>', '<=', '>=', '>', '<', " +
-                                "'instanceof', '==', '!=', '&', '^', '|', '&&', '||', '?', '??'}"));
-    }
-
-    @Test
-    public void testBrokenSyntax() throws IOException, URISyntaxException, InterruptedException {
-        singleFileErrorTest("/layout/layout_with_completely_broken_syntax.xml",
-                "/app/src/main/res/layout/broken.xml",
-                "new String()",
-                String.format(ErrorMessages.SYNTAX_ERROR,
-                        "mismatched input 'String' expecting {<EOF>, ',', '.', '::', '[', '+', " +
-                                "'-', '*', '/', '%', '<<', '>>>', '>>', '<=', '>=', '>', '<', " +
-                                "'instanceof', '==', '!=', '&', '^', '|', '&&', '||', '?', '??'}"));
-    }
-
-    @Test
-    public void testUndefinedVariable() throws IOException, URISyntaxException,
-            InterruptedException {
-        ScopedException ex = singleFileErrorTest("/layout/undefined_variable_binding.xml",
-                "/app/src/main/res/layout/broken.xml", "myVariable",
-                String.format(ErrorMessages.UNDEFINED_VARIABLE, "myVariable"));
-    }
-
-    @Test
-    public void testInvalidSetterBinding() throws IOException, URISyntaxException,
-            InterruptedException {
-        prepareProject();
-        ScopedException ex = singleFileErrorTest("/layout/invalid_setter_binding.xml",
-                "/app/src/main/res/layout/invalid_setter.xml", "myVariable",
-                String.format(ErrorMessages.CANNOT_FIND_SETTER_CALL, "android.widget.TextView",
-                    "android:textx", String.class.getCanonicalName()));
-    }
-
-    @Test
-    public void testCallbackArgumentCountMismatch() throws Throwable {
-        singleFileErrorTest("/layout/layout_with_missing_callback_args.xml",
-                "/app/src/main/res/layout/broken.xml",
-                "(seekBar, progress) -> obj.length()",
-                String.format(ErrorMessages.CALLBACK_ARGUMENT_COUNT_MISMATCH,
-                        "androidx.databinding.adapters.SeekBarBindingAdapter.OnProgressChanged",
-                        "onProgressChanged", 3, 2));
-    }
-
-    @Test
-    public void testDuplicateCallbackArgument() throws Throwable {
-        singleFileErrorTest("/layout/layout_with_duplicate_callback_identifier.xml",
-                "/app/src/main/res/layout/broken.xml",
-                "(seekBar, progress, progress) -> obj.length()",
-                String.format(ErrorMessages.DUPLICATE_CALLBACK_ARGUMENT,
-                        "progress"));
-    }
-
-    @Test
-    public void testConflictWithVariableName() throws Throwable {
-        singleFileWarningTest("/layout/layout_with_same_name_for_var_and_callback.xml",
-                "/app/src/main/res/layout/broken.xml",
-                String.format(ErrorMessages.CALLBACK_VARIABLE_NAME_CLASH,
-                        "myVar", "String", "myVar"));
-
-    }
-
-    @Test
-    public void testInvalidVariableType() throws IOException, URISyntaxException,
-            InterruptedException {
-        prepareProject();
-        ScopedException ex = singleFileErrorTest("/layout/invalid_variable_type.xml",
-                "/app/src/main/res/layout/invalid_variable.xml", "myVariable",
-                String.format(ErrorMessages.CANNOT_RESOLVE_TYPE, "myVariable"));
     }
 
     @Test
@@ -326,7 +146,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
     }
 
     // TODO: reenable this test once it works.
-    //@Test
+    @Ignore
     public void testModuleDependencyChange() throws IOException, URISyntaxException,
             InterruptedException {
         prepareApp(toMap(KEY_DEPENDENCIES, "implementation project(':module1')",
@@ -339,7 +159,7 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         CompilationResult result = runGradle("assembleDebug");
         assertEquals(result.error, 0, result.resultCode);
         File moduleFolder = new File(testFolder, "module1");
-        copyResourceTo("/module_build.gradle", new File(moduleFolder, "build.gradle"),
+        copyResourceWithReplacement("/module_build.gradle", new File(moduleFolder, "build.gradle"),
                 toMap());
         result = runGradle("assembleDebug");
         assertEquals(result.error, 0, result.resultCode);
@@ -476,20 +296,5 @@ public class SimpleCompilationTest extends BaseCompilationTest {
         assertEquals("Bindable annotation with property names is only supported on methods. " +
                 "Field 'androidx.databinding.compilationTest.badJava.MyObservable.field' has " +
                 "@Bindable(\"otherField\")", ex.getBareMessage());
-    }
-
-    private List<String> filterKnownWarnings(CompilationResult result) {
-        ArrayList<String> unexpectedErrors = new ArrayList<>();
-        for (String line : result.error.split(System.lineSeparator())) {
-            if (line.startsWith("WARNING: An illegal reflective access operation has occurred")
-                    || line.startsWith("WARNING: Illegal reflective access by org.codehaus.groovy.reflection.CachedClass")
-                    || line.startsWith("WARNING: Please consider reporting this to the maintainers of org.codehaus.groovy.reflection.CachedClass")
-                    || line.startsWith("WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations")
-                    || line.startsWith("WARNING: All illegal access operations will be denied in a future release")) {
-                continue;
-            }
-            unexpectedErrors.add(line);
-        }
-        return unexpectedErrors;
     }
 }

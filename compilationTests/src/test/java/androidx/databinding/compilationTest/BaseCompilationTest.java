@@ -17,14 +17,11 @@
 package androidx.databinding.compilationTest;
 
 import android.databinding.tool.processing.ScopedErrorReport;
+import android.databinding.tool.store.Location;
+import android.databinding.tool.util.Preconditions;
+import com.android.annotations.NonNull;
 import com.google.common.util.concurrent.SimpleTimeLimiter;
 import com.google.common.util.concurrent.TimeLimiter;
-import java.time.Duration;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import kotlin.Pair;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -35,9 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 
-import android.databinding.tool.store.Location;
-import android.databinding.tool.util.Preconditions;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,21 +40,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static androidx.databinding.compilationTest.DataBindingCompilationTestUtilsKt.copyResourceToFile;
+import static androidx.databinding.compilationTest.DataBindingCompilationTestUtilsKt.copyResourceWithReplacement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import com.android.annotations.NonNull;
 
 
 public class BaseCompilationTest {
@@ -73,7 +70,6 @@ public class BaseCompilationTest {
             "android.useAndroidX";
     @Rule
     public TestName name = new TestName();
-    static Pattern VARIABLES = Pattern.compile("!@\\{([A-Za-z0-9_-]*)}");
 
     public static final String KEY_MANIFEST_PACKAGE = "PACKAGE";
     public static final String KEY_DEPENDENCIES = "DEPENDENCIES";
@@ -98,7 +94,7 @@ public class BaseCompilationTest {
     File testFolder;
 
     protected void copyResourceTo(String name, String path) throws IOException {
-        copyResourceTo(name, new File(testFolder, path));
+        copyResourceToFile(name, new File(testFolder, path));
     }
 
     protected void writeFile(String path, String contents) throws IOException {
@@ -111,26 +107,7 @@ public class BaseCompilationTest {
 
     protected void copyResourceTo(String name, String path, Map<String, String> replacements)
             throws IOException {
-        copyResourceTo(name, new File(testFolder, path), replacements);
-    }
-
-    protected void copyResourceDirectory(String name, String targetPath)
-            throws URISyntaxException, IOException {
-        URL dir = getClass().getResource(name);
-        assertNotNull(dir);
-        assertEquals("file", dir.getProtocol());
-        File folder = new File(dir.toURI());
-        assertTrue(folder.isDirectory());
-        File target = new File(testFolder, targetPath);
-        int len = folder.getAbsolutePath().length() + 1;
-        for (File item : FileUtils.listFiles(folder, null, true)) {
-            if (item.getAbsolutePath().equals(folder.getAbsolutePath())) {
-                continue;
-            }
-            String resourcePath = item.getAbsolutePath().substring(len);
-
-            copyResourceTo(name + "/" + resourcePath, new File(target, resourcePath));
-        }
+        copyResourceWithReplacement(name, new File(testFolder, path), replacements);
     }
 
     @Before
@@ -169,16 +146,6 @@ public class BaseCompilationTest {
         return result.toString();
     }
 
-    protected static void copyResourceTo(String name, File targetFile) throws IOException {
-        File directory = targetFile.getParentFile();
-        FileUtils.forceMkdir(directory);
-        InputStream contents = BaseCompilationTest.class.getResourceAsStream(name);
-        FileOutputStream fos = new FileOutputStream(targetFile);
-        IOUtils.copy(contents, fos);
-        IOUtils.closeQuietly(fos);
-        IOUtils.closeQuietly(contents);
-    }
-
     protected static Map<String, String> toMap(String... keysAndValues) {
         assertEquals(0, keysAndValues.length % 2);
         Map<String, String> map = new HashMap<String, String>();
@@ -186,37 +153,6 @@ public class BaseCompilationTest {
             map.put(keysAndValues[i], keysAndValues[i + 1]);
         }
         return map;
-    }
-
-    protected void copyResourceTo(String name, File targetFile, Map<String, String> replacements)
-            throws IOException {
-        if (replacements.isEmpty()) {
-            copyResourceTo(name, targetFile);
-        }
-        InputStream inputStream = getClass().getResourceAsStream(name);
-        final String contents = IOUtils.toString(inputStream);
-        IOUtils.closeQuietly(inputStream);
-
-        StringBuilder out = new StringBuilder(contents.length());
-        final Matcher matcher = VARIABLES.matcher(contents);
-        int location = 0;
-        while (matcher.find()) {
-            int start = matcher.start();
-            if (start > location) {
-                out.append(contents, location, start);
-            }
-            final String key = matcher.group(1);
-            final String replacement = replacements.get(key);
-            if (replacement != null) {
-                out.append(replacement);
-            }
-            location = matcher.end();
-        }
-        if (location < contents.length()) {
-            out.append(contents, location, contents.length());
-        }
-
-        FileUtils.writeStringToFile(targetFile, out.toString());
     }
 
     protected void prepareProject() throws IOException, URISyntaxException {
@@ -241,18 +177,21 @@ public class BaseCompilationTest {
         replacements = addDefaults(replacements);
         // how to get build folder, pass from gradle somehow ?
         FileUtils.forceMkdir(testFolder);
-        copyResourceTo("/AndroidManifest.xml",
+        copyResourceWithReplacement("/AndroidManifest.xml",
                 new File(testFolder, "app/src/main/AndroidManifest.xml"), replacements);
-        copyResourceTo("/project_build.gradle", new File(testFolder, "build.gradle"), replacements);
-        copyResourceTo("/app_build.gradle", new File(testFolder, "app/build.gradle"), replacements);
-        copyResourceTo("/settings.gradle", new File(testFolder, "settings.gradle"), replacements);
+        copyResourceWithReplacement("/project_build.gradle",
+                                    new File(testFolder, "build.gradle"), replacements);
+        copyResourceWithReplacement("/app_build.gradle",
+                                    new File(testFolder, "app/build.gradle"), replacements);
+        copyResourceWithReplacement("/settings.gradle",
+                                    new File(testFolder, "settings.gradle"), replacements);
         copyGradle(testFolder);
     }
 
     private void copyCommonBuildScript(File checkoutRoot) throws IOException {
         Map<String, String> replacements = new HashMap<>();
         replacements.put("CHECKOUT_ROOT", checkoutRoot.getAbsolutePath());
-        copyResourceTo("/commonBuildScript.gradle",
+        copyResourceWithReplacement("/commonBuildScript.gradle",
                 new File(testFolder.getParentFile(), "commonBuildScript.gradle"),
                 replacements);
     }
@@ -282,9 +221,9 @@ public class BaseCompilationTest {
             FileUtils.forceDelete(moduleFolder);
         }
         FileUtils.forceMkdir(moduleFolder);
-        copyResourceTo("/AndroidManifest.xml",
+        copyResourceWithReplacement("/AndroidManifest.xml",
                 new File(moduleFolder, "src/main/AndroidManifest.xml"), replacements);
-        copyResourceTo("/module_build.gradle", new File(moduleFolder, "build.gradle"),
+        copyResourceWithReplacement("/module_build.gradle", new File(moduleFolder, "build.gradle"),
                 replacements);
     }
 

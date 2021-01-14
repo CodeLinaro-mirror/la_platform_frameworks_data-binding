@@ -32,4 +32,9 @@ afterEvaluate {
 
 compileJava {
     options.compilerArgs += ["-proc:none"]
+    excludes = ['**/bazel/**']
+}
+
+compileTestKotlin {
+    excludes = ['**/bazel/**']
 }

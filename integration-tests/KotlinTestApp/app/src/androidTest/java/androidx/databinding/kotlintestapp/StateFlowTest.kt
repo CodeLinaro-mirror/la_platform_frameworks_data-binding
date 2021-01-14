@@ -117,6 +117,27 @@ class StateFlowTest {
     }
 
     @Test
+    fun cleanLifecycle() {
+        setupView()
+        stateFlow.value = "foo"
+        rule.executePendingBindings()
+        assertEquals("foo", rule.binding.textView1.text)
+        rule.runOnUiThread {
+            rule.binding.lifecycleOwner = null
+        }
+        stateFlow.value = "bar"
+        rule.executePendingBindings()
+        // value shouldn't change because we don't have a lifecycle
+        assertEquals("foo", rule.binding.textView1.text)
+        // now set the lifecycle again, it should receover
+        rule.runOnUiThread {
+            rule.binding.lifecycleOwner = rule.activity
+        }
+        rule.executePendingBindings()
+        assertEquals("bar", rule.binding.textView1.text)
+    }
+
+    @Test
     fun stateFlowOfStateFlowChanged() {
         setupView()
 

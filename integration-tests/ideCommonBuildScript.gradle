@@ -1,9 +1,11 @@
 
-String kotlinStdLibProperty = rootProject.ext['libs'].getProperty("kotlin_stdlib")
-String bundledKotlinVersion= kotlinStdLibProperty.substring(kotlinStdLibProperty.lastIndexOf(":")+1)
-
 rootProject.buildscript {
     rootProject.ext.checkoutDir = "${rootProject.projectDir}/../../../.."
+    Properties dependencyProperties = new Properties()
+    dependencyProperties.load(new FileInputStream("${rootProject.ext.checkoutDir}/tools/buildSrc/base/dependencies.properties"))
+    String kotlinStdLibProperty = dependencyProperties.kotlin_stdlib
+    String bundledKotlinVersion= kotlinStdLibProperty.substring(kotlinStdLibProperty.lastIndexOf(":")+1)
+
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
     rootProject.ext.latestCompileSdk = 30
     rootProject.ext.buildToolsVersion = "29.0.2"

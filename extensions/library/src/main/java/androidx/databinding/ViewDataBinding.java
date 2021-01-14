@@ -18,7 +18,9 @@ package androidx.databinding;
 
 import android.annotation.TargetApi;
 
+import android.util.Log;
 import androidx.annotation.RestrictTo;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -203,7 +205,6 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
                 mPendingRebind = false;
             }
             processReferenceQueue();
-
             if (VERSION.SDK_INT >= VERSION_CODES.KITKAT) {
                 // Nested so that we don't get a lint warning in IntelliJ
                 if (!mRoot.isAttachedToWindow()) {
@@ -404,11 +405,21 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
      * and no LifecycleOwner is set, the LiveData will not be observed and updates to it
      * will not be propagated to the UI.
      *
+     * When using Data Binding with Fragments, make sure to use Fragment.getViewLifecycleOwner().
+     * Using the Fragment as the LifecycleOwner might cause memory leaks since the Fragment's
+     * Lifecycle outlives the view Lifecycle.
+     * When using Data Binding with Activities, you can use the Activity as the LifecycleOwner.
+     *
      * @param lifecycleOwner The LifecycleOwner that should be used for observing changes of
      *                       LiveData in this binding.
      */
     @MainThread
     public void setLifecycleOwner(@Nullable LifecycleOwner lifecycleOwner) {
+        if (lifecycleOwner instanceof Fragment) {
+            Log.w("DataBinding", "Setting the fragment as the LifecycleOwner might cause"
+                    + " memory leaks because views lives shorter than the Fragment. Consider"
+                    + " using Fragment's view lifecycle");
+        }
         if (mLifecycleOwner == lifecycleOwner) {
             return;
         }
@@ -1563,7 +1574,10 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
     private static class LiveDataListener implements Observer,
             ObservableReference<LiveData<?>> {
         final WeakListener<LiveData<?>> mListener;
-        LifecycleOwner mLifecycleOwner;
+        // keep this weak because listeners might leak, we don't want to leak the owner
+        // see: b/176886060
+        @Nullable
+        WeakReference<LifecycleOwner> mLifecycleOwnerRef = null;
 
         public LiveDataListener(
                 ViewDataBinding binder,
@@ -1573,19 +1587,31 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
             mListener = new WeakListener(binder, localFieldId, this, referenceQueue);
         }
 
+        @Nullable
+        private LifecycleOwner getLifecycleOwner() {
+            WeakReference<LifecycleOwner> ownerRef = this.mLifecycleOwnerRef;
+            if (ownerRef == null) {
+                return null;
+            }
+            return ownerRef.get();
+        }
+
         @Override
-        public void setLifecycleOwner(LifecycleOwner lifecycleOwner) {
-            LifecycleOwner owner = (LifecycleOwner) lifecycleOwner;
+        public void setLifecycleOwner(@Nullable LifecycleOwner lifecycleOwner) {
+            LifecycleOwner previousOwner = getLifecycleOwner();
+            LifecycleOwner newOwner = lifecycleOwner;
             LiveData<?> liveData = mListener.getTarget();
             if (liveData != null) {
-                if (mLifecycleOwner != null) {
+                if (previousOwner != null) {
                     liveData.removeObserver(this);
                 }
-                if (lifecycleOwner != null) {
-                    liveData.observe(owner, this);
+                if (newOwner != null) {
+                    liveData.observe(newOwner, this);
                 }
             }
-            mLifecycleOwner = owner;
+            if (newOwner != null) {
+                mLifecycleOwnerRef = new WeakReference<LifecycleOwner>(newOwner);
+            }
         }
 
         @Override
@@ -1595,8 +1621,9 @@ public abstract class ViewDataBinding extends BaseObservable implements ViewBind
 
         @Override
         public void addListener(LiveData<?> target) {
-            if (mLifecycleOwner != null) {
-                target.observe(mLifecycleOwner, this);
+            LifecycleOwner lifecycleOwner = getLifecycleOwner();
+            if (lifecycleOwner != null) {
+                target.observe(lifecycleOwner, this);
             }
         }
 
