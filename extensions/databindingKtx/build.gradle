@@ -39,14 +39,10 @@ android {
     }
 }
 
-configurations {
-    jarArchives
-}
-
 dependencies {
     implementation project(':library')
     implementation rootProject.ext.libs.kotlin_stdlib
-    implementation rootProject.ext.libs.coroutines
+    api rootProject.ext.libs.coroutines
     api rootProject.ext.libs.android_arch_lifecycle_extensions
     api rootProject.ext.libs.android_arch_lifecycle_runtime_ktx
 }
@@ -64,19 +60,23 @@ android.libraryVariants.all { variant ->
         classifier = 'sources'
         from android.sourceSets.main.java.srcDirs
     }
-
-    artifacts.add('archives', sourcesJarTask);
 }
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = 'databinding-ktx'
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                artifactId = 'databinding-ktx'
+                from components.release
+                artifact tasks.named("sourceJarRelease")
+
+                pom {
+                    licenses {
+                        license {
+                            name = dataBindingConfig.licenseName
+                            url = dataBindingConfig.licenseUrl
+                            distribution = dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
             }
@@ -85,7 +85,7 @@ uploadArchives {
 }
 
 task prebuildAar(type : Copy) {
-    dependsOn uploadArchives
+    dependsOn tasks.named("publish")
     from "$buildDir/outputs/aar/databinding-ktx-release.aar"
     into dataBindingConfig.prebuildFolder
     rename { String fileName ->

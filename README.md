@@ -92,6 +92,13 @@ package.
 They live in integration-tests-support folder and are an exact copy of what we had at the time of
 the migration.
 
+### Running Compilation Tests
+The entire compilationTests module can be developed and run from intellij (tools/adt/idea).
+
+To run the tests in bazel:
+
+`bazel test --config=remote -- //tools/data-binding/compilationTests:studio.compilationTests_tests`
+
 ### Making Build File Changes
 There are multiple ways data binding is compiled so build file changes are a bit tricky.
 

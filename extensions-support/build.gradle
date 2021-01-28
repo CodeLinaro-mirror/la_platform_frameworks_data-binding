@@ -137,7 +137,7 @@ task createArchive(type: Zip) {
     if (dataBindingConfig.maven.zip_out != null) {
         destinationDir dataBindingConfig.maven.zip_out
     }
-    baseName = "dataBindingRuntimeRepo"
+    archiveBaseName.set("dataBindingRuntimeRepo")
     doLast {
         println "created repo at ${dataBindingConfig.maven}"
     }
@@ -151,7 +151,7 @@ subprojects {
     if (project.path == ":doclava") {
         return
     }
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     group = "com.android.databinding"
     version = dataBindingConfig.version
     if (!autoConfigured) {
@@ -164,15 +164,14 @@ subprojects {
             }
         }
     }
-
-    uploadArchives {
+    publishing {
         repositories {
-            mavenDeployer {
-                repository(url: "file://${dataBindingConfig.maven.out_repo}")
+            maven {
+                url = "${dataBindingConfig.maven.out_repo}"
             }
         }
     }
-    createArchive.dependsOn tasks['uploadArchives']
+    createArchive.dependsOn tasks.named('publish')
     project.afterEvaluate {
         VersionFileWriterTask.setUpAndroidLibrary(project,
                 project.extensions.findByType(LibraryExtension.class))

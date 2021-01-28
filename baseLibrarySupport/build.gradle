@@ -69,7 +69,7 @@ if (dataBindingConfig.isIndependent) {
 }
 
 task prebuildJar(type : Copy) {
-    dependsOn uploadArchives
+    dependsOn tasks.named("publish")
     from "$buildDir/libs/baseLibrary-${version}.jar"
     into dataBindingConfig.prebuildFolder
     rename { String fileName ->

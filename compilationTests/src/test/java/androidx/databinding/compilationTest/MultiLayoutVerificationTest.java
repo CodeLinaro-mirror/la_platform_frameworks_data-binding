@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,42 @@
 
 package androidx.databinding.compilationTest;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.Parameterized;
-
 import android.databinding.tool.processing.ErrorMessages;
 import android.databinding.tool.processing.ScopedErrorReport;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.store.Location;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static androidx.databinding.compilationTest.DataBindingCompilationTestCaseKt.DEFAULT_APP_PACKAGE;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+
 
 @RunWith(JUnit4.class)
-public class MultiLayoutVerificationTest extends BaseCompilationTest {
+public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase {
+    private static final String KEY_CLASS_NAME = "CLASSNAME";
+    private static final String KEY_CLASS_TYPE = "CLASSTYPE";
+    private static final String KEY_IMPORT_TYPE = "IMPORTTYPE";
+    private static final String KEY_INCLUDE_ID = "INCLUDEID";
+    private static final String KEY_VIEW_ID = "VIEWID";
+
     @Test
-    public void testMultipleLayoutFilesWithNameMismatch()
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo("/layout/layout_with_class_name.xml",
-                "/app/src/main/res/layout/with_class_name.xml", toMap(KEY_CLASS_NAME,
-                        "AClassName"));
-        copyResourceTo("/layout/layout_with_class_name.xml",
-                "/app/src/main/res/layout-land/with_class_name.xml", toMap(KEY_CLASS_NAME,
-                        "SomeOtherClassName"));
-        CompilationResult result = runGradle("assembleDebug");
+    public void testMultipleLayoutFilesWithNameMismatch() throws IOException {
+        loadApp();
+        copyTestDataWithReplacement("layout/layout_with_class_name.xml",
+                                    "app/src/main/res/layout/with_class_name.xml",
+                                    Collections.singletonMap(KEY_CLASS_NAME, "AClassName"));
+        copyTestDataWithReplacement("layout/layout_with_class_name.xml",
+                                    "app/src/main/res/layout-land/with_class_name.xml",
+                                    Collections.singletonMap(KEY_CLASS_NAME,
+                                                             "SomeOtherClassName"));
+        CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
         assertEquals(result.error, 2, exceptions.size());
@@ -63,7 +65,7 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             Location location = report.getLocations().get(0);
             String name = file.getParentFile().getName();
             if ("layout".equals(name)) {
-                assertEquals(new File(testFolder,
+                assertEquals(new File(getProjectRoot(),
                         "/app/src/main/res/layout/with_class_name.xml")
                         .getCanonicalFile(), file.getCanonicalFile());
                 String extract = extract("/app/src/main/res/layout/with_class_name.xml",
@@ -75,7 +77,7 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
                         "layout/with_class_name"), exception.getBareMessage());
                 foundNormal = true;
             } else if ("layout-land".equals(name)) {
-                    assertEquals(new File(testFolder,
+                    assertEquals(new File(getProjectRoot(),
                             "/app/src/main/res/layout-land/with_class_name.xml")
                             .getCanonicalFile(), file.getCanonicalFile());
                     String extract = extract("/app/src/main/res/layout-land/with_class_name.xml",
@@ -95,16 +97,16 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
     }
 
     @Test
-    public void testMultipleLayoutFilesVariableMismatch()
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo("/layout/layout_with_variable_type.xml",
-                "/app/src/main/res/layout/layout_with_variable_type.xml", toMap(KEY_CLASS_TYPE,
-                        "String"));
-        copyResourceTo("/layout/layout_with_variable_type.xml",
-                "/app/src/main/res/layout-land/layout_with_variable_type.xml", toMap(KEY_CLASS_TYPE,
-                        "CharSequence"));
-        CompilationResult result = runGradle("assembleDebug");
+    public void testMultipleLayoutFilesVariableMismatch() throws IOException {
+        loadApp();
+        copyTestDataWithReplacement("layout/layout_with_variable_type.xml",
+                                    "app/src/main/res/layout/layout_with_variable_type.xml",
+                                    Collections.singletonMap(KEY_CLASS_TYPE, "String"));
+        copyTestDataWithReplacement("layout/layout_with_variable_type.xml",
+                                    "app/src/main/res/layout-land/layout_with_variable_type.xml",
+                                    Collections.singletonMap(KEY_CLASS_TYPE,
+                                                             "CharSequence"));
+        CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
         assertEquals(result.error, 2, exceptions.size());
@@ -118,7 +120,6 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             Location location = report.getLocations().get(0);
             // validated in switch
             String name = file.getParentFile().getName();
-            String config = name;
             String type = "???";
             if ("layout".equals(name)) {
                 type = "String";
@@ -129,34 +130,35 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(testFolder,
-                    "/app/src/main/res/" + config + "/layout_with_variable_type.xml")
+            assertEquals(new File(getProjectRoot(),
+                                  "/app/src/main/res/" + name + "/layout_with_variable_type.xml")
                     .getCanonicalFile(), file.getCanonicalFile());
-            String extract = extract("/app/src/main/res/" + config +
-                            "/layout_with_variable_type.xml", location);
+            String extract = extract("/app/src/main/res/" + name +
+                                     "/layout_with_variable_type.xml", location);
             assertEquals(extract, "<variable name=\"myVariable\" type=\"" + type + "\"/>");
             assertEquals(String.format(
                     ErrorMessages.MULTI_CONFIG_VARIABLE_TYPE_MISMATCH,
                     "myVariable", type,
-                    config + "/layout_with_variable_type"), exception.getBareMessage());
+                    name + "/layout_with_variable_type"), exception.getBareMessage());
         }
         assertTrue(result.error, foundNormal);
         assertTrue(result.error, foundLandscape);
     }
 
     @Test
-    public void testMultipleLayoutFilesImportMismatch()
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
+    public void testMultipleLayoutFilesImportMismatch() throws IOException {
+        loadApp();
         String typeNormal = "java.util.List";
         String typeLand = "java.util.Map";
-        copyResourceTo("/layout/layout_with_import_type.xml",
-                "/app/src/main/res/layout/layout_with_import_type.xml", toMap(KEY_IMPORT_TYPE,
-                        typeNormal));
-        copyResourceTo("/layout/layout_with_import_type.xml",
-                "/app/src/main/res/layout-land/layout_with_import_type.xml", toMap(KEY_IMPORT_TYPE,
-                        typeLand));
-        CompilationResult result = runGradle("assembleDebug");
+        copyTestDataWithReplacement("layout/layout_with_import_type.xml",
+                                    "app/src/main/res/layout/layout_with_import_type.xml",
+                                    Collections.singletonMap(KEY_IMPORT_TYPE,
+                                                             typeNormal));
+        copyTestDataWithReplacement("layout/layout_with_import_type.xml",
+                                    "app/src/main/res/layout-land/layout_with_import_type.xml",
+                                    Collections.singletonMap(KEY_IMPORT_TYPE,
+                                                             typeLand));
+        CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
         assertEquals(result.error, 2, exceptions.size());
@@ -170,7 +172,6 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             Location location = report.getLocations().get(0);
             // validated in switch
             String name = file.getParentFile().getName();
-            String config = name;
             String type = "???";
             if ("layout".equals(name)) {
                 type = typeNormal;
@@ -181,32 +182,33 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(testFolder,
-                    "/app/src/main/res/" + config + "/layout_with_import_type.xml")
+            assertEquals(new File(getProjectRoot(),
+                                  "/app/src/main/res/" + name + "/layout_with_import_type.xml")
                     .getCanonicalFile(), file.getCanonicalFile());
-            String extract = extract("/app/src/main/res/" + config + "/layout_with_import_type.xml",
+            String extract = extract("/app/src/main/res/" + name + "/layout_with_import_type.xml",
                     location);
             assertEquals(extract, "<import alias=\"Blah\" type=\"" + type + "\"/>");
             assertEquals(String.format(
                     ErrorMessages.MULTI_CONFIG_IMPORT_TYPE_MISMATCH,
                     "Blah", type,
-                    config + "/layout_with_import_type"), exception.getBareMessage());
+                    name + "/layout_with_import_type"), exception.getBareMessage());
         }
         assertTrue(result.error, foundNormal);
         assertTrue(result.error, foundLandscape);
     }
 
     @Test
-    public void testSameIdInIncludeAndView()
-            throws IOException, URISyntaxException, InterruptedException {
-        prepareProject();
-        copyResourceTo("/layout/basic_layout.xml",
-                "/app/src/main/res/layout/basic_layout.xml");
-        copyResourceTo("/layout/layout_with_include.xml",
-                "/app/src/main/res/layout/foo.xml", toMap(KEY_INCLUDE_ID, "sharedId"));
-        copyResourceTo("/layout/layout_with_view_id.xml",
-                "/app/src/main/res/layout-land/foo.xml", toMap(KEY_VIEW_ID, "sharedId"));
-        CompilationResult result = runGradle("assembleDebug");
+    public void testSameIdInIncludeAndView() throws IOException {
+        loadApp();
+        copyTestData("layout/basic_layout.xml",
+                     "app/src/main/res/layout/basic_layout.xml");
+        copyTestDataWithReplacement("layout/layout_with_include.xml",
+                                    "app/src/main/res/layout/foo.xml",
+                                    Collections.singletonMap(KEY_INCLUDE_ID, "sharedId"));
+        copyTestDataWithReplacement("layout/layout_with_view_id.xml",
+                                    "app/src/main/res/layout-land/foo.xml",
+                                    Collections.singletonMap(KEY_VIEW_ID, "sharedId"));
+        CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
 
@@ -237,7 +239,7 @@ public class MultiLayoutVerificationTest extends BaseCompilationTest {
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(testFolder,
+            assertEquals(new File(getProjectRoot(),
                     "/app/src/main/res/" + config + "/foo.xml").getCanonicalFile(),
                     file.getCanonicalFile());
             assertEquals(String.format(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,19 +24,25 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
-class RecursiveObservableTest : BaseCompilationTest() {
+class RecursiveObservableTest : DataBindingCompilationTestCase() {
+
     @Test
     fun recursiveObservableUsed() {
-        prepareProject()
-        copyResourceTo("/layout/recursive_layout.xml",
-                "/app/src/main/res/layout/recursive.xml")
-        copyResourceTo(
-                "/androidx/databinding/compilationTest/badJava/RecursiveLiveData.java",
-                "/app/src/main/java/androidx/databinding/compilationTest/badJava/RecursiveLiveData.java")
-        val result = runGradle("assembleDebug")
-        assertThat(result.error, result.bindingExceptions.firstOrNull()?.createHumanReadableMessage(),
-                containsString(
-                        String.format(ErrorMessages.RECURSIVE_OBSERVABLE, "recursiveLiveData.text")
-                ))
+        loadApp()
+        copyTestData(
+            "layout/recursive_layout.xml",
+            "app/src/main/res/layout/recursive.xml"
+        )
+        copyTestData(
+            "androidx/databinding/compilationTests/badJava/RecursiveLiveData.java",
+            "app/src/main/java/androidx/databinding/compilationTest/badJava/RecursiveLiveData.java"
+        )
+        val result = assembleDebug()
+        assertThat(
+            result.error, result.bindingExceptions.firstOrNull()?.createHumanReadableMessage(),
+            containsString(
+                String.format(ErrorMessages.RECURSIVE_OBSERVABLE, "recursiveLiveData.text")
+            )
+        )
     }
 }

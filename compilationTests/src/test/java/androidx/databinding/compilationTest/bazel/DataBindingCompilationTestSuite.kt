@@ -15,31 +15,12 @@
  */
 package androidx.databinding.compilationTest.bazel
 
-import androidx.databinding.compilationTest.AppCompatResourcesTest
-import androidx.databinding.compilationTest.InverseMethodTest
-import androidx.databinding.compilationTest.MultiLayoutVerificationTest
-import androidx.databinding.compilationTest.NonEnglishLocaleTest
-import androidx.databinding.compilationTest.ObservableGetDetectionTest
-import androidx.databinding.compilationTest.RecursiveObservableTest
-import androidx.databinding.compilationTest.SimpleCompilationTest
-import androidx.databinding.compilationTest.TooManyLayoutsTest
 import com.android.testutils.JarTestSuiteRunner
 import com.android.tools.tests.IdeaTestSuiteBase
 import org.junit.runner.RunWith
 
 @RunWith(JarTestSuiteRunner::class)
-@JarTestSuiteRunner.ExcludeClasses(
-    DataBindingCompilationTestSuite::class,
-    //TODO(b/173134729): remove the tests below when they are migrated to bazel.
-    AppCompatResourcesTest::class,
-    InverseMethodTest::class,
-    MultiLayoutVerificationTest::class,
-    NonEnglishLocaleTest::class,
-    ObservableGetDetectionTest::class,
-    RecursiveObservableTest::class,
-    SimpleCompilationTest::class,
-    TooManyLayoutsTest::class
-)
+@JarTestSuiteRunner.ExcludeClasses(DataBindingCompilationTestSuite::class)
 class DataBindingCompilationTestSuite: IdeaTestSuiteBase() {
     companion object {
         init {

@@ -148,7 +148,7 @@ task createArchive(type: Zip) {
     if (dataBindingConfig.maven.zip_out != null) {
         destinationDir dataBindingConfig.maven.zip_out
     }
-    baseName = "dataBindingRuntimeRepo"
+    archiveBaseName.set("dataBindingRuntimeRepo")
 }
 
 subprojects {
@@ -159,7 +159,7 @@ subprojects {
     if (project.path == ":doclava") {
         return
     }
-    apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     group = dataBindingConfig.group
     version = dataBindingConfig.version
     if (!autoConfigured) {
@@ -173,14 +173,14 @@ subprojects {
         }
     }
 
-    uploadArchives {
+    publishing {
         repositories {
-            mavenDeployer {
-                repository(url: "file://${dataBindingConfig.maven.out_repo}")
+            maven {
+                url = "${dataBindingConfig.maven.out_repo}"
             }
         }
     }
-    createArchive.dependsOn tasks['uploadArchives']
+    createArchive.dependsOn tasks.named('publish')
     configurations.all {
         resolutionStrategy {
             failOnVersionConflict()

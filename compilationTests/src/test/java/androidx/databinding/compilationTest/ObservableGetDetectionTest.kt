@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,13 @@ class ObservableGetDetectionTest(
         private val resolvedType: String, // e..g if it is ObservableInt, resolvedType is Int
         private val getter: String,
         private val constructor: String
-) : BaseCompilationTest() {
+) : DataBindingCompilationTestCase() {
     @Test
     fun detectGetterCallsOnObservables() {
         // this used to be disallowed on user code since 3.6 but causes issues w/ two way binding
         // which generates the same code. Now we instead support it but IDE will still show an
         // error to discourage developers.
-        prepareProject()
+        loadApp()
         // add an adapter so that it is settable on TextView
         writeFile("/app/src/main/java/com/example/MyAdapter.java",
                 """
@@ -60,13 +60,13 @@ class ObservableGetDetectionTest(
                             android:text="@{myVariable.$getter}"/>
                 </layout>
                 """.trimIndent())
-        val result = runGradle("assembleDebug")
+        val result = assembleDebug()
         assertThat(result.error, result.resultCode, `is`(0))
     }
 
     @Test
     fun nestedObservable() {
-        prepareProject()
+        loadApp()
         writeFile("/app/src/main/java/com/example/MyClass.java",
                 """
                     package com.example;
@@ -88,13 +88,13 @@ class ObservableGetDetectionTest(
                             android:text="@{``+myVariable.value}"/>
                 </layout>
                 """.trimIndent())
-        val result = runGradle("assembleDebug")
+        val result = assembleDebug()
         assertThat(result.error, result.resultCode, `is`(0))
     }
 
     @Test
     fun twoWayNested() {
-        prepareProject()
+        loadApp()
 
         writeFile("/app/src/main/java/com/example/MyClass.java",
                 """
@@ -125,7 +125,7 @@ class ObservableGetDetectionTest(
                             android:text="@={MyClass.convertToString(myVariable.value)}"/>
                 </layout>
                 """.trimIndent())
-        val result = runGradle("assembleDebug")
+        val result = assembleDebug()
         assertThat(result.error, result.resultCode, `is`(0))
     }
 

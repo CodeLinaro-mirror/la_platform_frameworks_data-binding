@@ -158,6 +158,7 @@ class ViewBinderGenerateJavaTest {
                 |import androidx.annotation.NonNull;
                 |import androidx.annotation.Nullable;
                 |import androidx.viewbinding.ViewBinding;
+                |import androidx.viewbinding.ViewBindings;
                 |import com.example.R;
                 |import java.lang.Override;
                 |
@@ -201,8 +202,8 @@ class ViewBinderGenerateJavaTest {
                 |
                 |  @NonNull
                 |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    TextView email = rootView.findViewById(R.id.email);
-                |    TextView name = rootView.findViewById(R.id.name);
+                |    TextView email = ViewBindings.findChildViewById(rootView, R.id.email);
+                |    TextView name = ViewBindings.findChildViewById(rootView, R.id.name);
                 |    return new ExampleBinding((LinearLayout) rootView, email, name);
                 |  }
                 |}
@@ -233,6 +234,7 @@ class ViewBinderGenerateJavaTest {
                 |import androidx.annotation.NonNull;
                 |import androidx.annotation.Nullable;
                 |import androidx.viewbinding.ViewBinding;
+                |import androidx.viewbinding.ViewBindings;
                 |import com.example.R;
                 |import java.lang.NullPointerException;
                 |import java.lang.Override;
@@ -285,19 +287,19 @@ class ViewBinderGenerateJavaTest {
                 |    int id;
                 |    missingId: {
                 |      id = R.id.id;
-                |      View id_ = rootView.findViewById(id);
+                |      View id_ = ViewBindings.findChildViewById(rootView, id);
                 |      if (id_ == null) {
                 |        break missingId;
                 |      }
                 |
                 |      id = R.id.missing_id;
-                |      TextView missingId = rootView.findViewById(id);
+                |      TextView missingId = ViewBindings.findChildViewById(rootView, id);
                 |      if (missingId == null) {
                 |        break missingId;
                 |      }
                 |
                 |      id = R.id.root_view;
-                |      TextView rootView_ = rootView.findViewById(id);
+                |      TextView rootView_ = ViewBindings.findChildViewById(rootView, id);
                 |      if (rootView_ == null) {
                 |        break missingId;
                 |      }
@@ -556,7 +558,7 @@ class ViewBinderGenerateJavaTest {
         val model = layouts.parse().getValue("example")
         model.toViewBinder().toJavaFile().assert {
             contains("""
-                |    View other = rootView.findViewById(R.id.other);
+                |    View other = ViewBindings.findChildViewById(rootView, R.id.other);
                 |    OtherBinding binding_other = other != null
                 |        ? OtherBinding.bind(other)
                 |        : null;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,20 @@
 
 package com.example.viewbinding;
 
-import static org.junit.Assert.assertNotNull;
-
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.view.LayoutInflater;
-import com.example.viewbinding.databinding.IncludeNamingCollisionBinding;
+import com.example.viewbinding.databinding.IncludeIdCollusionBinding;
 import org.junit.Test;
 
-public final class IncludeNamingCollisionTest {
+import static org.junit.Assert.assertEquals;
+
+public final class IncludeIdCollusionTest {
     private final Context context = InstrumentationRegistry.getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
-    @Test public void check() {
-        IncludeNamingCollisionBinding binding =
-                IncludeNamingCollisionBinding.inflate(inflater);
-        // Compilation is the real test here.
-        assertNotNull(binding);
+    @Test public void inflate() {
+        IncludeIdCollusionBinding binding = IncludeIdCollusionBinding.inflate(inflater);
+        assertEquals(binding.collidingId.collidingId.getText(), "sub item");
     }
 }

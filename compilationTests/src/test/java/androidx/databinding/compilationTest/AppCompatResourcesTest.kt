@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,9 @@ import java.io.File
  * `AppCompatResources` is found in the classpath or not.
  */
 @RunWith(Parameterized::class)
-class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) : BaseCompilationTest() {
+class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) :
+    DataBindingCompilationTestCase() {
+
     companion object {
         @JvmStatic
         @Parameterized.Parameters(name = "Add support dependency: {0}")
@@ -38,20 +40,23 @@ class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) : Base
     }
 
     @Before
-    fun setUp() {
-        if (addAppCompatDependency) {
-            prepareApp(toMap(
-              KEY_DEPENDENCIES, "implementation 'androidx.appcompat:appcompat:1.0.0'"
-            ))
-        } else {
-            prepareProject()
-        }
-        copyResourceTo("/layout/layout_with_drawable.xml",
-          "/app/src/main/res/layout/layout_with_drawable.xml")
-        copyResourceTo("/drawable/thumbs_up.png",
-          "/app/src/main/res/drawable/thumbs_up.png")
+    fun setUpTest() {
+        val replacements = if (addAppCompatDependency) {
+            mapOf(
+                KEY_DEPENDENCIES to "implementation 'androidx.appcompat:appcompat:+'"
+            )
+        } else emptyMap()
+        loadApp(replacements)
+        copyTestData(
+            "layout/layout_with_drawable.xml",
+            "app/src/main/res/layout/layout_with_drawable.xml"
+        )
+        copyTestData(
+            "drawable/thumbs_up.png",
+            "app/src/main/res/drawable/thumbs_up.png"
+        )
 
-        val result = runGradle("assembleDebug")
+        val result = assembleDebug()
         assertThat(result.error, result.resultCode, `is`(0))
     }
 
@@ -68,8 +73,7 @@ class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) : Base
         assertThat(bindingImpl.readText(Charsets.UTF_8), containsString(expectedCode))
     }
 
-    private fun findFile(fileName: String): File?
-      = testFolder.walkBottomUp().firstOrNull { it.name == fileName }
-
+    private fun findFile(fileName: String): File? =
+        projectRoot.walkBottomUp().firstOrNull { it.name == fileName }
 }
 

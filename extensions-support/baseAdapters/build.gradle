@@ -69,20 +69,22 @@ android.libraryVariants.all { variant ->
         classifier = 'sources'
         from android.sourceSets.main.java.srcDirs
     }
-
-    artifacts.add('archives', sourcesJarTask);
 }
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = "adapters"
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                artifactId = 'adapters'
+                from components.release
+                artifact project.tasks.named("sourceJarRelease")
+                pom {
+                    licenses {
+                        license {
+                            name = dataBindingConfig.licenseName
+                            url = dataBindingConfig.licenseUrl
+                            distribution = dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
             }
@@ -90,9 +92,8 @@ uploadArchives {
     }
 }
 
-
 task prebuild(type : Copy) {
-    dependsOn uploadArchives
+    dependsOn tasks.named("publish")
     from "$buildDir/outputs/aar/baseAdapters-release.aar"
     into dataBindingConfig.prebuildFolder
     rename { String fileName ->

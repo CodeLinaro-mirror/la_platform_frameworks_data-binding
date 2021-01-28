@@ -1,5 +1,0 @@
-buildscript {
-    def runningInIde = project.hasProperty('android.injected.invoked.from.ide')
-    rootProject.ext.runningInIde = runningInIde
-    apply from: "../commonBuildScript.gradle"
-}

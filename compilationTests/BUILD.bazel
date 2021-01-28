@@ -4,6 +4,7 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 iml_module(
     name = "studio.compilationTests",
     iml_files = ["db-compilationTests.iml"],
+    tags = ["no_test_mac"],  # b/178123368
     test_class = "androidx.databinding.compilationTest.bazel.DataBindingCompilationTestSuite",
     test_data = [
         "//prebuilts/studio/sdk:build-tools/latest",
@@ -14,8 +15,8 @@ iml_module(
         "//tools/adt/idea/android/testData",
         "//tools/base/build-system:gradle-distrib",
         "//tools/base/build-system:studio_repo.zip",
-    ],
-    test_resources = ["src/test/resources"],
+    ] + glob(["testData/**"]),
+    test_shard_count = 4,
     test_srcs = ["src/test/java"],
     test_timeout = "long",
     visibility = ["//visibility:public"],
@@ -35,5 +36,6 @@ iml_module(
         "//tools/adt/idea/android-test-framework:intellij.android.testFramework[module, test]",
         "//tools/adt/idea/adt-testutils:intellij.android.adt.testutils[module, test]",
         "//tools/adt/idea/android:intellij.android.core[module, test]",
+        "//tools/analytics-library/shared:analytics-shared[module, test]",
     ],
 )

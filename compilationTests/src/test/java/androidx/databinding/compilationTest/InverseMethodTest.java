@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Android Open Source Project
+ * Copyright (C) 2021 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,18 @@
 
 package androidx.databinding.compilationTest;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import org.junit.runners.Parameterized;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
 @RunWith(JUnit4.class)
-public class InverseMethodTest extends BaseCompilationTest {
+public class InverseMethodTest extends DataBindingCompilationTestCase {
     @Test
     public void testInverseMethodWrongParameterType() throws Throwable {
         testErrorForMethod("InverseMethod_WrongParameterType", 23, "Could not find inverse " +
@@ -65,19 +61,24 @@ public class InverseMethodTest extends BaseCompilationTest {
 
     private void testErrorForMethod(String className, int lineNumber, String expectedError)
             throws Throwable {
-        prepareProject();
-        copyResourceTo(
-                "/androidx/databinding/compilationTest/badJava/" + className + ".java",
-                "/app/src/main/java/androidx/databinding/compilationTest/badJava/" + className + ".java");
-        CompilationResult result = runGradle("assembleDebug", "--stacktrace");
+        loadApp();
+        copyTestData(
+                "androidx/databinding/compilationTests/badJava/" + className + ".java",
+                "app/src/main/java/androidx/databinding/compilationTest/badJava/"
+                + className
+                + ".java");
+        CompilationResult result = invokeTasks(Lists.newArrayList("assembleDebug"),
+                                               Lists.newArrayList("--stacktrace"));
         assertNotEquals(0, result.resultCode);
         String error = getErrorLine(result.error);
         assertNotNull("Couldn't find error in \n" + result.error, error);
-        File errorFile = new File(testFolder,
-                "/app/src/main/java/androidx/databinding/compilationTest/badJava/" +
-                        className +  ".java");
+        File errorFile = new File(getProjectRoot(),
+                                  "app/src/main/java/androidx/databinding/compilationTest/badJava/"
+                                  +
+                                  className
+                                  + ".java");
         assertEquals(errorFile.getCanonicalPath() + ":" + lineNumber + ": error: " + expectedError,
-                error);
+                     error);
     }
 
     private static String getErrorLine(String err) {

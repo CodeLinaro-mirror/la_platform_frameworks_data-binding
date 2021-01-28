@@ -55,6 +55,7 @@ private class JavaFileGenerator(
 ) {
     private val annotationPackage =
         if (useLegacyAnnotations) "android.support.annotation" else "androidx.annotation"
+    val viewBindingPackage = (if (useLegacyAnnotations) "android" else "androidx") + ".viewbinding"
     private val nonNull = ClassName.get(annotationPackage, "NonNull")
     private val nullable = ClassName.get(annotationPackage, "Nullable")
 
@@ -73,8 +74,7 @@ private class JavaFileGenerator(
     private fun typeSpec() = classSpec(binder.generatedTypeName) {
         addModifiers(PUBLIC, FINAL)
 
-        val viewBindingPackage = if (useLegacyAnnotations) "android" else "androidx"
-        addSuperinterface(ClassName.get("$viewBindingPackage.viewbinding", "ViewBinding"))
+        addSuperinterface(ClassName.get(viewBindingPackage, "ViewBinding"))
 
         // TODO elide the separate root field if the root tag has an ID (and isn't a binder)
         addField(rootViewField())
@@ -216,7 +216,7 @@ private class JavaFileGenerator(
 
     private fun bind() = methodSpec("bind") {
         // TODO addJavadoc
-
+        val viewBindings = ClassName.get(viewBindingPackage, "ViewBindings")
         addModifiers(PUBLIC, STATIC)
         addAnnotation(nonNull)
         returns(binder.generatedTypeName)
@@ -281,9 +281,10 @@ private class JavaFileGenerator(
                 // bytecode re-uses the same register rather than using one for optional IDs and
                 // one for required IDs.
                 addStatement("$id = $L", binding.id.asCode())
-                CodeBlock.of("$N.findViewById($id)", rootParam)
+                CodeBlock.of("$T.findChildViewById($N, $id)", viewBindings, rootParam)
             } else {
-                CodeBlock.of("$N.findViewById($L)", rootParam, binding.id.asCode())
+                CodeBlock.of("$T.findChildViewById($N, $L)", viewBindings, rootParam,
+                    binding.id.asCode())
             }
             addStatement("$T $viewName = $L", viewType, viewInitializer)
 

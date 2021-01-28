@@ -7,18 +7,21 @@ buildscript {
     }
 }
 
+def publishAllSubprojects = project.tasks.create("publishAllSubprojects")
+
 subprojects {
     if (dataBindingConfig.isIndependent) {
-        apply plugin: 'maven'
+        apply plugin: 'maven-publish'
         if (it.name != "compilationTests") {
-            uploadArchives {
+            publishing {
                 repositories {
-                    mavenDeployer {
-                        repository(url: "file://${dataBindingConfig.mavenRepoDir}")
+                    maven {
+                        url = "${dataBindingConfig.mavenRepoDir}"
                     }
                 }
             }
         }
+        publishAllSubprojects.dependsOn tasks.named("publish")
     } else {
         apply plugin: 'com.android.tools.java-library'
         Project includedProject = it
@@ -45,15 +48,14 @@ task deleteEap(type: Delete) {
     delete "${dataBindingConfig.eapOutDir}"
 }
 
-
 def buildExtensionsTask = project.tasks.create "buildExtensionsTask", Exec
 buildExtensionsTask.workingDir file('extensions').getAbsolutePath()
 buildExtensionsTask.commandLine './gradlew'
-buildExtensionsTask.args 'clean', 'uploadArchives', '--info', '--stacktrace',
+buildExtensionsTask.args 'clean', 'publish', '--info', '--stacktrace',
         "-PuseReleaseVersion=${dataBindingConfig.inReleaseBuild ? 'true' : 'false'}",
         "-PaddRemoteRepos=${dataBindingConfig.addRemoteRepos ? 'true' : 'false'}",
         "-PforGradlePlugin=${dataBindingConfig.forGradlePlugin ? 'true' : 'false'}"
-buildExtensionsTask.dependsOn subprojects.uploadArchives
+buildExtensionsTask.dependsOn publishAllSubprojects
 
 def prepareExtensionPrebuilds = project.tasks.create "prepareExtensionPrebuilds", Exec
 prepareExtensionPrebuilds.workingDir file('extensions').getAbsolutePath()
@@ -62,7 +64,7 @@ prepareExtensionPrebuilds.args 'clean', 'preparePrebuilds', '--info', '--stacktr
         "-PuseReleaseVersion=${dataBindingConfig.inReleaseBuild ? 'true' : 'false'}",
         "-PaddRemoteRepos=${dataBindingConfig.addRemoteRepos ? 'true' : 'false'}",
         "-PforGradlePlugin=${dataBindingConfig.forGradlePlugin ? 'true' : 'false'}"
-prepareExtensionPrebuilds.dependsOn subprojects.uploadArchives
+prepareExtensionPrebuilds.dependsOn publishAllSubprojects
 
 file('integration-tests').listFiles().findAll { it.isDirectory() }.each {
     def strippedName = it.getName().replaceAll("[^A-Za-z0-9]", "-")
@@ -74,7 +76,7 @@ file('integration-tests').listFiles().findAll { it.isDirectory() }.each {
             "-PuseReleaseVersion=${dataBindingConfig.inReleaseBuild ? 'true' : 'false'}",
             "-PaddRemoteRepos=${dataBindingConfig.addRemoteRepos ? 'true' : 'false'}",
             "-PforGradlePlugin=${dataBindingConfig.forGradlePlugin ? 'true' : 'false'}"
-    testTask.dependsOn subprojects.uploadArchives
+    testTask.dependsOn publishAllSubprojects
 }
 
 task runIntegrationTests {
@@ -98,8 +100,8 @@ allprojects {
     }
 }
 
-subprojects.uploadArchives.each { it.shouldRunAfter deleteRepo  }
-subprojects.uploadArchives.each { it.shouldRunAfter deletePrebuildFolder  }
+publishAllSubprojects.shouldRunAfter deleteRepo
+publishAllSubprojects.shouldRunAfter deletePrebuildFolder
 
 buildExtensionsTask.shouldRunAfter deleteRepo
 tasks['runTestsOfMultiModuleTestApp'].dependsOn tasks['runTestsOfIndependentLibrary']
@@ -107,7 +109,7 @@ tasks['runTestsOfMultiModuleTestApp'].dependsOn tasks['runTestsOfIndependentLibr
 
 task rebuildRepo() {
     dependsOn deleteRepo
-    dependsOn subprojects.uploadArchives
+    dependsOn publishAllSubprojects
 }
 
 task copySamplesToEap(type : Copy) {
@@ -186,7 +188,7 @@ def fullJar(project) {
             exclude "META-INF/services/javax.annotation.processing.Processor"
             exclude "**/*.stg"
         }
-        archiveName "${baseName}.jar"
+        archiveBaseName.set("${baseName}.jar")
         destinationDir = new File(workingDir)
         with project.jar
     }
@@ -310,7 +312,7 @@ def createExtensionsBuildTask(folder, taskName) {
         } else {
             commandLine "$rootDir/gradlew"
         }
-        args '-q', '-p', libBuild.getAbsolutePath(), 'uploadArchives', '--stacktrace'
+        args '-q', '-p', libBuild.getAbsolutePath(), 'publish', '--stacktrace'
         environment VERSION: rootProject.buildVersion
         environment MAVEN_REPO: rootProject.ext.localRepo
         environment PREBUILTS_REPO: rootProject.file('../prebuilts/tools/common/m2/repository')

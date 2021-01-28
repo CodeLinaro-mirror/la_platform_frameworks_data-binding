@@ -61,11 +61,6 @@ android {
     }
 }
 
-configurations {
-    jarArchives
-}
-
-
 dependencies {
     implementation rootProject.ext.libs.android_support_collection
     api "androidx.databinding:databinding-common:${dataBindingConfig.version}"
@@ -87,19 +82,23 @@ android.libraryVariants.all { variant ->
         classifier = 'sources'
         from android.sourceSets.main.java.srcDirs
     }
-
-    artifacts.add('archives', sourcesJarTask);
 }
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            pom.artifactId = 'databinding-runtime'
-            pom.project {
-                licenses {
-                    license {
-                        name dataBindingConfig.licenseName
-                        url dataBindingConfig.licenseUrl
-                        distribution dataBindingConfig.licenseDistribution
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                artifactId = 'databinding-runtime'
+                from components.release
+                artifact tasks.named("sourceJarRelease")
+
+                pom {
+                    licenses {
+                        license {
+                            name = dataBindingConfig.licenseName
+                            url = dataBindingConfig.licenseUrl
+                            distribution = dataBindingConfig.licenseDistribution
+                        }
                     }
                 }
             }
@@ -163,7 +162,7 @@ class ExcludeShimTransform extends Transform {
 android.registerTransform(new ExcludeShimTransform(project))
 
 task prebuildAar(type : Copy) {
-    dependsOn uploadArchives
+    dependsOn tasks.named("publish")
     from "$buildDir/outputs/aar/library-release.aar"
     into dataBindingConfig.prebuildFolder
     rename { String fileName ->
