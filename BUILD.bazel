@@ -86,12 +86,6 @@ iml_module(
         "compilerCommon/src/main/xml-gen",
         "compilerCommon/src/main/grammar-gen",
     ],
-    bundled_deps = [
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:antlr4-runtime",
-        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:juniversalchardet",
-        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:javapoet",
-        "//prebuilts/tools/common/m2/repository/com/android/tools/build/jetifier/jetifier-core/1.0.0-beta09:jetifier-core",
-    ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
     test_srcs = [
         "compilerCommon/src/test/java",
@@ -202,13 +196,6 @@ iml_module(
     srcs = [
         "compiler/src/main/java",
         "compiler/src/main/kotlin",
-    ],
-    bundled_deps = [
-        "//prebuilts/tools/common/m2/repository/org/antlr/antlr4-runtime/4.5.3:antlr4-runtime",
-        "//prebuilts/tools/common/m2/repository/com/googlecode/juniversalchardet/juniversalchardet/1.0.3:juniversalchardet",
-        "//prebuilts/tools/common/m2/repository/commons-lang/commons-lang/2.6:commons-lang",
-        "//prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0:javapoet",
-        "//prebuilts/tools/common/m2/repository/com/google/auto/auto-common/0.10:auto-common",
     ],
     iml_files = ["compiler/db-compiler.iml"],
     resources = ["compiler/src/main/resources"],
