@@ -17,6 +17,7 @@ package androidx.databinding.compilationTest
 
 import android.databinding.tool.processing.ScopedErrorReport
 import android.databinding.tool.store.Location
+import com.android.SdkConstants
 import com.android.testutils.TestUtils
 import com.android.tools.analytics.Environment
 import com.android.tools.analytics.EnvironmentFakes
@@ -127,7 +128,15 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
                 }
             }
         }
-        request.setCommandLineArguments(listOf("--offline") + args)
+        request.setCommandLineArguments(
+                listOfNotNull(
+                        "--offline",
+                        // Limit the number of workers to reduce the tests' flakiness on Windows.
+                        // TODO(177936851): Remove this workaround when that bug is fixed.
+                        "--max-workers=1".takeIf {
+                            SdkConstants.currentPlatform() == SdkConstants.PLATFORM_WINDOWS
+                        }
+                ) + args)
         val result = invokeGradle(project) { gradleInvoker ->
             gradleInvoker.executeTasks(request)
         }
