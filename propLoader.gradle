@@ -1,20 +1,9 @@
-boolean getBooleanValue(String environmentVariable, String projectProperty, boolean defaultValue) {
-    String env = System.getenv(environmentVariable)
-    if (env != null) {
-        return !env.isEmpty();
-    }
-    return getBooleanValue(project, projectProperty, defaultValue);
-}
-
 boolean getBooleanValue(Project proj, String propertyName, boolean defaultValue) {
-    if (proj.hasProperty(propertyName)) {
-        String prop = (String) project.properties[propertyName]
-        if (prop != null) {
-            return Boolean.valueOf(prop);
-        }
-    } else {
-        return defaultValue;
-    }
+    return proj.providers.gradleProperty(propertyName)
+            .forUseAtConfigurationTime()
+            .map { Boolean.valueOf(it) }
+            .orElse(defaultValue)
+            .get()
 }
 
 /**
