@@ -43,7 +43,7 @@ public class GeneratedLayoutTest {
             public void run() {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
-                View view = inflater.inflate(R.layout.library_layout, null);
+                View view = inflater.inflate(androidx.databinding.test.independentlibrary.R.layout.library_layout, null);
                 // force override tag
                 view.setTag("layout/library_layout_0");
                 ViewDataBinding bind = DataBindingUtil.bind(view);
@@ -60,7 +60,7 @@ public class GeneratedLayoutTest {
             public void run() {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
-                View view = inflater.inflate(R.layout.library_layout, null);
+                View view = inflater.inflate(androidx.databinding.test.independentlibrary.R.layout.library_layout, null);
                 // force override tag
                 view.setTag("layout-sw600dp-land/library_layout_0");
                 ViewDataBinding bind = DataBindingUtil.bind(view);
@@ -77,13 +77,13 @@ public class GeneratedLayoutTest {
             public void run() {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
-                View view = inflater.inflate(R.layout.layout2, null);
+                View view = inflater.inflate(androidx.databinding.testlibrary2.R.layout.layout2, null);
                 Layout2Binding binding = DataBindingUtil.bind(view);
                 TestObservable testObservable = new TestObservable();
                 testObservable.setCat("foo");
                 binding.setVar(testObservable);
                 binding.executePendingBindings();
-                TextView inherited = (TextView) view.findViewById(R.id.inherited_text);
+                TextView inherited = (TextView) view.findViewById(androidx.databinding.inheritedmodule.R.id.inherited_text);
                 assertEquals("foo", inherited.getText());
             }
         });

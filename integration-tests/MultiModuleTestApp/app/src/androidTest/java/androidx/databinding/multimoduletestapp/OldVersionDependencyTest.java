@@ -42,7 +42,7 @@ public class OldVersionDependencyTest {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
                 LayoutFrom31Binding binding = DataBindingUtil.inflate(inflater,
-                        R.layout.layout_from_3_1, null, false);
+                        com.example.android.support.lib.R.layout.layout_from_3_1, null, false);
                 binding.setBar("bar");
                 binding.setFoo(3);
                 binding.executePendingBindings();
@@ -59,7 +59,7 @@ public class OldVersionDependencyTest {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
                 LayoutFrom331Binding binding = DataBindingUtil.inflate(inflater,
-                        R.layout.layout_from_3_3_1, null, false);
+                        com.example.agp331.R.layout.layout_from_3_3_1, null, false);
                 binding.setBar("bar");
                 binding.setFoo(3);
                 binding.executePendingBindings();
