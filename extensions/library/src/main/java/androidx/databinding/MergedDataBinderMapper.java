@@ -19,6 +19,7 @@ package androidx.databinding;
 
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.RestrictTo;
 
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +29,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * A data binding mapper that merges other mappers.
  */
+/**
+ * @hide
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @SuppressWarnings("unused")
 public class MergedDataBinderMapper extends DataBinderMapper {
     private static final String TAG = "MergedDataBinderMapper";

@@ -90,22 +90,24 @@ project.tasks.create(name : "generateGrammar", type : JavaExec) {
     args "BindingExpression.g4", "-visitor", "-o", "src/main/grammar-gen/android/databinding/parser", "-package", "android.databinding.parser"
 }
 
+def versionProvider = project.provider { project.version }
+def buildVersionFileProvider = project.provider { project.file(new File(sourceSets.main.output.resourcesDir,"data_binding_version_info.properties")) }
 tasks.create(name : 'exportBuildVersions').doLast {
     def props = new HashMap();
-    def buildVersionFile = new File(sourceSets.main.output.resourcesDir,"data_binding_version_info.properties")
+    def buildVersionFile = buildVersionFileProvider.get()
     // Using Java Properties appends date to the output which is bad for incremental compilation.
     // Instead, we build it manually.
-    props.put("compilerCommon", project.version)
-    props.put("compiler", project.version)
-    props.put("baseLibrary", project.version)
-    props.put("extensions", project.version)
+    props.put("compilerCommon", versionProvider.get())
+    props.put("compiler", versionProvider.get())
+    props.put("baseLibrary", versionProvider.get())
+    props.put("extensions", versionProvider.get())
     buildVersionFile.getParentFile().mkdirs()
     logger.info("writing build versions file to $buildVersionFile")
     def propText = new StringBuilder();
     props.each {
         propText.append(it.key).append("=").append(it.value).append(System.getProperty("line.separator"))
     }
-    file(buildVersionFile).write(propText.toString())
+    buildVersionFile.write(propText.toString())
 }
 
 tasks['jar'].dependsOn('exportBuildVersions')

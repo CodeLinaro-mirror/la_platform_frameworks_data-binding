@@ -63,7 +63,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
     <orderEntry type="module-library">
       <library name="auto-common" type="repository">
         <properties maven-id="com.google.auto:auto-common:0.10" />

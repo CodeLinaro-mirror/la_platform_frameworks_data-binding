@@ -4,7 +4,10 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 iml_module(
     name = "studio.compilationTests",
     iml_files = ["db-compilationTests.iml"],
-    tags = ["no_test_mac"],  # b/178123368
+    tags = [
+        "no_test_mac",  # b/178123368
+        "no_test_windows",  # b/177936851
+    ],
     test_class = "androidx.databinding.compilationTest.bazel.DataBindingCompilationTestSuite",
     test_data = [
         "//prebuilts/studio/sdk:build-tools/latest",
@@ -23,7 +26,6 @@ iml_module(
     # do not sort: must match IML order
     deps = [
         "//prebuilts/studio/intellij-sdk:studio-sdk",
-        "//tools/adt/idea/.idea/libraries:kotlin-stdlib-jdk8",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module, test]",
         "//tools/data-binding:studio.compilerCommon[module, test]",
         "//tools/data-binding:studio.compiler[module, test]",

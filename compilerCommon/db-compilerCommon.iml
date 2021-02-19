@@ -40,7 +40,6 @@
         </SOURCES>
       </library>
     </orderEntry>
-    <orderEntry type="library" name="kotlin-stdlib-jdk8" level="project" />
     <orderEntry type="module-library">
       <library name="javapoet" type="repository">
         <properties maven-id="com.squareup:javapoet:1.10.0" />
