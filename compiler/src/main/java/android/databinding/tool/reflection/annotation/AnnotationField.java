@@ -74,6 +74,11 @@ class AnnotationField extends ModelField {
     }
 
     @Override
+    public int hashCode() {
+        return mField.getSimpleName().hashCode();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof AnnotationField) {
             AnnotationField that = (AnnotationField) obj;
