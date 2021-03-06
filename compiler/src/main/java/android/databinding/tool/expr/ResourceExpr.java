@@ -16,6 +16,7 @@
 package android.databinding.tool.expr;
 
 import android.databinding.tool.BindingTarget;
+import android.databinding.tool.Context;
 import android.databinding.tool.reflection.ImportBag;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
@@ -57,11 +58,7 @@ public class ResourceExpr extends Expr {
             String resourceName, List<Expr> args) {
         super(args);
         mTarget = target;
-        if ("android".equals(packageName)) {
-            mPackage = "android.";
-        } else {
-            mPackage = "";
-        }
+        mPackage = Context.getResources().getRPackagePrefix(packageName, resourceType, resourceName);
         mResourceType = resourceType;
         mResourceId = resourceName;
     }
