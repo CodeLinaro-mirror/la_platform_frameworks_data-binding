@@ -47,8 +47,7 @@ data class Resources(val symbolTables: ImmutableList<SymbolTable>?) {
                     }
                 }
                 throw RuntimeException(
-                        "Unexpected error: Resource not found: $type $name. Please file a bug at " +
-                        "https://b.corp.google.com/issues/new?component=192708&template=840533")
+                        "Unexpected error: Resource not found: $type $name.")
             }
             else -> {
                 // If we don't have a list of resources, it means the local R class contains all
