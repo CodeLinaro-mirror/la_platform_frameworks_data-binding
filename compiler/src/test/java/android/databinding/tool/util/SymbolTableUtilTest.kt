@@ -103,7 +103,8 @@ class SymbolTableUtilTest {
                 string second
                 """.trimIndent().toByteArray())
 
-        val result = parseRTxtFiles(localFile.toFile(), ImmutableList.of(dependencyFile.toFile()))
+        val result =
+                parseRTxtFiles(localFile.toFile(), ImmutableList.of(dependencyFile.toFile()), null)
 
         assertEquals(result.symbolTables!!.size, 2)
         assertEquals(result.symbolTables!![0].rPackage, "")
@@ -115,8 +116,47 @@ class SymbolTableUtilTest {
     }
 
     @Test
+    fun testParsingMergedDependencies() {
+        val mergedR = Files.createTempFile("merged", "R.txt")
+        Files.write(
+                mergedR,
+                """
+                    com.test.mid.lib
+                    string foo
+                    string bar
+
+                    com.test.leaf.lib
+                    string foo_bar
+
+                    com.test.empty.lib
+
+                    com.test.other.lib
+                    attr hi
+
+
+                """.trimIndent().toByteArray())
+
+        val result = ImmutableList.builder<SymbolTable>()
+        parseMergedPackageAwareRTxt(mergedR.toFile(), result)
+
+        val symbolTables = result.build()
+        assertEquals(symbolTables.size, 4)
+        assertEquals(symbolTables[0].rPackage, "com.test.mid.lib")
+        assertEquals(symbolTables[0].resources.size(), 2)
+        assertTrue(symbolTables[0].contains("string", "bar"))
+
+        assertEquals(symbolTables[2].rPackage, "com.test.empty.lib")
+        assertEquals(symbolTables[2].resources.size(), 0)
+
+        assertEquals(symbolTables[3].rPackage, "com.test.other.lib")
+        assertEquals(symbolTables[3].resources.size(), 1)
+        assertTrue(symbolTables[3].contains("attr", "hi"))
+
+    }
+
+    @Test
     fun testParsingNoFiles() {
-        val result = parseRTxtFiles(null, null)
+        val result = parseRTxtFiles(null, null, null)
         assertEquals(result, EMPTY_RESOURCES)
 
         assertEquals(result.getRPackagePrefix(null, "string", "hello"), "")

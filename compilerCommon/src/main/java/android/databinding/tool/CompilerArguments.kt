@@ -74,7 +74,8 @@ data class CompilerArguments constructor(
     val directDependencyPackages : String? = null,
 
     val localR: File? = null,
-    val dependenciesRFiles: List<File>? = null
+    val dependenciesRFiles: List<File>? = null,
+    val mergedDependenciesRFile: File? = null
 ) {
     init {
         Preconditions.check(
@@ -155,6 +156,7 @@ data class CompilerArguments constructor(
         }
         localR?.let { args[PARAM_LOCAL_R_FILE] = it.absolutePath}
         dependenciesRFiles?.let { args[PARAM_DEPENDENCIES_R_FILES] = fileListToString(it)}
+        mergedDependenciesRFile?.let {args[PARAM_MERGED_DEPENDENCIES_R_FILE] = it.absolutePath}
 
         return args
     }
@@ -200,6 +202,7 @@ data class CompilerArguments constructor(
         private const val PARAM_DIRECT_DEPENDENCY_PKGS = PREFIX + "directDependencyPkgs"
         private const val PARAM_LOCAL_R_FILE = PREFIX + "localResourceFile"
         private const val PARAM_DEPENDENCIES_R_FILES = PREFIX + "dependenciesRFiles"
+        private const val PARAM_MERGED_DEPENDENCIES_R_FILE = PREFIX + "mergedDependenciesRFile"
 
         @JvmField
         val ALL_PARAMS: Set<String> = Sets.newHashSet(
@@ -261,6 +264,9 @@ data class CompilerArguments constructor(
                 localR = options[PARAM_LOCAL_R_FILE]?.let { File(it) },
                 dependenciesRFiles = options[PARAM_DEPENDENCIES_R_FILES]?.let {
                     stringToFileList(it)
+                },
+                mergedDependenciesRFile = options[PARAM_MERGED_DEPENDENCIES_R_FILE]?.let {
+                    File(it)
                 }
             )
         }

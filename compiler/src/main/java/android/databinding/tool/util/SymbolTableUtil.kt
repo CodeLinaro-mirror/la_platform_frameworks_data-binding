@@ -46,8 +46,7 @@ data class Resources(val symbolTables: ImmutableList<SymbolTable>?) {
                         return "${table.rPackage}."
                     }
                 }
-                throw RuntimeException(
-                        "Unexpected error: Resource not found: $type $name.")
+                throw RuntimeException("Resource not found: $type $name.")
             }
             else -> {
                 // If we don't have a list of resources, it means the local R class contains all
@@ -58,7 +57,6 @@ data class Resources(val symbolTables: ImmutableList<SymbolTable>?) {
     }
 }
 
-
 data class SymbolTable constructor(
         val rPackage: String,
         val resources: ImmutableMultimap<String, String>) {
@@ -68,15 +66,32 @@ data class SymbolTable constructor(
     }
 }
 
-fun parseRTxtFiles(localRFile: File?, dependenciesRFiles: List<File>?) : Resources {
+fun parseRTxtFiles(
+        localRFile: File?,
+        dependenciesRFiles: List<File>?,
+        mergedDependenciesRFile: File?
+) : Resources {
     // If not using non-transitive R, return empty Resources (only local R class should be used)
-    if (localRFile == null || dependenciesRFiles == null) return EMPTY_RESOURCES
+    if (localRFile == null) return EMPTY_RESOURCES
+    if (dependenciesRFiles != null && mergedDependenciesRFile != null) {
+        error("Unexpected error: Both listed and merged dependencies R files present.")
+    }
 
     val symbolTables = ImmutableList.builder<SymbolTable>()
     // local resources at the front of the list
     symbolTables.add(parseLocalRTxt(localRFile))
-    // then add the rest of the dependencies, in order
-    dependenciesRFiles.forEach { symbolTables.add(parsePackageAwareRTxt(it)) }
+    when {
+        dependenciesRFiles != null -> {
+            // then add the rest of the dependencies, in order
+            dependenciesRFiles.forEach { symbolTables.add(parsePackageAwareRTxt(it)) }
+        }
+        mergedDependenciesRFile != null -> {
+            parseMergedPackageAwareRTxt(mergedDependenciesRFile, symbolTables)
+        }
+        else -> {
+            error("Unexpected error: Missing dependency resources")
+        }
+    }
 
     return Resources(symbolTables.build())
 }
@@ -125,15 +140,63 @@ fun parsePackageAwareRTxt(file: File) : SymbolTable {
     }
 }
 
+fun parseMergedPackageAwareRTxt(file: File, symbolTables: ImmutableList.Builder<SymbolTable>) {
+    file.useLines {
+        val iterator: Iterator<String> = it.iterator()
+        // As a workaround for KAPT resolving files at configuration time, dependencies' R files are
+        // merged into one file and then separated by an empty line, for example:
+        // com.mid.lib
+        // string foo
+        //
+        // com.leaf.lib1
+        // string bar
+        //
+        // com.empty.lib
+        //
+        // com.final.lib
+        // string hello
+        //
+        // Each dependency's chunk will start with a line with that R package, followed by the list
+        // of resources defined in that dependency (non-transitive) - or empty if there were no
+        // resources.
+
+        // Loop through all the lines.
+        while (iterator.hasNext()) {
+            // First line contains the dependency's package
+            if (!iterator.hasNext())
+                error("Resource list needs to contain the local package. " +
+                        "Failed to parse file: ${file.absolutePath}")
+            val pckg: String = iterator.next()
+            val resources = try {
+                // Until the next empty line, this method will parse the resources from the current
+                // dependency.
+                readResources(iterator)
+            } catch (e: IllegalStateException) {
+                throw IllegalStateException("Failed to parse file: ${file.absolutePath}", e)
+            }
+            symbolTables.add(SymbolTable(pckg, resources))
+        }
+    }
+}
+
 fun readResources(lines: Iterator<String>) : ImmutableMultimap<String, String> {
     val resources = ImmutableMultimap.builder<String, String>()
+    // Loop through the resources for a single dependency. The package has already been consumed,
+    // so read the resources until an empty line or EOF.
     while (lines.hasNext()) {
         val line = lines.next()
+        if (line.isEmpty())
+            // No more resources within this dependency.
+            return resources.build()
         val chunks = line.split(" ")
+        // Format is <type> <name> for all resources apart from Styleables.
         if (chunks.size < 2 || (chunks[0] != STYLEABLE && chunks.size != 2))
             error("Illegal line in R.txt: '$line'")
         resources.put(chunks[0], sanitizeName(chunks[1]))
         if (chunks[0] == STYLEABLE) {
+            // For styleables the format is <type> <name> <child1> <child2> ... <childN>
+            // The resulting children need to be added as Styleable <parent>_<child>.
+            // It's possible for a styleable to not have children at all.
             val parent = sanitizeName(chunks[1])
             for (i in 2 until chunks.size) {
                 // Styleable children exist in the R class as R.styleable.parent_child.

@@ -50,7 +50,8 @@ object Context {
         typeUtil = modelAnalyzer!!.createTypeUtil()
         setterStore = SetterStore.create(modelAnalyzer, generationalClassUtil)
         sdkUtil = SdkUtil.create(args.sdkDir, args.minApi)
-        resources = parseRTxtFiles(args.localR, args.dependenciesRFiles)
+        resources =
+                parseRTxtFiles(args.localR, args.dependenciesRFiles, args.mergedDependenciesRFile)
     }
 
     private fun discoverAndroidX(processingEnvironment: ProcessingEnvironment): Boolean {
