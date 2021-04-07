@@ -17,6 +17,8 @@
 apply plugin: 'com.android.test'
 
 android {
+    namespace 'com.example.viewbinding.test'
+
     targetProjectPath ':app'
 
     compileSdkVersion rootProject.latestCompileSdk
