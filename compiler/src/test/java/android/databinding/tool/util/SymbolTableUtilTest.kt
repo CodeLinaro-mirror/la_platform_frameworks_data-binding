@@ -56,14 +56,15 @@ class SymbolTableUtilTest {
         val result = parseLocalRTxt(testFile.toFile())
 
         assertEquals(result.rPackage, "")
-        assertEquals(result.resources.keySet().size, 3)
-        assertEquals(result.resources.values().size, 5)
+        assertEquals(result.resources.keySet().size, 4) // 3 + "text"
+        assertEquals(result.resources.values().size, 6) // "first" counted twice
 
         assertTrue(result.contains("string", "first"))
         assertTrue(result.contains("int", "second"))
         assertTrue(result.contains("styleable", "parent"))
         assertTrue(result.contains("styleable", "parent_child1"))
         assertTrue(result.contains("styleable", "parent_child2"))
+        assertTrue(result.contains("text", "first"))
     }
 
     @Test
@@ -79,9 +80,10 @@ class SymbolTableUtilTest {
         val result = parsePackageAwareRTxt(testFile.toFile())
 
         assertEquals(result.rPackage, "com.test.lib")
-        assertEquals(result.resources.keySet().size, 1)
-        assertEquals(result.resources.values().size, 1)
+        assertEquals(result.resources.keySet().size, 2) // string -> string, text
+        assertEquals(result.resources.values().toSet().size, 1) // "first" twice
         assertTrue(result.contains("string", "first"))
+        assertTrue(result.contains("text", "first"))
     }
 
     @Test
@@ -142,8 +144,9 @@ class SymbolTableUtilTest {
         val symbolTables = result.build()
         assertEquals(symbolTables.size, 4)
         assertEquals(symbolTables[0].rPackage, "com.test.mid.lib")
-        assertEquals(symbolTables[0].resources.size(), 2)
+        assertEquals(symbolTables[0].resources.size(), 4) // string -> string, text
         assertTrue(symbolTables[0].contains("string", "bar"))
+        assertTrue(symbolTables[0].contains("text", "bar"))
 
         assertEquals(symbolTables[2].rPackage, "com.test.empty.lib")
         assertEquals(symbolTables[2].resources.size(), 0)
@@ -175,6 +178,36 @@ class SymbolTableUtilTest {
             assertEquals(exception.message, "Illegal line in R.txt: 'default string first'")
         }
         assertTrue(found)
+    }
+
+    @Test
+    fun testDataBindingKeyWords() {
+        val testFile = Files.createTempFile("dependency", "R.txt")
+        Files.write(
+                testFile,
+                """
+                com.test.lib
+                string first
+                array my_list
+                dimen dimension
+                color foo
+                """.trimIndent().toByteArray())
+
+        val result = parsePackageAwareRTxt(testFile.toFile())
+
+        assertEquals(result.resources.size(), 11)
+        assertTrue(result.contains("string", "first"))
+        assertTrue(result.contains("text", "first"))
+        assertTrue(result.contains("array", "my_list"))
+        assertTrue(result.contains("intArray", "my_list"))
+        assertTrue(result.contains("stringArray", "my_list"))
+        assertTrue(result.contains("typedArray", "my_list"))
+        assertTrue(result.contains("dimen", "dimension"))
+        assertTrue(result.contains("dimenOffset", "dimension"))
+        assertTrue(result.contains("dimenSize", "dimension"))
+        assertTrue(result.contains("color", "foo"))
+        assertTrue(result.contains("colorStateList", "foo"))
+
     }
 
     @Test

@@ -16,6 +16,7 @@
 @file:JvmName("SymbolTableUtil")
 package android.databinding.tool.util
 
+import android.databinding.tool.expr.ResourceExpr
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMultimap
 import java.io.File
@@ -29,6 +30,9 @@ data class Resources(val symbolTables: ImmutableList<SymbolTable>?) {
      * Returns the prefix to be used in R class references in Java/Kotlin. For example: "android."
      * for "android.R.color.white", "com.my.lib." for "com.my.lib.R.string.text" and an empty string
      * for default R class reference e.g. "R.attr.my_attr".
+     *
+     * This method accepts data-binding specific "types", e.g. using "text" (for "string" resources)
+     * or "intArray" ( for "array" resources).
      */
     fun getRPackagePrefix(packageName: String?, type: String, name: String): String {
         when {
@@ -192,7 +196,7 @@ fun readResources(lines: Iterator<String>) : ImmutableMultimap<String, String> {
         // Format is <type> <name> for all resources apart from Styleables.
         if (chunks.size < 2 || (chunks[0] != STYLEABLE && chunks.size != 2))
             error("Illegal line in R.txt: '$line'")
-        resources.put(chunks[0], sanitizeName(chunks[1]))
+        addResource(chunks[0], sanitizeName(chunks[1]), resources)
         if (chunks[0] == STYLEABLE) {
             // For styleables the format is <type> <name> <child1> <child2> ... <childN>
             // The resulting children need to be added as Styleable <parent>_<child>.
@@ -205,6 +209,22 @@ fun readResources(lines: Iterator<String>) : ImmutableMultimap<String, String> {
         }
     }
     return resources.build()
+}
+
+fun addResource(
+        type: String,
+        name: String,
+        resourcesBuilder: ImmutableMultimap.Builder<String, String>) {
+
+    // Some expressions in data-binding correspond to different names in the R class. To be able
+    // to verify them, we need to add the resource to all matching expressions, e.g:
+    //  - "string" to "text"
+    //  - "array" to "intArray" AND "stringArray" AND "typedArray"
+    ResourceExpr.R_OBJECT_TO_RESOURCE_TYPE[type]?.forEach {
+        resourcesBuilder.put(it, name)
+    }
+
+    resourcesBuilder.put(type, name)
 }
 
 private fun sanitizeName(name: String): String {

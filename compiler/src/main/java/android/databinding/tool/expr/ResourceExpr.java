@@ -22,6 +22,7 @@ import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.reflection.ModelClass;
 import android.databinding.tool.writer.KCode;
 import android.databinding.tool.writer.LayoutBinderWriterKt;
+import com.google.common.collect.Lists;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import static android.databinding.tool.ext.ExtKt.capitalizeUS;
 public class ResourceExpr extends Expr {
 
     private final static Map<String, String> RESOURCE_TYPE_TO_R_OBJECT;
+    public final static Map<String, List<String>> R_OBJECT_TO_RESOURCE_TYPE;
     static {
         RESOURCE_TYPE_TO_R_OBJECT = new HashMap<String, String>();
         RESOURCE_TYPE_TO_R_OBJECT.put("colorStateList", "color");
@@ -42,6 +44,15 @@ public class ResourceExpr extends Expr {
         RESOURCE_TYPE_TO_R_OBJECT.put("stringArray", "array");
         RESOURCE_TYPE_TO_R_OBJECT.put("text", "string");
         RESOURCE_TYPE_TO_R_OBJECT.put("typedArray", "array");
+
+        // TODO(184833062): clean up so it reads from the above map and reverses it more elegantly
+        R_OBJECT_TO_RESOURCE_TYPE = new HashMap<String, List<String>>();
+        R_OBJECT_TO_RESOURCE_TYPE.put("color", Lists.newArrayList("colorStateList"));
+        R_OBJECT_TO_RESOURCE_TYPE.put("dimen", Lists.newArrayList("dimenOffset", "dimenSize"));
+        R_OBJECT_TO_RESOURCE_TYPE.put(
+                "array", Lists.newArrayList("intArray", "stringArray", "typedArray"));
+        R_OBJECT_TO_RESOURCE_TYPE.put("animator", Lists.newArrayList("stateListAnimator"));
+        R_OBJECT_TO_RESOURCE_TYPE.put("string", Lists.newArrayList("text"));
     }
     // lazily initialized
     private Map<String, ModelClass> mResourceToTypeMapping;
