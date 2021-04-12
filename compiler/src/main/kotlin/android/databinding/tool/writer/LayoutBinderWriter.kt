@@ -635,27 +635,56 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                     it.callbackExprModel.ext.forceLocalize.add(it.expr)
                 }
             }
+            // b: 123260053
+            fun checkCanReturn(
+                lambda: LambdaExpr
+            ) {
+                if (shouldReturn) {
+                    // we only check here for void or not instead of checking assignability
+                    // The right thing would be to check assignability but we might break some
+                    // existing users by adding more checks hence this is a simple workaround to
+                    // detect a common problem which causes stack overflow due to missing value.
+                    // everything else will be regular compilation errors for bad return type.
+                    val canReturn = !lambda.expr.resolvedType.isVoid
+                    if (!canReturn) {
+                        L.e(
+                            ErrorMessages.callbackReturnTypeMismatchError(
+                                wrapper.method.name,
+                                wrapper.method.returnType.toString(),
+                                lambda.toString(),
+                                lambda.expr.resolvedType.toString()
+                            )
+                        )
+                    }
+                }
+            }
             block("public final ${wrapper.method.returnType.canonicalName} ${wrapper.listenerMethodName}(${wrapper.allArgsWithTypes()})") {
                 Preconditions.check(lambdas.size > 0, "bindings list should not be empty")
                 if (lambdas.size == 1) {
                     val lambda = lambdas[0]
-                    nl(lambda.callbackExprModel.localizeGlobalVariables(lambda))
-                    nl(lambda.executionPath.toCode())
-                    if (shouldReturn) {
-                        nl("return ${lambda.expr.scopedName()};")
-                    } else if (returnKotlinUnit) {
-                        nl("return null;")
+                    lambda.inErrorScope {
+                        checkCanReturn(lambda)
+                        nl(lambda.callbackExprModel.localizeGlobalVariables(lambda))
+                        nl(lambda.executionPath.toCode())
+                        if (shouldReturn) {
+                            nl("return ${lambda.expr.scopedName()};")
+                        } else if (returnKotlinUnit) {
+                            nl("return null;")
+                        }
                     }
                 } else {
                     block("switch(${CallbackWrapper.SOURCE_ID})") {
                         lambdas.forEach { lambda ->
-                            block("case ${lambda.callbackId}:") {
-                                nl(lambda.callbackExprModel.localizeGlobalVariables(lambda))
-                                nl(lambda.executionPath.toCode())
-                                when {
-                                    shouldReturn -> nl("return ${lambda.expr.scopedName()};")
-                                    returnKotlinUnit -> nl("return null;")
-                                    else -> nl("break;")
+                            lambda.inErrorScope {
+                                checkCanReturn(lambda)
+                                block("case ${lambda.callbackId}:") {
+                                    nl(lambda.callbackExprModel.localizeGlobalVariables(lambda))
+                                    nl(lambda.executionPath.toCode())
+                                    when {
+                                        shouldReturn -> nl("return ${lambda.expr.scopedName()};")
+                                        returnKotlinUnit -> nl("return null;")
+                                        else -> nl("break;")
+                                    }
                                 }
                             }
                         }
@@ -1401,4 +1430,20 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                 tab("}")
                 nl("}")
             }.generate()
+}
+
+/**
+ * Runs the given block in the error scope of this scope provider such that any exception thrown
+ * will be scoped to that expression for error reporting.
+ */
+private inline fun android.databinding.tool.processing.scopes.ScopeProvider.inErrorScope(
+    crossinline block : () -> Unit
+) {
+    try {
+        android.databinding.tool.processing.Scope.enter(this)
+        block()
+    } finally {
+        android.databinding.tool.processing.Scope.exit()
+    }
+
 }
