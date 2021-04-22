@@ -83,6 +83,18 @@ public class ErrorMessages {
             "'%s::%s' accepts %d parameter(s), but the assigned expression uses %d parameter(s). The expression should have no " +
             "parameters or an equal number of parameters.";
 
+    public static String callbackReturnTypeMismatchError(
+        String methodName,
+        String expectedReturnType,
+        String expression,
+        String expressionReturnType
+    ) {
+        return "Invalid return type in callback.\n"
+               + "Callback method `" + methodName + "` is expected to return `"
+               + expectedReturnType + "` but expression `"
+               + expression + "` returns `" + expressionReturnType + "`";
+    }
+
     public static final String DUPLICATE_CALLBACK_ARGUMENT =
             "Callback parameter '%s' is not unique";
 

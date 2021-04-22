@@ -163,6 +163,21 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
     }
 
     @Test
+    fun testCallbackReturnTypeMismatch() {
+        singleFileErrorTest(
+            resource = "layout/layout_with_bad_callback_return_type.xml",
+            targetFile = "app/src/main/res/layout/broken.xml",
+            expectedExtract = null,
+            errorMessage = ErrorMessages.callbackReturnTypeMismatchError(
+                "onLongClick",
+                "boolean",
+                """() -> System.out.println("nada")""",
+                "void"
+            )
+        )
+    }
+
+    @Test
     fun testInvalidVariableType() {
         singleFileErrorTest(
             "layout/invalid_variable_type.xml",
@@ -543,11 +558,12 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         copyTestData(resource, targetFile)
         val result = assembleDebug()
         assertFalse(result.isBuildSuccessful)
-        val scopedException = result.bindingException
+        val scopedException = result.bindingException ?: throw AssertionError(
+            result.error
+        )
         val report = scopedException.scopedErrorReport
-        assertNotNull(report)
+        assertNotNull(result.error, report)
         assertEquals(1, report.locations.size.toLong())
-
         val loc = report.locations[0]
         if (expectedExtract != null) {
             val extract: String = extract(targetFile, loc)
