@@ -70,14 +70,14 @@ dependencies {
 }
 
 project.tasks.create(name : "generateXmlLexer", type : JavaExec) {
-    classpath configurations.runtime
+    classpath configurations.runtimeClasspath
     main "org.antlr.v4.Tool"
     workingDir projectDir
     args "XMLLexer.g4", "-visitor", "-lib", projectDir.absolutePath, "-o", "src/main/xml-gen/android/databinding/parser", "-package", "android.databinding.parser"
 }
 
 project.tasks.create(name : "generateXmlParser", type : JavaExec) {
-    classpath configurations.runtime
+    classpath configurations.runtimeClasspath
     main "org.antlr.v4.Tool"
     workingDir projectDir
     args "XMLParser.g4", "-visitor", "-lib", projectDir.absolutePath, "-o", "src/main/xml-gen/android/databinding/parser", "-package", "android.databinding.parser"
@@ -85,7 +85,7 @@ project.tasks.create(name : "generateXmlParser", type : JavaExec) {
 }
 
 project.tasks.create(name : "generateGrammar", type : JavaExec) {
-    classpath configurations.runtime
+    classpath configurations.runtimeClasspath
     main "org.antlr.v4.Tool"
     args "BindingExpression.g4", "-visitor", "-o", "src/main/grammar-gen/android/databinding/parser", "-package", "android.databinding.parser"
 }
