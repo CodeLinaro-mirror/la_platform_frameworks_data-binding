@@ -53,7 +53,7 @@ object ZipUtil {
         fos.use {
             val zos = ZipOutputStream(fos)
             zos.use {
-                FileUtils.listFiles(folder, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
+                FileUtil.listAndSortFiles(folder)
                     .forEach { file ->
                         val entry = ZipEntry(
                             file.absolutePath.substring(inputAbsPath + 1)
