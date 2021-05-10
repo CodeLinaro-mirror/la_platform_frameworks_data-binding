@@ -57,8 +57,9 @@ class BaseDataBinder(val input : LayoutInfoInput) {
         val useAndroidX = input.args.useAndroidX
         val libTypes = LibTypes(useAndroidX = useAndroidX)
 
+        // Sort the layout bindings to ensure deterministic order
         val layoutBindings = resourceBundle.allLayoutFileBundlesInSource
-            .groupBy(LayoutFileBundle::getFileName)
+            .groupBy(LayoutFileBundle::getFileName).toSortedMap()
 
         layoutBindings.forEach { layoutName, variations ->
             val layoutModel = BaseLayoutModel(variations)

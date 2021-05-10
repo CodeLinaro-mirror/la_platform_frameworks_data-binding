@@ -182,7 +182,7 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
         } else {
             // it is a directory, search sub folders.
             for (File layoutFile :
-                    FileUtil.INSTANCE.listAndSortFiles(layoutInfoDir, new String[]{"xml"}, true)) {
+                    FileUtil.listAndSortFiles(layoutInfoDir, new String[]{"xml"}, true)) {
                 if (excludeList.contains(layoutFile.getName())) {
                     continue;
                 }
@@ -195,7 +195,7 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
             }
             // also accept zip files
             for (File zipFile :
-                    FileUtil.INSTANCE.listAndSortFiles(layoutInfoDir, new String[]{"zip"}, true)) {
+                    FileUtil.listAndSortFiles(layoutInfoDir, new String[]{"zip"}, true)) {
                 try {
                     L.d("found zip file %s", zipFile.getAbsolutePath());
                     loadLayoutInfoFromZipFile(zipFile, result, excludeList);

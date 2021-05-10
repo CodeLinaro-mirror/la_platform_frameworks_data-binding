@@ -143,7 +143,8 @@ class LayoutInfoInput(val args: Args) {
         dontCarry
     }
 
-    internal fun saveLog(myLog: LayoutInfoLog) {
+    @VisibleForTesting
+    fun saveLog(myLog: LayoutInfoLog) {
         myLog.serialize(baseBinderOutFile)
         FileUtils.forceMkdir(args.artifactFolder)
         val merged = GenClassInfoLog()

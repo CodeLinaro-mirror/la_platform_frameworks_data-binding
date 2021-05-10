@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,7 +107,7 @@ public class ResourceBundle implements Serializable {
      *      previous build. We don't really need to track these files as there are no corresponding
      *      stale layout info files to delete, but it's easier (and okay) to leave them here.
      */
-    @NonNull private List<File> mFileWithNoDataBinding = new ArrayList<>();
+    @NonNull private List<File> mFilesWithNoDataBinding = new ArrayList<>();
 
     private final String viewDataBindingClass;
 
@@ -213,8 +212,7 @@ public class ResourceBundle implements Serializable {
             SuffixFileFilter fileFilter = new SuffixFileFilter(
                 DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
                 IOCase.SYSTEM);
-            List<File> files = FileUtil.INSTANCE.listAndSortFiles(folder,
-                fileFilter,
+            List<File> files = FileUtil.listAndSortFiles(folder, fileFilter,
                 TrueFileFilter.INSTANCE);
             for (File file : files) {
                 merged.addAll(GenClassInfoLog.fromFile(file));
@@ -566,12 +564,12 @@ public class ResourceBundle implements Serializable {
     }
 
     public void addFileWithNoDataBinding(@NonNull File file) {
-        mFileWithNoDataBinding.add(file);
+        mFilesWithNoDataBinding.add(file);
     }
 
     @NonNull
     public List<File> getFilesWithNoDataBinding() {
-        return new ArrayList<>(mFileWithNoDataBinding);
+        return new ArrayList<>(mFilesWithNoDataBinding);
     }
 
     @XmlAccessorType(XmlAccessType.NONE)

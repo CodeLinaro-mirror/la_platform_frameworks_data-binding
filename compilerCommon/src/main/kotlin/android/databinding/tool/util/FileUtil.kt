@@ -28,6 +28,7 @@ object FileUtil {
      *
      * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, org.apache.commons.io.filefilter.IOFileFilter, org.apache.commons.io.filefilter.IOFileFilter)
      */
+    @JvmStatic
     fun listAndSortFiles(
         directory: File,
         fileFilter: IOFileFilter = TrueFileFilter.TRUE,
@@ -41,6 +42,7 @@ object FileUtil {
      *
      * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, java.lang.String[], boolean)
      */
+    @JvmStatic
     fun listAndSortFiles(
         directory: File, extensions: Array<String>, recursive: Boolean
     ): List<File> {
