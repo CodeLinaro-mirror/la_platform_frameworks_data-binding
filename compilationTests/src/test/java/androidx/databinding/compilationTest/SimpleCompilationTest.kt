@@ -17,6 +17,7 @@ package androidx.databinding.compilationTest
 
 import android.databinding.tool.processing.ErrorMessages
 import android.databinding.tool.processing.ScopedException
+import android.databinding.tool.util.FileUtil
 import com.google.common.base.Joiner
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.NameFileFilter
@@ -65,7 +66,7 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
             projectRoot,
             "app/build/intermediates/incremental/mergeDebugResources/stripped.dir"
         )
-        val layoutFiles = FileUtils.listFiles(
+        val layoutFiles = FileUtil.listAndSortFiles(
             debugOut, NameFileFilter("main.xml"),
             PrefixFileFilter("layout")
         )

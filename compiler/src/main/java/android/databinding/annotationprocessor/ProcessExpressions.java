@@ -24,6 +24,7 @@ import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.reflection.ModelAnalyzer;
 import android.databinding.tool.store.GenClassInfoLog;
 import android.databinding.tool.store.ResourceBundle;
+import android.databinding.tool.util.FileUtil;
 import android.databinding.tool.util.GenerationalClassUtil;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.LoggedErrorException;
@@ -38,10 +39,8 @@ import com.google.common.base.Joiner;
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -182,7 +181,8 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
             };
         } else {
             // it is a directory, search sub folders.
-            for (File layoutFile : FileUtils.listFiles(layoutInfoDir, new String[]{"xml"}, true)) {
+            for (File layoutFile :
+                    FileUtil.INSTANCE.listAndSortFiles(layoutInfoDir, new String[]{"xml"}, true)) {
                 if (excludeList.contains(layoutFile.getName())) {
                     continue;
                 }
@@ -194,7 +194,8 @@ public class ProcessExpressions extends ProcessDataBinding.ProcessingStep {
                 }
             }
             // also accept zip files
-            for (File zipFile : FileUtils.listFiles(layoutInfoDir, new String[]{"zip"}, true)) {
+            for (File zipFile :
+                    FileUtil.INSTANCE.listAndSortFiles(layoutInfoDir, new String[]{"zip"}, true)) {
                 try {
                     L.d("found zip file %s", zipFile.getAbsolutePath());
                     loadLayoutInfoFromZipFile(zipFile, result, excludeList);

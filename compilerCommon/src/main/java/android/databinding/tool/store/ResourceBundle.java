@@ -19,6 +19,7 @@ import android.databinding.tool.processing.Scope;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.processing.scopes.FileScopeProvider;
 import android.databinding.tool.processing.scopes.LocationScopeProvider;
+import android.databinding.tool.util.FileUtil;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.ParserHelper;
 import android.databinding.tool.util.Preconditions;
@@ -27,7 +28,6 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -213,7 +213,7 @@ public class ResourceBundle implements Serializable {
             SuffixFileFilter fileFilter = new SuffixFileFilter(
                 DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
                 IOCase.SYSTEM);
-            Collection<File> files = FileUtils.listFiles(folder,
+            List<File> files = FileUtil.INSTANCE.listAndSortFiles(folder,
                 fileFilter,
                 TrueFileFilter.INSTANCE);
             for (File file : files) {
