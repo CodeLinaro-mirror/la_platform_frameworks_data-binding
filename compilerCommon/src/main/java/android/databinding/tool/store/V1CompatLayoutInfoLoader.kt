@@ -45,6 +45,7 @@ class V1CompatLayoutInfoLoader {
         val fileFilter = SuffixFileFilter(
                 DataBindingBuilder.LAYOUT_INFO_FILE_EXT,
                 IOCase.INSENSITIVE)
+        // Sort files to ensure deterministic order
         val files = FileUtil.listAndSortFiles(folder, fileFilter)
         val mapping: Map<String, GenClassInfoLog.GenClass> = files.flatMap {
             // read bundle
@@ -70,7 +71,7 @@ class V1CompatLayoutInfoLoader {
                             implementations = emptySet()
                     ))
         }.toMap()
-        return GenClassInfoLog(mappings = mapping.toMutableMap())
+        return GenClassInfoLog(mappings = LinkedHashMap(mapping))
     }
 
     private class CompatObjectInputStream(`in`: InputStream) : ObjectInputStream(`in`) {
