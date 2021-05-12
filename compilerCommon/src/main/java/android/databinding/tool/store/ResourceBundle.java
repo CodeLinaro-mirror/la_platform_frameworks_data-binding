@@ -19,6 +19,7 @@ import android.databinding.tool.processing.Scope;
 import android.databinding.tool.processing.ScopedException;
 import android.databinding.tool.processing.scopes.FileScopeProvider;
 import android.databinding.tool.processing.scopes.LocationScopeProvider;
+import android.databinding.tool.util.FileUtil;
 import android.databinding.tool.util.L;
 import android.databinding.tool.util.ParserHelper;
 import android.databinding.tool.util.Preconditions;
@@ -27,7 +28,6 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOCase;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -48,7 +48,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,7 +107,7 @@ public class ResourceBundle implements Serializable {
      *      previous build. We don't really need to track these files as there are no corresponding
      *      stale layout info files to delete, but it's easier (and okay) to leave them here.
      */
-    @NonNull private List<File> mFileWithNoDataBinding = new ArrayList<>();
+    @NonNull private List<File> mFilesWithNoDataBinding = new ArrayList<>();
 
     private final String viewDataBindingClass;
 
@@ -213,8 +212,7 @@ public class ResourceBundle implements Serializable {
             SuffixFileFilter fileFilter = new SuffixFileFilter(
                 DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
                 IOCase.SYSTEM);
-            Collection<File> files = FileUtils.listFiles(folder,
-                fileFilter,
+            List<File> files = FileUtil.listAndSortFiles(folder, fileFilter,
                 TrueFileFilter.INSTANCE);
             for (File file : files) {
                 merged.addAll(GenClassInfoLog.fromFile(file));
@@ -566,12 +564,12 @@ public class ResourceBundle implements Serializable {
     }
 
     public void addFileWithNoDataBinding(@NonNull File file) {
-        mFileWithNoDataBinding.add(file);
+        mFilesWithNoDataBinding.add(file);
     }
 
     @NonNull
     public List<File> getFilesWithNoDataBinding() {
-        return new ArrayList<>(mFileWithNoDataBinding);
+        return new ArrayList<>(mFilesWithNoDataBinding);
     }
 
     @XmlAccessorType(XmlAccessType.NONE)

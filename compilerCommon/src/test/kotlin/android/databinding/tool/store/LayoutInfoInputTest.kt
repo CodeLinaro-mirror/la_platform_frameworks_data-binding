@@ -310,6 +310,39 @@ class LayoutInfoInputTest {
         assertThat(input.unchangedLog.classInfoLog.mappings(), `is`(prevMapping))
     }
 
+    @Test
+    fun deterministic_log_output() { // Regression test for bug 187340555
+        val fooClass = createClass("com.example.Foo")
+        val barClass = createClass("com.example.Bar")
+        val bazClass = createClass("com.example.Baz")
+
+        val log = LayoutInfoLog()
+        log.classInfoLog.addMapping("foo", fooClass)
+        log.classInfoLog.addMapping("bar", barClass)
+        log.classInfoLog.addMapping("baz", bazClass)
+
+        // Check that the order of entries is preserved
+        assertThat(log.classInfoLog.mappings().keys.toList(), `is`(listOf("foo", "bar", "baz")))
+
+        // Write the log file
+        val input = create(
+            added = emptyList(),
+            removed = emptyList(),
+            incremental = true,
+            log = null,
+            packageName = "com.example"
+        )
+        input.saveLog(log)
+
+        // Read the log file that was just written
+        val logFile =
+            File(artifactFolder,"com.example${DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX}")
+        val logReadFromFile = GenClassInfoLog.fromFile(logFile)
+
+        // Check that the order of entries is preserved
+        assertThat(logReadFromFile.mappings().keys.toList(), `is`(listOf("foo", "bar", "baz")))
+    }
+
     private fun createInfoFile(name: String, config: String = ""): File {
         val configSuffix = if (config == "") {
             ""
@@ -338,7 +371,8 @@ class LayoutInfoInputTest {
             added: List<File>,
             removed: List<File>,
             incremental: Boolean,
-            log: LayoutInfoLog?): LayoutInfoInput {
+            log: LayoutInfoLog?,
+            packageName: String = "foo.bar.baz"): LayoutInfoInput {
         log?.serialize(File(baseBinderLogFolder, LayoutInfoInput.LOG_FILE_NAME))
         return LayoutInfoInput(
                 LayoutInfoInput.Args(
@@ -349,7 +383,7 @@ class LayoutInfoInputTest {
                         incremental = incremental,
                         logFolder = baseBinderLogFolder,
                         artifactFolder = artifactFolder,
-                        packageName = "foo.bar.baz",
+                        packageName = packageName,
                         useAndroidX = true,
                         enableViewBinding = false,
                         enableDataBinding = true)

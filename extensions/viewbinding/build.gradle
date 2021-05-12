@@ -28,6 +28,10 @@ android {
         sourceCompatibility dataBindingConfig.javaTargetCompatibility
         targetCompatibility dataBindingConfig.javaSourceCompatibility
     }
+
+    publishing {
+        singleVariant("release")
+    }
 }
 
 dependencies {

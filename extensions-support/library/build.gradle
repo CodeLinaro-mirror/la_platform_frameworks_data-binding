@@ -59,6 +59,10 @@ android {
     buildTypes.all {
         consumerProguardFiles 'proguard-consumer-rules.pro'
     }
+
+    publishing {
+        singleVariant("release")
+    }
 }
 
 dependencies {
