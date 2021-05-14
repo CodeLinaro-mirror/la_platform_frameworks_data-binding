@@ -17,6 +17,7 @@
 package android.databinding.tool.store
 
 import android.databinding.tool.DataBindingBuilder
+import android.databinding.tool.util.FileUtil
 import android.databinding.tool.util.L
 import com.google.common.annotations.VisibleForTesting
 import org.apache.commons.io.FileUtils
@@ -50,7 +51,7 @@ class LayoutInfoInput(val args: Args) {
     }
 
     private val allInfoFiles by lazy(LazyThreadSafetyMode.NONE) {
-        FileUtils.listFiles(args.infoFolder, arrayOf("xml"), true).toList()
+        FileUtil.listAndSortFiles(args.infoFolder, arrayOf("xml"), true)
     }
 
     private val groupedInfoFiles: Map<String, List<File>> by lazy(LazyThreadSafetyMode.NONE) {
@@ -142,7 +143,8 @@ class LayoutInfoInput(val args: Args) {
         dontCarry
     }
 
-    internal fun saveLog(myLog: LayoutInfoLog) {
+    @VisibleForTesting
+    fun saveLog(myLog: LayoutInfoLog) {
         myLog.serialize(baseBinderOutFile)
         FileUtils.forceMkdir(args.artifactFolder)
         val merged = GenClassInfoLog()

@@ -18,10 +18,10 @@ package android.databinding.tool.store
 
 import android.databinding.tool.DataBindingBuilder
 import android.databinding.tool.store.GenClassInfoLog.GenClass
+import android.databinding.tool.util.FileUtil
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.IOCase
 import org.apache.commons.io.filefilter.SuffixFileFilter
-import org.apache.commons.io.filefilter.TrueFileFilter
 import java.io.File
 import java.io.InputStream
 import java.io.ObjectInputStream
@@ -45,9 +45,8 @@ class V1CompatLayoutInfoLoader {
         val fileFilter = SuffixFileFilter(
                 DataBindingBuilder.LAYOUT_INFO_FILE_EXT,
                 IOCase.INSENSITIVE)
-        val files = FileUtils.listFiles(folder,
-                fileFilter,
-                TrueFileFilter.INSTANCE)
+        // Sort files to ensure deterministic order
+        val files = FileUtil.listAndSortFiles(folder, fileFilter)
         val mapping: Map<String, GenClassInfoLog.GenClass> = files.flatMap {
             // read bundle
             FileUtils.openInputStream(it).use { inputStream ->
@@ -72,7 +71,7 @@ class V1CompatLayoutInfoLoader {
                             implementations = emptySet()
                     ))
         }.toMap()
-        return GenClassInfoLog(mappings = mapping.toMutableMap())
+        return GenClassInfoLog(mappings = LinkedHashMap(mapping))
     }
 
     private class CompatObjectInputStream(`in`: InputStream) : ObjectInputStream(`in`) {

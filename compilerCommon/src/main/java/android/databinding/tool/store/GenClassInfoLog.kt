@@ -27,10 +27,11 @@ import java.io.InputStream
  * e.g: generic_view to android.databinding.testapp.databinding.GenericViewBinding
  */
 data class GenClassInfoLog(
+        // Use LinkedHashMap to ensure deterministic order (see bug 187340555)
         @SerializedName("mappings")
-        private val mappings: MutableMap<String, GenClass> = mutableMapOf()) {
+        private val mappings: LinkedHashMap<String, GenClass> = LinkedHashMap()) {
 
-    fun mappings(): Map<String, GenClass> = mappings
+    fun mappings(): LinkedHashMap<String, GenClass> = mappings
 
     companion object {
         private val GSON = GsonBuilder()
