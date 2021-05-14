@@ -118,7 +118,7 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
             )
         val outBuilder = StringBuilder()
         val errBuilder = StringBuilder()
-        request.taskListener = object : ExternalSystemTaskNotificationListenerAdapter() {
+        val taskListener = object : ExternalSystemTaskNotificationListenerAdapter() {
             override fun onTaskOutput(id: ExternalSystemTaskId, text: String, stdOut: Boolean) {
                 if (stdOut) {
                     outBuilder.append(text)
@@ -129,7 +129,7 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
         }
         request.setCommandLineArguments(listOf("--offline") + args)
         val result = invokeGradle(project) { gradleInvoker ->
-            gradleInvoker.executeTasks(request)
+            gradleInvoker.executeTasks(request, taskListener)
         }
         return CompilationResult(
             if (result.isBuildSuccessful) 0 else 1,
