@@ -109,13 +109,10 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
 
     protected fun assembleDebug() = invokeTasks(listOf("assembleDebug"))
 
-    protected fun invokeTasks(tasks: List<String>, args: List<String> = emptyList()): CompilationResult {
-        val request =
-            GradleBuildInvoker.Request(
-                project,
-                File(toSystemDependentName(project.basePath!!)),
-                tasks
-            )
+    protected fun invokeTasks(
+        tasks: List<String>,
+        args: List<String> = emptyList()
+    ): CompilationResult {
         val outBuilder = StringBuilder()
         val errBuilder = StringBuilder()
         val taskListener = object : ExternalSystemTaskNotificationListenerAdapter() {
@@ -127,9 +124,17 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
                 }
             }
         }
-        request.setCommandLineArguments(listOf("--offline") + args)
+        val request =
+            GradleBuildInvoker.Request.builder(
+                project,
+                File(toSystemDependentName(project.basePath!!)),
+                tasks
+            )
+                .setCommandLineArguments(listOf("--offline") + args)
+                .setListener(taskListener)
+                .build()
         val result = invokeGradle(project) { gradleInvoker ->
-            gradleInvoker.executeTasks(request, taskListener)
+            gradleInvoker.executeTasks(request)
         }
         return CompilationResult(
             if (result.isBuildSuccessful) 0 else 1,
