@@ -362,9 +362,11 @@ gradle_build(
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_androidx.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",
+    repo_manifests = [
+        "//tools/base/third_party/kotlin:kotlin-m2repository",
+    ],
     repos = [
         "//tools/base/build-system:gradle_plugin_repo.zip",
-        "//tools/base/third_party/kotlin:kotlin-m2repository.zip",
         ":external_deps.zip",
     ],
     tasks = ["createArchive"],
@@ -395,9 +397,11 @@ gradle_build(
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_support.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",
+    repo_manifests = [
+        "//tools/base/third_party/kotlin:kotlin-m2repository",
+    ],
     repos = [
         "//tools/base/build-system:gradle_plugin_repo.zip",
-        "//tools/base/third_party/kotlin:kotlin-m2repository.zip",
         ":external_deps.zip",
     ],
     tasks = ["createArchive"],
