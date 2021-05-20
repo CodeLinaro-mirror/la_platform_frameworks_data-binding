@@ -31,7 +31,7 @@ import android.databinding.tool.writer.toViewBinder
 import com.squareup.javapoet.JavaFile
 
 @Suppress("unused")// used by tools
-class BaseDataBinder(val input : LayoutInfoInput) {
+class BaseDataBinder(val input : LayoutInfoInput, val getRPackage: ((String, String) -> (String))?) {
     private val resourceBundle : ResourceBundle = ResourceBundle(
             input.packageName, input.args.useAndroidX)
     init {
@@ -62,7 +62,7 @@ class BaseDataBinder(val input : LayoutInfoInput) {
             .groupBy(LayoutFileBundle::getFileName).toSortedMap()
 
         layoutBindings.forEach { layoutName, variations ->
-            val layoutModel = BaseLayoutModel(variations)
+            val layoutModel = BaseLayoutModel(variations, getRPackage)
 
             val javaFile: JavaFile
             val classInfo: GenClassInfoLog.GenClass

@@ -78,6 +78,6 @@ class LayoutResourceRule(
 
         return resourceBundle.allLayoutFileBundlesInSource
             .groupBy(LayoutFileBundle::getFileName)
-            .mapValues { BaseLayoutModel(it.value) }
+            .mapValues { BaseLayoutModel(it.value, null) }
     }
 }

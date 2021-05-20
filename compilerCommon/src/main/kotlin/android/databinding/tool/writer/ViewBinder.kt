@@ -91,14 +91,16 @@ data class ViewBinding(
 }
 
 data class ResourceReference(val rClassName: ClassName, val type: String, val name: String) {
-    fun asCode(): CodeBlock = CodeBlock.of("$T.$N", rClassName.nestedClass(type), name)
+    fun asCode(): CodeBlock {
+        return CodeBlock.of("$T.$N", rClassName.nestedClass(type), name)
+    }
 }
 
 fun BaseLayoutModel.toViewBinder(): ViewBinder {
     val rClassName = ClassName.get(modulePackage, "R")
 
     fun BindingTargetBundle.toBinding(): ViewBinding {
-        val idReference = id.parseXmlResourceReference().toResourceReference(rClassName)
+        val idReference = id.parseXmlResourceReference().toResourceReference(rClassName, getRPackage)
         val (present, absent) = layoutConfigurationMembership(this)
 
         return ViewBinding(
@@ -159,7 +161,7 @@ private fun BaseLayoutModel.parseRootNode(
         }
         // All variation's root nodes agree on the ID.
         val idName = uniqueIds.single()!!
-        val id = idName.parseXmlResourceReference().toResourceReference(rClassName)
+        val id = idName.parseXmlResourceReference().toResourceReference(rClassName, getRPackage)
 
         // Check to make sure that the ID matches a binding. Ignored tags like <merge> or <fragment>
         // might have an ID but not have an actual binding. Only use ID if a match was found.
@@ -179,13 +181,20 @@ private fun BaseLayoutModel.parseRootNode(
     return RootNode.View(rootViewType)
 }
 
-private fun XmlResourceReference.toResourceReference(moduleRClass: ClassName): ResourceReference {
-    val rClassName = when (namespace) {
+private fun XmlResourceReference.toResourceReference(
+        moduleRClass: ClassName,
+        getRPackage: ((String, String) -> String)?
+): ResourceReference {
+    var rClassName = when (namespace) {
         "android" -> ANDROID_R
         null -> moduleRClass
         else -> throw IllegalArgumentException("Unknown namespace: $this")
     }
+    if (getRPackage != null) {
+       rClassName = ClassName.get(getRPackage(type, name), "R")
+    }
+
     return ResourceReference(rClassName, type, name)
 }
 
-private val ANDROID_R = ClassName.get("android", "R")
+val ANDROID_R = ClassName.get("android", "R")
