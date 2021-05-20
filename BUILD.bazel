@@ -334,6 +334,7 @@ maven_repo(
         "//prebuilts/tools/common/m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.4.1:jar",
         "//prebuilts/tools/common/m2/repository/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.4.1:jar",
     ],
+    use_zip = False,
 )
 
 gradle_build(
@@ -362,10 +363,10 @@ gradle_build(
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_androidx.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",
-    repos = [
-        "//tools/base/build-system:gradle_plugin_repo.zip",
-        "//tools/base/third_party/kotlin:kotlin-m2repository.zip",
-        ":external_deps.zip",
+    repo_manifests = [
+        ":external_deps",
+        "//tools/base/build-system:gradle_plugin_repo",
+        "//tools/base/third_party/kotlin:kotlin-m2repository",
     ],
     tasks = ["createArchive"],
 )
@@ -395,10 +396,10 @@ gradle_build(
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_support.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",
-    repos = [
-        "//tools/base/build-system:gradle_plugin_repo.zip",
-        "//tools/base/third_party/kotlin:kotlin-m2repository.zip",
-        ":external_deps.zip",
+    repo_manifests = [
+        ":external_deps",
+        "//tools/base/build-system:gradle_plugin_repo",
+        "//tools/base/third_party/kotlin:kotlin-m2repository",
     ],
     tasks = ["createArchive"],
 )

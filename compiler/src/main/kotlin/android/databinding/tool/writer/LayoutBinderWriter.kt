@@ -16,6 +16,7 @@ package android.databinding.tool.writer
 import android.databinding.tool.Binding
 import android.databinding.tool.BindingTarget
 import android.databinding.tool.CallbackWrapper
+import android.databinding.tool.Context
 import android.databinding.tool.InverseBinding
 import android.databinding.tool.LayoutBinder
 import android.databinding.tool.LibTypes
@@ -162,11 +163,8 @@ val BindingTarget.fieldName : String by lazyProp { target: BindingTarget ->
 
 val BindingTarget.androidId by lazyProp { target: BindingTarget ->
     val reference = target.id.parseXmlResourceReference()
-    if (reference.namespace == "android") {
-        "android.R.id.${reference.name}"
-    } else {
-        "R.id.${reference.name}"
-    }
+    val rClass = Context.resources.getRPackagePrefix(reference.namespace, "id", reference.name)
+    "${rClass}R.id.${reference.name}"
 }
 
 val BindingTarget.interfaceClass by lazyProp { target: BindingTarget ->
@@ -574,13 +572,19 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
                     if (originalTag != null && !originalTag.startsWith("@{")) {
                         tagValue = "\"$originalTag\""
                         if (originalTag.startsWith("@")) {
-                            var packageName = layoutBinder.modulePackage
-                            if (originalTag.startsWith("@android:")) {
-                                packageName = "android"
-                            }
                             val slashIndex = originalTag.indexOf('/')
                             val resourceId = originalTag.substring(slashIndex + 1)
-                            tagValue = "this.${it.fieldName}.getResources().getString($packageName.R.string.$resourceId)"
+                            var packageName = layoutBinder.modulePackage + "."
+                            if (originalTag.startsWith("@android:")) {
+                                packageName = "android."
+                            } else {
+                                val rPackage = Context.resources.getRPackagePrefix(
+                                                null, "string", resourceId)
+                                // If the package is not local, use the package of the lib/module
+                                // the string was defined in.
+                                if (rPackage.isNotEmpty()) packageName = rPackage
+                            }
+                            tagValue = "this.${it.fieldName}.getResources().getString(${packageName}R.string.$resourceId)"
                         }
                     }
                     if (it.includedLayout == null) {

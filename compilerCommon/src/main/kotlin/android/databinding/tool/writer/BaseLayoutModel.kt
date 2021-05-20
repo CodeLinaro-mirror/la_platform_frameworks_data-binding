@@ -25,7 +25,9 @@ import android.databinding.tool.store.ResourceBundle
 import android.databinding.tool.store.ResourceBundle.BindingTargetBundle
 import android.databinding.tool.store.ResourceBundle.LayoutFileBundle
 
-class BaseLayoutModel(val variations: List<LayoutFileBundle>) {
+class BaseLayoutModel(
+        val variations: List<LayoutFileBundle>,
+        val getRPackage: ((String, String) -> String)?) {
     private val COMPARE_FIELD_NAME = Comparator<BindingTargetBundle> { first, second ->
         val fieldName1 = fieldName(first)
         val fieldName2 = fieldName(second)
