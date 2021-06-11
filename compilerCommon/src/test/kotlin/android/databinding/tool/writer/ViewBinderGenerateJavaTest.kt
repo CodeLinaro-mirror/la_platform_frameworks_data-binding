@@ -18,15 +18,23 @@ package android.databinding.tool.writer
 
 import android.databinding.tool.LayoutResourceRule
 import android.databinding.tool.assert
+import android.databinding.tool.processing.ErrorMessages
 import android.databinding.tool.processing.ErrorMessages.FOUND_LAYOUT_BUT_NOT_ENABLED
 import android.databinding.tool.processing.ScopedException
+import android.databinding.tool.processing.ViewBindingErrorMessages
+import android.databinding.tool.store.LayoutFileParser
 import com.google.common.truth.Truth.assertThat
+import com.squareup.javapoet.ClassName
 import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 
 class ViewBinderGenerateJavaTest {
     @get:Rule val layouts = LayoutResourceRule(viewBindingEnabled = true)
+    @get:Rule val layoutsWithDataBinding = LayoutResourceRule(
+        dataBindingEnabled = true,
+        viewBindingEnabled = true
+    )
 
     @Test fun nullableFieldsJavadocTheirConfigurations() {
         layouts.write("example", "layout", """
@@ -739,4 +747,206 @@ class ViewBinderGenerateJavaTest {
             assertThat(e).hasMessageThat().contains(FOUND_LAYOUT_BUT_NOT_ENABLED)
         }
     }
+
+    @Test fun mismatchedViewTypesDefaultToView() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <Button android:id="@+id/view1"/>
+            </LinearLayout>
+        """.trimIndent())
+        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+        assertThat(
+            viewBinder.viewTypeOf("view1")
+        ).isEqualTo(
+            ClassName.get("android.view", "View")
+        )
+    }
+
+    @Test fun viewBindingType_singleLayout() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1"/>
+                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+                <TextView android:id="@+id/view3" tools:viewBindingType="ImageView"/>
+            </LinearLayout>
+        """.trimIndent())
+        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+        assertThat(
+            viewBinder.viewTypeOf("view1")
+        ).isEqualTo(
+            ClassName.get("android.widget", "TextView")
+        )
+        assertThat(
+            viewBinder.viewTypeOf("view2")
+        ).isEqualTo(
+            ClassName.get("foo.bar", "MyQualifiedType")
+        )
+        assertThat(
+            viewBinder.viewTypeOf("view3")
+        ).isEqualTo(
+            ClassName.get("android.widget", "ImageView")
+        )
+    }
+
+    @Test fun viewBindingType_multipleConfigurations_matches() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+        assertThat(
+            viewBinder.viewTypeOf("view1")
+        ).isEqualTo(
+            ClassName.get("foo.bar", "MyQualifiedType")
+        )
+    }
+
+    @Test fun viewBindingType_multipleConfigurations_declarationMatchesOtherLayout() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <foo.bar.MyQualifiedType android:id="@+id/view1"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+        assertThat(
+            viewBinder.viewTypeOf("view1")
+        ).isEqualTo(
+            ClassName.get("foo.bar", "MyQualifiedType")
+        )
+    }
+
+    @Test fun viewBindingType_inIncludeTag() {
+        layouts.write("other", "layout", "<FrameLayout/>")
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <include android:id="@+id/other" layout="@layout/other"
+                    tools:viewBindingType="foo.bar.MyQualifiedType"
+                />
+
+            </LinearLayout>
+        """.trimIndent())
+        try {
+            layouts.parse()["example"]?.toViewBinder()
+            fail()
+        } catch (ex: IllegalStateException) {
+            assertThat(ex).hasMessageThat().contains(
+                ViewBindingErrorMessages.viewBindingTypeInIncludeTag(
+                    layoutFileName = "example",
+                    includeTagId = "@+id/other"
+                )
+            )
+        }
+    }
+
+    @Test fun viewBindingType_multipleConfigurations_missingInOne() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        try {
+            layouts.parse()["example"]?.toViewBinder()
+            fail()
+        } catch (e: java.lang.IllegalStateException) {
+            assertThat(e).hasMessageThat().contains(
+                ViewBindingErrorMessages.inconsistentViewBindingType(
+                    layoutFileName = "example",
+                    bindingTargetId = "@+id/view1",
+                    bindingTypes = listOf("TextView", "foo.bar.MyQualifiedType")
+                )
+            )
+        }
+    }
+
+    @Test fun viewBindingType_multipleConfigurations_missingIn1ConfigDoesNotCauseIssues() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1"  tools:viewBindingType="foo.bar.AnotherType"/>
+                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        val viewBinding = layouts.parse()["example"]?.toViewBinder() ?: error("where is my layout?")
+        assertThat(
+            viewBinding.viewTypeOf("view1")
+        ).isEqualTo(
+            ClassName.get("foo.bar", "AnotherType")
+        )
+        assertThat(
+            viewBinding.viewTypeOf("view2")
+        ).isEqualTo(
+            ClassName.get("foo.bar", "MyQualifiedType")
+        )
+    }
+    @Test fun viewBindingType_multipleConfigurations_mismatch() {
+        layouts.write("example", "layout", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.AnotherType"/>
+            </LinearLayout>
+        """.trimIndent())
+        layouts.write("example", "layout-land", """
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </LinearLayout>
+        """.trimIndent())
+        try {
+            layouts.parse()["example"]?.toViewBinder()
+            fail()
+        } catch (e: java.lang.IllegalStateException) {
+            assertThat(e).hasMessageThat().contains(
+                ViewBindingErrorMessages.inconsistentViewBindingType(
+                    layoutFileName = "example",
+                    bindingTargetId = "@+id/view1",
+                    bindingTypes = listOf("foo.bar.AnotherType", "foo.bar.MyQualifiedType")
+                )
+            )
+        }
+    }
+
+    @Test fun viewBindingTypeInDataBinding() {
+        layoutsWithDataBinding.write("example", "layout", """
+            <layout xmlns:android="http://schemas.android.com/apk/res/android">
+                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+            </layout>
+        """.trimIndent())
+        try {
+            layouts.parse()
+        } catch (ex: ScopedException) {
+            assertThat(ex).hasMessageThat().contains(
+                "tools:viewBindingType cannot be used in DataBinding"
+            )
+            assertThat(ex.scopedErrorReport.filePath).contains("example.xml")
+        }
+    }
+
+    private fun ViewBinder.viewTypeOf(name:String) = this.bindings.firstOrNull() {
+        it.name == name
+    }?.type ?: error("""
+        Cannot find binding with field name ${name}. Available names: ${this.bindings.map { it.name }}
+    """.trimIndent())
 }

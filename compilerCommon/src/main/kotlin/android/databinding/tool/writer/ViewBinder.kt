@@ -21,6 +21,7 @@ import android.databinding.tool.ext.T
 import android.databinding.tool.ext.XmlResourceReference
 import android.databinding.tool.ext.parseLayoutClassName
 import android.databinding.tool.ext.parseXmlResourceReference
+import android.databinding.tool.processing.ViewBindingErrorMessages
 import android.databinding.tool.store.ResourceBundle.BindingTargetBundle
 import android.databinding.tool.writer.ViewBinder.RootNode
 import com.squareup.javapoet.ClassName
@@ -96,6 +97,39 @@ data class ResourceReference(val rClassName: ClassName, val type: String, val na
     }
 }
 
+private fun BaseLayoutModel.validateExplicitViewBindingTypes() {
+    variations.forEach { layoutFileBundle ->
+        layoutFileBundle.bindingTargetBundles.filter {
+            it.viewBindingType != null
+        }.forEach { bindingTarget ->
+            // cannot set view binding type for included layouts
+            check(bindingTarget.includedLayout == null) {
+                ViewBindingErrorMessages.viewBindingTypeInIncludeTag(
+                    layoutFileName = layoutFileBundle.fileName,
+                    includeTagId = bindingTarget.id
+                )
+            }
+            // if there is an explicit type and it does not match the view we've picked, throw an
+            // error.
+            check(
+                bindingTarget.qualifiedViewBindingType == bindingTarget.fieldType
+
+            ) {
+                ViewBindingErrorMessages.inconsistentViewBindingType(
+                    layoutFileName = layoutFileBundle.fileName,
+                    bindingTargetId = bindingTarget.id,
+                    bindingTypes = variations.mapNotNull {
+                        val target = it.bindingTargetBundles.firstOrNull { otherTarget ->
+                            otherTarget.id != null && otherTarget.isUsed
+                        }
+                        target?.viewBindingType ?: target?.viewName
+                    }
+                )
+            }
+        }
+    }
+}
+
 fun BaseLayoutModel.toViewBinder(): ViewBinder {
     val rClassName = ClassName.get(modulePackage, "R")
 
@@ -112,7 +146,7 @@ fun BaseLayoutModel.toViewBinder(): ViewBinder {
           absentConfigurations = absent
         )
     }
-
+    validateExplicitViewBindingTypes()
     val bindings = sortedTargets
         .filter { it.id != null }
         .filter { it.viewName != "merge" } // <merge> can have ID but it's ignored at runtime.

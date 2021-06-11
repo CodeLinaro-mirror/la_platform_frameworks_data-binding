@@ -432,12 +432,38 @@ public class ResourceBundle implements Serializable {
                         if (target == null) {
                             String include = includes.get(viewType.getKey());
                             if (include == null) {
-                                bundle.createBindingTarget(viewType.getKey(), viewType.getValue(),
-                                        false, null, null, null);
+                                bundle.createBindingTarget(
+                                        // id
+                                        viewType.getKey(),
+                                        // viewName
+                                        viewType.getValue(),
+                                        // viewBindingType
+                                        null,
+                                        // used
+                                        false,
+                                        // tag
+                                        null,
+                                        // originalTag
+                                        null,
+                                        // location
+                                        null);
                             } else {
                                 BindingTargetBundle bindingTargetBundle = bundle
                                         .createBindingTarget(
-                                                viewType.getKey(), null, false, null, null, null);
+                                                // id
+                                                viewType.getKey(),
+                                                // viewName
+                                                null,
+                                                // viewBindingType
+                                                null,
+                                                // used
+                                                false,
+                                                // tag
+                                                null,
+                                                // originalTag
+                                                null,
+                                                // location
+                                                null);
                                 bindingTargetBundle.setIncludedLayout(include);
                                 bindingTargetBundle.setInterfaceType(viewType.getValue());
                             }
@@ -701,9 +727,17 @@ public class ResourceBundle implements Serializable {
         }
 
         public BindingTargetBundle createBindingTarget(String id, String viewName,
-                boolean used, String tag, String originalTag, Location location) {
-            BindingTargetBundle target = new BindingTargetBundle(id, viewName, used, tag,
-                    originalTag, location);
+                @Nullable
+                String viewBindingType, boolean used, String tag, String originalTag,
+                Location location) {
+            if (isBindingData() && viewBindingType != null) {
+                throw new IllegalArgumentException(
+                        LayoutFileParser.VIEW_BINDING_TYPE_ATTR + " cannot be used in DataBinding"
+                );
+            }
+
+            BindingTargetBundle target = new BindingTargetBundle(id, viewName,
+                    viewBindingType, used, tag, originalTag, location);
             mBindingTargetBundles.add(target);
             return target;
         }
@@ -1005,6 +1039,10 @@ public class ResourceBundle implements Serializable {
         public String mIncludedLayout;
         @XmlElement(name = "location")
         public Location mLocation;
+        // tools:viewBindingType attribute on the BindingTarget.
+        @Nullable
+        @XmlElement(name = "viewBindingType")
+        public String mViewBindingType;
         private String mInterfaceType;
         private String mModulePackage;
 
@@ -1012,10 +1050,11 @@ public class ResourceBundle implements Serializable {
         public BindingTargetBundle() {
         }
 
-        public BindingTargetBundle(String id, String viewName, boolean used,
+        public BindingTargetBundle(String id, String viewName, String viewBindingType, boolean used,
                 String tag, String originalTag, Location location) {
             mId = id;
             mViewName = viewName;
+            mViewBindingType = viewBindingType;
             mUsed = used;
             mTag = tag;
             mOriginalTag = originalTag;
@@ -1078,6 +1117,23 @@ public class ResourceBundle implements Serializable {
             return mTag;
         }
 
+        @Nullable
+        public String getViewBindingType() {
+            return mViewBindingType;
+        }
+
+        /**
+         * Returns the view binding type after it is qualifed as if it is a tag.
+         * e.g. ImageView turns into android.widget.ImageView etc.
+         */
+        @Nullable
+        public String getQualifiedViewBindingType() {
+            if (mViewBindingType == null) {
+                return null;
+            }
+            return qualifyViewNodeName(mViewBindingType);
+        }
+
         public String getOriginalTag() {
             return mOriginalTag;
         }
@@ -1086,6 +1142,8 @@ public class ResourceBundle implements Serializable {
             if (mFullClassName == null) {
                 if (isBinder()) {
                     mFullClassName = mInterfaceType;
+                } else if (mViewBindingType != null) {
+                    mFullClassName = qualifyViewNodeName(mViewBindingType);
                 } else {
                     mFullClassName = qualifyViewNodeName(mViewName);
                 }
