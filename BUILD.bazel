@@ -436,3 +436,23 @@ merge_jars(
     ],
     visibility = ["//visibility:public"],
 )
+
+filegroup(
+    name = "agp_gradle_build_files",
+    srcs = glob([
+        "baseLibrary/src/main/java/**",
+        "baseLibrarySupport/src/main/java/**",
+        "compilerCommon/src/main/**/*.java",
+        "compilerCommon/src/main/**/*.kt",
+        "compilerCommon/src/main/resources/**",
+        "integration-tests/*/build.gradle",
+    ]) + [
+        "propLoader.gradle",
+        "build.gradle",
+        "baseLibrary/build.gradle",
+        "baseLibrarySupport/build.gradle",
+        "compilerCommon/build.gradle",
+        "databinding.properties",
+    ],
+    visibility = ["//tools/base/build-system:__pkg__"],
+)
