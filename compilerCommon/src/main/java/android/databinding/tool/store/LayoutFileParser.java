@@ -70,6 +70,8 @@ public final class LayoutFileParser {
 
     private static final String LAYOUT_PREFIX = "@layout/";
 
+    public static final String VIEW_BINDING_TYPE_ATTR = "tools:viewBindingType";
+
     @Nullable
     public static ResourceBundle.LayoutFileBundle parseXml(@NonNull final RelativizableFile input,
             @NonNull final File outputFile, @NonNull final String pkg,
@@ -191,8 +193,12 @@ public final class LayoutFileParser {
         return !name.toLowerCase().equals(name);
     }
 
-    private static void parseExpressions(String newTag, final XMLParser.ElementContext rootView,
-            final boolean isMerge, ResourceBundle.LayoutFileBundle bundle) {
+    private static void parseExpressions(
+            String newTag,
+            final XMLParser.ElementContext rootView,
+            final boolean isMerge,
+            ResourceBundle.LayoutFileBundle bundle
+    ) {
         final List<XMLParser.ElementContext> bindingElements = new ArrayList<>();
         final List<XMLParser.ElementContext> otherElementsWithIds = new ArrayList<>();
         rootView.accept(new XMLParserBaseVisitor<Void>() {
@@ -283,9 +289,19 @@ public final class LayoutFileParser {
                 }
                 tagNumber++;
             }
+            // optional explicit parameter for setting view type.
+            String viewBindingType = attributes.get(VIEW_BINDING_TYPE_ATTR);
             final ResourceBundle.BindingTargetBundle bindingTargetBundle =
-                    bundle.createBindingTarget(id, viewName, true, tag, originalTag,
-                            new Location(parent));
+                    bundle.createBindingTarget(
+                            id,
+                            viewName,
+                            viewBindingType,
+                            // used
+                            true,
+                            tag,
+                            originalTag,
+                            new Location(parent)
+                    );
             nodeTagMap.put(parent, tag);
             bindingTargetBundle.setIncludedLayout(includedLayoutName);
 
@@ -315,9 +331,20 @@ public final class LayoutFileParser {
         }
 
         for (XMLParser.ElementContext elm : otherElementsWithIds) {
-            final String id = attributeMap(elm).get("android:id");
+            Map<String, String> attributeMap = attributeMap(elm);
+            final String id = attributeMap.get("android:id");
             final String className = getViewName(elm);
-            bundle.createBindingTarget(id, className, true, null, null, new Location(elm));
+            String viewBindingType = attributeMap.get(VIEW_BINDING_TYPE_ATTR);
+            bundle.createBindingTarget(
+                    id,
+                    className,
+                    viewBindingType,
+                    // used
+                    true,
+                    null,
+                    null,
+                    new Location(elm)
+            );
         }
     }
 
