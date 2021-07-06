@@ -442,6 +442,9 @@ filegroup(
     srcs = glob([
         "baseLibrary/src/main/java/**",
         "baseLibrarySupport/src/main/java/**",
+        "compiler/src/main/**/*.java",
+        "compiler/src/main/**/*.kt",
+        "compiler/src/main/resources/**",
         "compilerCommon/src/main/**/*.java",
         "compilerCommon/src/main/**/*.kt",
         "compilerCommon/src/main/resources/**",
@@ -453,6 +456,7 @@ filegroup(
         "baseLibrary/NOTICE",
         "baseLibrarySupport/build.gradle",
         "baseLibrarySupport/NOTICE",
+        "compiler/build.gradle",
         "compilerCommon/build.gradle",
         "compilerCommon/NOTICE",
         "databinding.properties",
