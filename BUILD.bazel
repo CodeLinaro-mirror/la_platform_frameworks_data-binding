@@ -165,9 +165,9 @@ kotlin_test(
     deps = [
         ":tools.compilerCommon",
         "//tools/base/bazel:langtools",
-        "//tools/base/third_party:com.google.testing.compile_compile-testing",
-        "//tools/base/third_party:com.google.truth_truth",
-        "//tools/base/third_party:junit_junit",
+        "@maven//:com.google.testing.compile.compile-testing",
+        "@maven//:com.google.truth.truth",
+        "@maven//:junit.junit",
     ],
 )
 
