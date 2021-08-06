@@ -1,10 +1,10 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library_legacy", "kotlin_test")
-load("//tools/base/bazel:maven.bzl", "maven_java_library", "maven_pom")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test", "maven_library")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_repo")
 load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
+load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 exports_files(["databinding.properties"])
 
@@ -36,44 +36,32 @@ iml_module(
     ],
 )
 
-maven_java_library(
-    name = "tools.baseLibrary",
+maven_library(
+    name = "tools.baseLibrary_bzl",
     srcs = glob(["baseLibrary/src/main/java/**"]),
+    coordinates = "androidx.databinding:databinding-common:" + BUILD_VERSION,
     javacopts = [
         "-source 6",
         "-target 6",
     ],
-    pom = ":databinding-common.pom",
+    legacy_name = "tools.baseLibrary",
+    notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
-    resources = ["baseLibrary/NOTICE"],
     visibility = ["//visibility:public"],
 )
 
-maven_java_library(
-    name = "tools.baseLibrarySupport",
+maven_library(
+    name = "tools.baseLibrarySupport_bzl",
     srcs = glob(["baseLibrarySupport/src/main/java/**"]),
+    coordinates = "com.android.databinding:baseLibrary:" + BUILD_VERSION,
     javacopts = [
         "-source 6",
         "-target 6",
     ],
-    pom = ":baseLibrarySupport.pom",
+    legacy_name = "tools.baseLibrarySupport",
+    notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
-    resources = ["baseLibrary/NOTICE"],
     visibility = ["//visibility:public"],
-)
-
-maven_pom(
-    name = "databinding-common.pom",
-    artifact = "databinding-common",
-    group = "androidx.databinding",
-    source = "//tools/buildSrc/base:build_version",
-)
-
-maven_pom(
-    name = "baseLibrarySupport.pom",
-    artifact = "baseLibrary",
-    group = "com.android.databinding",
-    source = "//tools/buildSrc/base:build_version",
 )
 
 # managed by go/iml_to_build
@@ -129,7 +117,6 @@ merged_properties(
 fileset(
     name = "tools.compilerCommon.resources",
     srcs = [
-        "compilerCommon/NOTICE",
         ":data_binding_version_info",
     ],
     mappings = {
@@ -137,38 +124,33 @@ fileset(
     },
 )
 
-kotlin_library_legacy(
-    name = "tools.compilerCommon",
+maven_library(
+    name = "tools.compilerCommon_bzl",
     srcs = glob([
         "compilerCommon/src/main/**/*.kt",
         "compilerCommon/src/main/**/*.java",
     ]),
-    pom = ":databinding-compiler-common.pom",
+    coordinates = "androidx.databinding:databinding-compiler-common:" + BUILD_VERSION,
+    legacy_name = "tools.compilerCommon",
+    notice = "compilerCommon/NOTICE",
     resource_strip_prefix = "tools/data-binding",
     resources = [":tools.compilerCommon.resources"],
     visibility = ["//visibility:public"],
     deps = [
-        ":tools.baseLibrary",
-        ":tools.baseLibrarySupport",
-        "//tools/base/annotations",
-        "//tools/base/third_party:com.android.tools.build.jetifier_jetifier-core",
-        "//tools/base/third_party:com.google.code.gson_gson",
-        "//tools/base/third_party:com.google.guava_guava",
-        "//tools/base/third_party:com.googlecode.juniversalchardet_juniversalchardet",
-        "//tools/base/third_party:com.squareup_javapoet",
-        "//tools/base/third_party:commons-io_commons-io",
-        "//tools/base/third_party:jakarta.xml.bind_jakarta.xml.bind-api",
-        "//tools/base/third_party:org.antlr_antlr4",
-        "//tools/base/third_party:org.glassfish.jaxb_jaxb-runtime",
-        "//tools/base/third_party:org.jetbrains.kotlin_kotlin-stdlib",
+        ":tools.baseLibrarySupport_bzl",
+        ":tools.baseLibrary_bzl",
+        "//tools/base/annotations:annotations_bzl",
+        "@maven//:com.android.tools.build.jetifier.jetifier-core",
+        "@maven//:com.google.code.gson.gson",
+        "@maven//:com.google.guava.guava",
+        "@maven//:com.googlecode.juniversalchardet.juniversalchardet",
+        "@maven//:com.squareup.javapoet",
+        "@maven//:commons-io.commons-io",
+        "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
+        "@maven//:org.antlr.antlr4",
+        "@maven//:org.glassfish.jaxb.jaxb-runtime",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     ],
-)
-
-maven_pom(
-    name = "databinding-compiler-common.pom",
-    artifact = "databinding-compiler-common",
-    group = "androidx.databinding",
-    source = "//tools/buildSrc/base:build_version",
 )
 
 kotlin_test(
@@ -229,35 +211,34 @@ iml_module(
 )
 
 # TODO: Use the right version of kotlin-compiler.
-kotlin_library_legacy(
-    name = "tools.compiler",
+maven_library(
+    name = "tools.compiler_bzl",
     srcs = glob([
         "compiler/src/main/**/*.java",
         "compiler/src/main/**/*.kt",
     ]),
-    pom = ":databinding-compiler.pom",
-    resources = glob(["compiler/src/main/resources/**"]),
+    coordinates = "androidx.databinding:databinding-compiler:" + BUILD_VERSION,
+    legacy_name = "tools.compiler",
+    notice = "compiler/src/main/resources/NOTICE.txt",
+    resource_strip_prefix = "tools/data-binding/compiler/src/main/resources",
+    resources = glob(
+        include = ["compiler/src/main/resources/**"],
+        exclude = ["compiler/src/main/resources/NOTICE.txt"],
+    ),
     visibility = ["//visibility:public"],
     deps = [
-        ":tools.baseLibrary",
-        ":tools.baseLibrarySupport",
-        ":tools.compilerCommon",
-        "//prebuilts/tools/common/m2:com.google.auto.auto-common.0.10",
-        "//tools/base/annotations",
-        "//tools/base/third_party:com.google.guava_guava",
-        "//tools/base/third_party:com.squareup_javapoet",
-        "//tools/base/third_party:commons-io_commons-io",
-        "//tools/base/third_party:jakarta.xml.bind_jakarta.xml.bind-api",
-        "//tools/base/third_party:org.antlr_antlr4",
-        "//tools/base/third_party:org.jetbrains.kotlin_kotlin-stdlib",
+        ":tools.baseLibrarySupport_bzl",
+        ":tools.baseLibrary_bzl",
+        ":tools.compilerCommon_bzl",
+        "//tools/base/annotations:annotations_bzl",
+        "@maven//:com.google.auto.auto-common",
+        "@maven//:com.google.guava.guava",
+        "@maven//:com.squareup.javapoet",
+        "@maven//:commons-io.commons-io",
+        "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
+        "@maven//:org.antlr.antlr4",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     ],
-)
-
-maven_pom(
-    name = "databinding-compiler.pom",
-    artifact = "databinding-compiler",
-    group = "androidx.databinding",
-    source = "//tools/buildSrc/base:build_version",
 )
 
 maven_repo(
