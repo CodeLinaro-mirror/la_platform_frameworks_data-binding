@@ -1,8 +1,8 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test", "maven_library")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
-load("//tools/base/bazel:maven.bzl", "maven_repository")
+load("//tools/base/bazel:maven.bzl", "maven_repository", "maven_library")
 load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
