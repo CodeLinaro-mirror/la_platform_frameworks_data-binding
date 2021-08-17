@@ -19,11 +19,17 @@ import org.junit.Test;
 import android.databinding.tool.reflection.java.JavaAnalyzer;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SdkVersionTest {
     @Before
     public void setUp() throws Exception {
         JavaAnalyzer.initForTests();
+    }
+
+    @Test
+    public void loadSdkFile() {
+        assertTrue(SdkUtil.get().getApiChecker().getDidLoadApiFileFromSdk());
     }
 
     @Test

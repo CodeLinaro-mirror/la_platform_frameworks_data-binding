@@ -179,7 +179,7 @@ iml_module(
     iml_files = ["compiler/db-compiler.iml"],
     resources = ["compiler/src/main/resources"],
     test_data = [
-        "//prebuilts/studio/sdk:platforms/android-24",
+        "//prebuilts/studio/sdk:platforms/latest",
         "//prebuilts/studio/sdk:platform-tools",
     ],
     test_srcs = ["compiler/src/test/java"],
