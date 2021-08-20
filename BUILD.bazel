@@ -1,9 +1,9 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test", "maven_library")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
-load("//tools/base/bazel:maven.bzl", "maven_repository")
-load("//tools/base/bazel:merge_archives.bzl", "merge_jars")
+load("//tools/base/bazel:maven.bzl", "maven_repository", "maven_library")
+load("//tools/base/bazel:utils.bzl", "zip_merger")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 exports_files(["databinding.properties"])
@@ -37,28 +37,26 @@ iml_module(
 )
 
 maven_library(
-    name = "tools.baseLibrary_bzl",
+    name = "tools.baseLibrary",
     srcs = glob(["baseLibrary/src/main/java/**"]),
     coordinates = "androidx.databinding:databinding-common:" + BUILD_VERSION,
     javacopts = [
         "-source 6",
         "-target 6",
     ],
-    legacy_name = "tools.baseLibrary",
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
     visibility = ["//visibility:public"],
 )
 
 maven_library(
-    name = "tools.baseLibrarySupport_bzl",
+    name = "tools.baseLibrarySupport",
     srcs = glob(["baseLibrarySupport/src/main/java/**"]),
     coordinates = "com.android.databinding:baseLibrary:" + BUILD_VERSION,
     javacopts = [
         "-source 6",
         "-target 6",
     ],
-    legacy_name = "tools.baseLibrarySupport",
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
     visibility = ["//visibility:public"],
@@ -125,21 +123,20 @@ fileset(
 )
 
 maven_library(
-    name = "tools.compilerCommon_bzl",
+    name = "tools.compilerCommon",
     srcs = glob([
         "compilerCommon/src/main/**/*.kt",
         "compilerCommon/src/main/**/*.java",
     ]),
     coordinates = "androidx.databinding:databinding-compiler-common:" + BUILD_VERSION,
-    legacy_name = "tools.compilerCommon",
     notice = "compilerCommon/NOTICE",
     resource_strip_prefix = "tools/data-binding",
     resources = [":tools.compilerCommon.resources"],
     visibility = ["//visibility:public"],
     deps = [
-        ":tools.baseLibrarySupport_bzl",
-        ":tools.baseLibrary_bzl",
-        "//tools/base/annotations:annotations_bzl",
+        ":tools.baseLibrary",
+        ":tools.baseLibrarySupport",
+        "//tools/base/annotations",
         "@maven//:com.android.tools.build.jetifier.jetifier-core",
         "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.guava.guava",
@@ -212,13 +209,12 @@ iml_module(
 
 # TODO: Use the right version of kotlin-compiler.
 maven_library(
-    name = "tools.compiler_bzl",
+    name = "tools.compiler",
     srcs = glob([
         "compiler/src/main/**/*.java",
         "compiler/src/main/**/*.kt",
     ]),
     coordinates = "androidx.databinding:databinding-compiler:" + BUILD_VERSION,
-    legacy_name = "tools.compiler",
     notice = "compiler/src/main/resources/NOTICE.txt",
     resource_strip_prefix = "tools/data-binding/compiler/src/main/resources",
     resources = glob(
@@ -227,10 +223,10 @@ maven_library(
     ),
     visibility = ["//visibility:public"],
     deps = [
-        ":tools.baseLibrarySupport_bzl",
-        ":tools.baseLibrary_bzl",
-        ":tools.compilerCommon_bzl",
-        "//tools/base/annotations:annotations_bzl",
+        ":tools.baseLibrary",
+        ":tools.baseLibrarySupport",
+        ":tools.compilerCommon",
+        "//tools/base/annotations",
         "@maven//:com.google.auto.auto-common",
         "@maven//:com.google.guava.guava",
         "@maven//:com.squareup.javapoet",
@@ -355,13 +351,18 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-merge_jars(
-    name = "runtimeLibraries",
-    out = "data_binding_runtime.zip",
-    jars = [
-        "//tools/data-binding:data_binding_runtime_support.zip",
+zip_merger(
+    name = "data_binding_runtime",
+    srcs = [
         "//tools/data-binding:data_binding_runtime_androidx.zip",
+        "//tools/data-binding:data_binding_runtime_support.zip",
     ],
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "runtimeLibraries",
+    actual = ":data_binding_runtime",
     visibility = ["//visibility:public"],
 )
 
