@@ -15,6 +15,7 @@ package android.databinding.tool.reflection;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.jetbrains.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -52,9 +53,8 @@ public class SdkUtil {
         this.mMinSdk = mMinSdk;
     }
 
-    public static SdkUtil create(File sdkPath, int minSdk) {
-        ApiChecker checker = new ApiChecker(new File(sdkPath.getAbsolutePath()
-                                                     + "/platform-tools/api/api-versions.xml"));
+    public static SdkUtil create(@Nullable File apiFile, int minSdk) {
+        ApiChecker checker = new ApiChecker(apiFile);
         return new SdkUtil(checker, minSdk);
     }
 
@@ -108,7 +108,12 @@ public class SdkUtil {
 
         private XPath mXPath;
 
-        public ApiChecker(File apiFile) {
+        /**
+         * Used for tests to ensure we can load the API file properly from the SDK.
+         */
+        private boolean mDidLoadApiFileFromSdk = false;
+
+        public ApiChecker(@Nullable File apiFile) {
             InputStream inputStream = null;
             try {
                 if (apiFile == null || !apiFile.exists()) {
@@ -117,6 +122,7 @@ public class SdkUtil {
                     inputStream = getClass().getClassLoader().getResource("api-versions.xml").openStream();
                 } else {
                     inputStream = FileUtils.openInputStream(apiFile);
+                    mDidLoadApiFileFromSdk = true;
                 }
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder builder = factory.newDocumentBuilder();
@@ -129,6 +135,11 @@ public class SdkUtil {
             } finally {
                 IOUtils.closeQuietly(inputStream);
             }
+        }
+
+        @VisibleForTesting
+        public boolean getDidLoadApiFileFromSdk() {
+            return mDidLoadApiFileFromSdk;
         }
 
         private void buildFullLookup() throws XPathExpressionException {

@@ -3,7 +3,7 @@ load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_repository", "maven_library")
-load("//tools/base/bazel:utils.bzl", "zip_merger")
+load("//tools/base/bazel:utils.bzl", "merged_zip")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 exports_files(["databinding.properties"])
@@ -146,7 +146,6 @@ maven_library(
         "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
         "@maven//:org.antlr.antlr4",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     ],
 )
 
@@ -179,7 +178,7 @@ iml_module(
     iml_files = ["compiler/db-compiler.iml"],
     resources = ["compiler/src/main/resources"],
     test_data = [
-        "//prebuilts/studio/sdk:platforms/android-24",
+        "//prebuilts/studio/sdk:platforms/latest",
         "//prebuilts/studio/sdk:platform-tools",
     ],
     test_srcs = ["compiler/src/test/java"],
@@ -233,7 +232,6 @@ maven_library(
         "@maven//:commons-io.commons-io",
         "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
         "@maven//:org.antlr.antlr4",
-        "@maven//:org.jetbrains.kotlin.kotlin-stdlib",
     ],
 )
 
@@ -351,7 +349,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-zip_merger(
+merged_zip(
     name = "data_binding_runtime",
     srcs = [
         "//tools/data-binding:data_binding_runtime_androidx.zip",

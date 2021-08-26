@@ -32,7 +32,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,12 +212,14 @@ public class JavaAnalyzer extends ModelAnalyzer {
                 .listFilesAndDirs(platforms, FileFilterUtils.falseFileFilter(),
                         FileFilterUtils.prefixFileFilter(prefix));
         File androidJar = null;
+        File apiVersionsFile = null;
         int maxVersion = -1;
         for (File sdk : sdks) {
             try {
                 int version = Integer.parseInt(sdk.getName().substring(prefix.length()));
                 if (version > maxVersion) {
                     androidJar = new File(sdk, "android.jar");
+                    apiVersionsFile = new File(sdk, "data/api-versions.xml");
                     maxVersion = version;
                 }
             } catch (NumberFormatException ex) {
@@ -235,7 +236,7 @@ public class JavaAnalyzer extends ModelAnalyzer {
                     ModelAnalyzer.class.getClassLoader());
             JavaAnalyzer javaAnalyzer = new JavaAnalyzer(classLoader, new LibTypes(true));
             Context.initForTests(javaAnalyzer,
-                    SdkUtil.create(new File(androidHome), 8));
+                    SdkUtil.create(apiVersionsFile, 8));
         } catch (MalformedURLException e) {
             throw new RuntimeException("cannot create class loader", e);
         }

@@ -45,7 +45,7 @@ fun runProcessorTest(
                                         artifactType = CompilerArguments.Type.APPLICATION,
                                         modulePackage = "foo.bar",
                                         minApi = 14,
-                                        sdkDir = tmpFolder.newFolder("sdk"),
+                                        apiFile = null,
                                         dependencyArtifactsDir = tmpFolder.newFolder("dep_artifacts"),
                                         layoutInfoDir = tmpFolder.newFolder("layout_info"),
                                         classLogDir = tmpFolder.newFolder("class_log_dir"),

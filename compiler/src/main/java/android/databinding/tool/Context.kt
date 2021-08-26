@@ -49,7 +49,7 @@ object Context {
         modelAnalyzer = AnnotationAnalyzer(processingEnvironment, libTypes)
         typeUtil = modelAnalyzer!!.createTypeUtil()
         setterStore = SetterStore.create(modelAnalyzer, generationalClassUtil)
-        sdkUtil = SdkUtil.create(args.sdkDir, args.minApi)
+        sdkUtil = SdkUtil.create(args.apiFile, args.minApi)
         resources =
                 parseRTxtFiles(args.localR, args.dependenciesRFiles, args.mergedDependenciesRFile)
     }

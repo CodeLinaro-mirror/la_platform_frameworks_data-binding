@@ -36,8 +36,8 @@ data class CompilerArguments constructor(
     val modulePackage: String,
     val minApi: Int,
 
-    // the SDK directory
-    val sdkDir: File,
+    // the API file from the SDK, might be null if we cannot find the right SDK
+    val apiFile: File?,
 
     // the directory containing artifacts from library dependencies
     val dependencyArtifactsDir: File,
@@ -138,7 +138,10 @@ data class CompilerArguments constructor(
         args[PARAM_ARTIFACT_TYPE] = artifactType.name
         args[PARAM_MODULE_PACKAGE] = modulePackage
         args[PARAM_MIN_API] = minApi.toString()
-        args[PARAM_SDK_DIR] = sdkDir.path
+        apiFile?.let {
+            args[PARAM_API_FILE] = it.path
+        }
+
         args[PARAM_DEPENDENCY_ARTIFACTS_DIR] = dependencyArtifactsDir.path
         args[PARAM_LAYOUT_INFO_DIR] = layoutInfoDir.path
         args[PARAM_CLASS_LOG_DIR] = classLogDir.path
@@ -177,7 +180,7 @@ data class CompilerArguments constructor(
         private const val PARAM_ARTIFACT_TYPE = PREFIX + "artifactType"
         private const val PARAM_MODULE_PACKAGE = PREFIX + "modulePackage"
         private const val PARAM_MIN_API = PREFIX + "minApi"
-        private const val PARAM_SDK_DIR = PREFIX + "sdkDir"
+        private const val PARAM_API_FILE = PREFIX + "apiFile"
         private const val PARAM_DEPENDENCY_ARTIFACTS_DIR = PREFIX + "dependencyArtifactsDir"
         private const val LEGACY_PARAM_DEPENDENCY_ARTIFACTS_DIR = PREFIX + "bindingBuildFolder"
         private const val PARAM_LAYOUT_INFO_DIR = PREFIX + "layoutInfoDir"
@@ -210,7 +213,7 @@ data class CompilerArguments constructor(
             PARAM_ARTIFACT_TYPE,
             PARAM_MODULE_PACKAGE,
             PARAM_MIN_API,
-            PARAM_SDK_DIR,
+            PARAM_API_FILE,
             PARAM_DEPENDENCY_ARTIFACTS_DIR,
             PARAM_LAYOUT_INFO_DIR,
             PARAM_CLASS_LOG_DIR,
@@ -235,7 +238,7 @@ data class CompilerArguments constructor(
                 artifactType = Type.valueOf(options[PARAM_ARTIFACT_TYPE]!!),
                 modulePackage = options[PARAM_MODULE_PACKAGE]!!,
                 minApi = Integer.parseInt(options[PARAM_MIN_API]!!),
-                sdkDir = File(options[PARAM_SDK_DIR]!!),
+                apiFile = options[PARAM_API_FILE]?.let(::File),
                 dependencyArtifactsDir = File(
                         (options[PARAM_DEPENDENCY_ARTIFACTS_DIR] ?:
                         options[LEGACY_PARAM_DEPENDENCY_ARTIFACTS_DIR])!!),
