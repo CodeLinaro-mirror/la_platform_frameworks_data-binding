@@ -143,9 +143,9 @@ maven_library(
         "@maven//:com.googlecode.juniversalchardet.juniversalchardet",
         "@maven//:com.squareup.javapoet",
         "@maven//:commons-io.commons-io",
-        "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
         "@maven//:org.antlr.antlr4",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
 )
 
@@ -223,15 +223,18 @@ maven_library(
     visibility = ["//visibility:public"],
     deps = [
         ":tools.baseLibrary",
-        ":tools.baseLibrarySupport",
         ":tools.compilerCommon",
         "//tools/base/annotations",
         "@maven//:com.google.auto.auto-common",
+        "@maven//:com.google.code.gson.gson",
         "@maven//:com.google.guava.guava",
+        "@maven//:com.googlecode.juniversalchardet.juniversalchardet",
         "@maven//:com.squareup.javapoet",
+        "@maven//:commons-codec.commons-codec",
         "@maven//:commons-io.commons-io",
-        "@maven//:jakarta.xml.bind.jakarta.xml.bind-api",
         "@maven//:org.antlr.antlr4",
+        "@maven//:org.glassfish.jaxb.jaxb-runtime",
+        "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
 )
 
