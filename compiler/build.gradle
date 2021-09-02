@@ -35,7 +35,7 @@ buildscript {
 dependencies {
     implementation project(':dataBinding:compilerCommon')
     implementation project(':dataBinding:baseLibrary')
-    implementation findProject(':base:annotations') ?: 'com.android.tools:annotations:24.5.0'
+    implementation libs.com.android.tools.annotations
     implementation libs.kotlin_stdlib
     implementation libs.auto_common
     implementation libs.javapoet

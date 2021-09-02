@@ -59,7 +59,7 @@ dependencies {
     implementation libs.gson
     // specify a jaxb runtime for j11 compatibility
     implementation libs.jaxb_runtime
-    implementation findProject(':base:annotations') ?: 'com.android.tools:annotations:24.5.0'
+    implementation libs.com.android.tools.annotations
     implementation libs.jetifier_core
     testImplementation libs.junit
     testImplementation libs.compile_testing
