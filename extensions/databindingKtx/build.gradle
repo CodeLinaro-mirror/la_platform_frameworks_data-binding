@@ -55,8 +55,13 @@ dependencies {
     implementation project(':library')
     implementation rootProject.ext.libs.kotlin_stdlib
     api rootProject.ext.libs.coroutines
-    api rootProject.ext.libs.android_arch_lifecycle_extensions
     api rootProject.ext.libs.android_arch_lifecycle_runtime_ktx
+    // some of these lifecycle deps are unnecessary but we are keeping them to stay backwards
+    // compatible with the lifecycle-extensions dependency
+    api rootProject.libs.lifecycle_livedata
+    api rootProject.libs.lifecycle_process
+    api rootProject.libs.lifecycle_service
+    api rootProject.libs.lifecycle_viewmodel
 }
 
 //create jar tasks
