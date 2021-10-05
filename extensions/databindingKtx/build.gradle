@@ -43,6 +43,14 @@ android {
     }
 }
 
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        // Cannot use dataBindingConfig.javaTargetCompatibility here because
+        // its current value is 1.7---which Kotlinc does not support.
+        jvmTarget = "1.6"
+    }
+}
+
 dependencies {
     implementation project(':library')
     implementation rootProject.ext.libs.kotlin_stdlib

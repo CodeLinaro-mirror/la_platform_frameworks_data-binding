@@ -513,7 +513,7 @@ class LayoutBinderWriter(val layoutBinder : LayoutBinder, val libTypes: LibTypes
     }
 
     fun maxIndex(): kotlin.Int {
-        val maxIndex = indices.values.max()
+        val maxIndex = indices.values.maxOrNull()
         if (maxIndex == null) {
             return -1
         } else {
