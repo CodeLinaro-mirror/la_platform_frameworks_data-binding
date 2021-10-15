@@ -224,7 +224,7 @@ private fun XmlResourceReference.toResourceReference(
         null -> moduleRClass
         else -> throw IllegalArgumentException("Unknown namespace: $this")
     }
-    if (getRPackage != null) {
+    if (getRPackage != null && rClassName != ANDROID_R) {
        rClassName = ClassName.get(getRPackage(type, name), "R")
     }
 
