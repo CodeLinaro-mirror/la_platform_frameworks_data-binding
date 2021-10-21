@@ -40,7 +40,6 @@ maven_library(
     name = "tools.baseLibrary",
     srcs = glob(["baseLibrary/src/main/java/**"]),
     coordinates = "androidx.databinding:databinding-common:" + BUILD_VERSION,
-    description = "Shared library between Data Binding runtime lib and compiler",
     javacopts = [
         "-source 6",
         "-target 6",
@@ -54,7 +53,6 @@ maven_library(
     name = "tools.baseLibrarySupport",
     srcs = glob(["baseLibrarySupport/src/main/java/**"]),
     coordinates = "com.android.databinding:baseLibrary:" + BUILD_VERSION,
-    description = "Shared library between Data Binding runtime lib and compiler",
     javacopts = [
         "-source 6",
         "-target 6",
@@ -131,8 +129,6 @@ maven_library(
         "compilerCommon/src/main/**/*.java",
     ]),
     coordinates = "androidx.databinding:databinding-compiler-common:" + BUILD_VERSION,
-    description = "Common library that can be shared between different build tools",
-    module_name = "databinding-compiler-common",
     notice = "compilerCommon/NOTICE",
     resource_strip_prefix = "tools/data-binding",
     resources = [":tools.compilerCommon.resources"],
@@ -218,8 +214,6 @@ maven_library(
         "compiler/src/main/**/*.kt",
     ]),
     coordinates = "androidx.databinding:databinding-compiler:" + BUILD_VERSION,
-    description = "The annotation processor for Data Binding. Generates binding classes for runtime.",
-    module_name = "databinding-compiler",
     notice = "compiler/src/main/resources/NOTICE.txt",
     resource_strip_prefix = "tools/data-binding/compiler/src/main/resources",
     resources = glob(
@@ -371,4 +365,31 @@ alias(
     name = "runtimeLibraries",
     actual = ":data_binding_runtime",
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "agp_gradle_build_files",
+    srcs = glob([
+        "baseLibrary/src/main/java/**",
+        "baseLibrarySupport/src/main/java/**",
+        "compiler/src/main/**/*.java",
+        "compiler/src/main/**/*.kt",
+        "compiler/src/main/resources/**",
+        "compilerCommon/src/main/**/*.java",
+        "compilerCommon/src/main/**/*.kt",
+        "compilerCommon/src/main/resources/**",
+        "integration-tests/*/build.gradle",
+    ]) + [
+        "propLoader.gradle",
+        "build.gradle",
+        "baseLibrary/build.gradle",
+        "baseLibrary/NOTICE",
+        "baseLibrarySupport/build.gradle",
+        "baseLibrarySupport/NOTICE",
+        "compiler/build.gradle",
+        "compilerCommon/build.gradle",
+        "compilerCommon/NOTICE",
+        "databinding.properties",
+    ],
+    visibility = ["//tools/base/build-system:__pkg__"],
 )
