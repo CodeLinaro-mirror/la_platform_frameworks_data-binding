@@ -16,16 +16,16 @@
 
 package android.databinding.tool;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import android.databinding.internal.org.antlr.v4.runtime.ANTLRInputStream;
+import android.databinding.internal.org.antlr.v4.runtime.BaseErrorListener;
+import android.databinding.internal.org.antlr.v4.runtime.CommonTokenStream;
+import android.databinding.internal.org.antlr.v4.runtime.ParserRuleContext;
+import android.databinding.internal.org.antlr.v4.runtime.RecognitionException;
+import android.databinding.internal.org.antlr.v4.runtime.Recognizer;
+import android.databinding.internal.org.antlr.v4.runtime.Token;
+import android.databinding.internal.org.antlr.v4.runtime.tree.ErrorNode;
+import android.databinding.internal.org.antlr.v4.runtime.tree.ParseTreeListener;
+import android.databinding.internal.org.antlr.v4.runtime.tree.TerminalNode;
 
 import android.databinding.parser.BindingExpressionLexer;
 import android.databinding.parser.BindingExpressionParser;

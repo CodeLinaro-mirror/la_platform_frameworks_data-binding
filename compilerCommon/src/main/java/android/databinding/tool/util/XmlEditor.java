@@ -27,11 +27,11 @@ import android.databinding.parser.XMLParser.ElementContext;
 import com.google.common.base.Joiner;
 import com.google.common.xml.XmlEscapers;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import android.databinding.internal.org.antlr.v4.runtime.ANTLRInputStream;
+import android.databinding.internal.org.antlr.v4.runtime.CommonTokenStream;
+import android.databinding.internal.org.antlr.v4.runtime.Token;
+import android.databinding.internal.org.antlr.v4.runtime.misc.NotNull;
+import android.databinding.internal.org.antlr.v4.runtime.tree.TerminalNode;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

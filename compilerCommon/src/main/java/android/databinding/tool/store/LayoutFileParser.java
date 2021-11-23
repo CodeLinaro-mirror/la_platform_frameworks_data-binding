@@ -31,9 +31,9 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.google.common.base.Strings;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
+import android.databinding.internal.org.antlr.v4.runtime.ANTLRInputStream;
+import android.databinding.internal.org.antlr.v4.runtime.CommonTokenStream;
+import android.databinding.internal.org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.io.FileUtils;
 import org.mozilla.universalchardet.UniversalDetector;
 import org.w3c.dom.Document;

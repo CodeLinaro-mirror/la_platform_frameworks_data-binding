@@ -16,8 +16,8 @@
 
 package android.databinding.tool.store;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
+import android.databinding.internal.org.antlr.v4.runtime.ParserRuleContext;
+import android.databinding.internal.org.antlr.v4.runtime.Token;
 
 import android.databinding.tool.processing.scopes.LocationScopeProvider;
 import android.databinding.tool.util.StringUtils;

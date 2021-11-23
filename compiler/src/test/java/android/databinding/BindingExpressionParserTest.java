@@ -37,11 +37,11 @@ import android.databinding.parser.BindingExpressionParser.StringLiteralContext;
 import android.databinding.parser.BindingExpressionParser.TernaryOpContext;
 import android.databinding.parser.BindingExpressionParser.UnaryOpContext;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.NotNull;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import android.databinding.internal.org.antlr.v4.runtime.ANTLRInputStream;
+import android.databinding.internal.org.antlr.v4.runtime.CommonTokenStream;
+import android.databinding.internal.org.antlr.v4.runtime.Token;
+import android.databinding.internal.org.antlr.v4.runtime.misc.NotNull;
+import android.databinding.internal.org.antlr.v4.runtime.tree.TerminalNode;
 import org.junit.Test;
 
 import java.io.StringReader;

@@ -34,10 +34,10 @@ import android.databinding.tool.util.Preconditions;
 import com.android.annotations.NonNull;
 import com.google.common.base.Objects;
 
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import android.databinding.internal.org.antlr.v4.runtime.ParserRuleContext;
+import android.databinding.internal.org.antlr.v4.runtime.tree.ParseTree;
+import android.databinding.internal.org.antlr.v4.runtime.tree.ParseTreeListener;
+import android.databinding.internal.org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

@@ -1,0 +1,2 @@
+rule org.antlr.** android.databinding.internal.org.antlr.@1
+
