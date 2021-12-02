@@ -1,9 +1,9 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_repository", "maven_library")
-load("//tools/base/bazel:utils.bzl", "merged_zip")
+load("//tools/base/bazel:utils.bzl", "java_jarjar", "merged_zip")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
 exports_files(["databinding.properties"])
@@ -64,6 +64,47 @@ maven_library(
     visibility = ["//visibility:public"],
 )
 
+java_jarjar(
+    name = "compilerCommon.antlr_runtime.shaded_jar",
+    srcs = [
+        "//prebuilts/tools/common/m2:antlr4-runtime",
+    ],
+    rules = "jarjar_rules.txt",
+)
+
+# managed by go/iml_to_build
+java_import(
+    name = "compilerCommon.antlr_runtime.shaded",
+    jars = ["//tools/data-binding:compilerCommon.antlr_runtime.shaded_jar.jar"],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "compilerCommon.antlr",
+    srcs = glob([
+        "compilerCommon/src/main/xml-gen/**/*.java",
+        "compilerCommon/src/main/grammar-gen/**/*.java",
+    ]),
+    deps = [
+        "//prebuilts/tools/common/m2:antlr4-runtime",
+    ],
+)
+
+java_jarjar(
+    name = "compilerCommon.antlr.shaded_jar",
+    srcs = [
+        ":compilerCommon.antlr",
+    ],
+    rules = "jarjar_rules.txt",
+)
+
+# managed by go/iml_to_build
+java_import(
+    name = "compilerCommon.antlr.shaded",
+    jars = ["//tools/data-binding:compilerCommon.antlr.shaded_jar.jar"],
+    visibility = ["//visibility:public"],
+)
+
 # managed by go/iml_to_build
 iml_module(
     name = "studio.compilerCommon",
@@ -71,8 +112,6 @@ iml_module(
     srcs = [
         "compilerCommon/src/main/java",
         "compilerCommon/src/main/kotlin",
-        "compilerCommon/src/main/xml-gen",
-        "compilerCommon/src/main/grammar-gen",
     ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
     test_srcs = [
@@ -87,7 +126,8 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
-        "//prebuilts/tools/common/m2:antlr4-runtime",
+        "//tools/data-binding:compilerCommon.antlr_runtime.shaded",
+        "//tools/data-binding:compilerCommon.antlr.shaded",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/data-binding:studio.baseLibrary[module]",
         "//tools/data-binding:studio.baseLibrarySupport[module]",
@@ -127,9 +167,15 @@ fileset(
 maven_library(
     name = "tools.compilerCommon",
     srcs = glob([
-        "compilerCommon/src/main/**/*.kt",
-        "compilerCommon/src/main/**/*.java",
+        "compilerCommon/src/main/java/**/*.java",
+        "compilerCommon/src/main/java/**/*.kt",
+        "compilerCommon/src/main/kotlin/**/*.java",
+        "compilerCommon/src/main/kotlin/**/*.kt",
     ]),
+    bundled_deps = [
+        ":compilerCommon.antlr_runtime.shaded",
+        ":compilerCommon.antlr.shaded",
+    ],
     coordinates = "androidx.databinding:databinding-compiler-common:" + BUILD_VERSION,
     description = "Common library that can be shared between different build tools",
     module_name = "databinding-compiler-common",
@@ -147,7 +193,6 @@ maven_library(
         "@maven//:com.googlecode.juniversalchardet.juniversalchardet",
         "@maven//:com.squareup.javapoet",
         "@maven//:commons-io.commons-io",
-        "@maven//:org.antlr.antlr4",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
     ],
@@ -194,7 +239,8 @@ iml_module(
     ],
     # do not sort: must match IML order
     deps = [
-        "//prebuilts/tools/common/m2:antlr4-runtime",
+        "//tools/data-binding:compilerCommon.antlr_runtime.shaded",
+        "//tools/data-binding:compilerCommon.antlr.shaded",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
         "//tools/data-binding:studio.baseLibrary[module]",
         "//tools/data-binding:studio.baseLibrarySupport[module]",
@@ -214,8 +260,9 @@ iml_module(
 maven_library(
     name = "tools.compiler",
     srcs = glob([
-        "compiler/src/main/**/*.java",
-        "compiler/src/main/**/*.kt",
+        "compiler/src/main/java/**/*.java",
+        "compiler/src/main/java/**/*.kt",
+        "compiler/src/main/kotlin/**/*.kt",
     ]),
     coordinates = "androidx.databinding:databinding-compiler:" + BUILD_VERSION,
     description = "The annotation processor for Data Binding. Generates binding classes for runtime.",
@@ -238,9 +285,34 @@ maven_library(
         "@maven//:com.squareup.javapoet",
         "@maven//:commons-codec.commons-codec",
         "@maven//:commons-io.commons-io",
-        "@maven//:org.antlr.antlr4",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
+    ],
+)
+
+kotlin_test(
+    name = "tools.compiler_tests",
+    srcs = glob([
+        "compiler/src/test/**/*.kt",
+        "compiler/src/test/**/*.java",
+    ]),
+    data = [
+        "//prebuilts/studio/sdk:platform-tools",
+        "//prebuilts/studio/sdk:platforms/latest",
+    ],
+    jvm_flags = ["-Dtest.suite.jar=tests.jar"],
+    test_class = "com.android.testutils.JarTestSuite",
+    runtime_deps = ["//tools/base/testutils:tools.testutils"],
+    deps = [
+        ":tools.baseLibrary",
+        ":tools.compiler",
+        ":tools.compilerCommon",
+        "//tools/base/bazel:langtools",
+        "@maven//:com.google.testing.compile.compile-testing",
+        "@maven//:com.google.truth.truth",
+        "@maven//:commons-io.commons-io",
+        "@maven//:junit.junit",
+        "@maven//:org.mockito.mockito-core",
     ],
 )
 

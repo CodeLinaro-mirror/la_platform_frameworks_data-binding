@@ -64,7 +64,7 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         assertTrue(result.isBuildSuccessful)
         val debugOut = File(
             projectRoot,
-            "app/build/intermediates/incremental/mergeDebugResources/stripped.dir"
+            "app/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir"
         )
         val layoutFiles = FileUtil.listAndSortFiles(
             debugOut, NameFileFilter("main.xml"),

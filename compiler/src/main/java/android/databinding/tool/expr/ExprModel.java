@@ -31,7 +31,7 @@ import android.databinding.tool.util.Preconditions;
 import android.databinding.tool.writer.ExprModelExt;
 import android.databinding.tool.writer.FlagSet;
 
-import org.antlr.v4.runtime.ParserRuleContext;
+import android.databinding.internal.org.antlr.v4.runtime.ParserRuleContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
