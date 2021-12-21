@@ -26,6 +26,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".TestActivity"
+            android:exported="true"
             android:label="@string/title_activity_test_activty"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
