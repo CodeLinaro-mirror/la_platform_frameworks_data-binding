@@ -114,7 +114,7 @@ buildscript {
     }
     ext.dataBindingConfig = databindingProperties
     def supportLibVersion = "1.0.0"
-    def lifecycleVersion = "2.2.0"
+    def lifecycleVersion = "2.4.0"
     ext.libs = [:]
     ext.libs.android_support_annotations = "androidx.annotation:annotation:$supportLibVersion"
     ext.libs.android_support_collection = "androidx.collection:collection:$supportLibVersion"
@@ -195,8 +195,8 @@ subprojects {
             failOnVersionConflict()
 
             preferProjectModules()
-            force 'androidx.lifecycle:lifecycle-viewmodel:2.2.0'
-            force 'androidx.lifecycle:lifecycle-livedata-core:2.2.0'
+            force 'androidx.lifecycle:lifecycle-viewmodel:2.4.0'
+            force 'androidx.lifecycle:lifecycle-livedata-core:2.4.0'
             force 'androidx.fragment:fragment:1.0.0'
         }
     }

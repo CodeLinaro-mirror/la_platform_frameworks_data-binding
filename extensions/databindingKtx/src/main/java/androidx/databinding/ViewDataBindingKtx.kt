@@ -17,11 +17,14 @@
 package androidx.databinding;
 
 import androidx.annotation.RestrictTo
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.lang.ref.ReferenceQueue
 import java.lang.ref.WeakReference
 
@@ -88,9 +91,13 @@ object ViewDataBindingKtx {
 
         private fun startCollection(owner: LifecycleOwner, flow: Flow<Any?>) {
             observerJob?.cancel()
-            observerJob = owner.lifecycleScope.launchWhenCreated {
-                flow.collect {
-                    listener.binder?.handleFieldChange(listener.mLocalFieldId, listener.target, 0)
+            observerJob = owner.lifecycleScope.launch {
+                owner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    flow.collect {
+                        listener.binder?.handleFieldChange(
+                            listener.mLocalFieldId, listener.target, 0
+                        )
+                    }
                 }
             }
         }
