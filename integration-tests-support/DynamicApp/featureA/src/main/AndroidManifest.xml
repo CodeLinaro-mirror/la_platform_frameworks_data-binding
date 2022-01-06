@@ -29,7 +29,7 @@
     </dist:module>
 
     <application>
-        <activity android:name=".FeatureAActivity">
+        <activity android:name=".FeatureAActivity" android:exported="true">
             <intent-filter android:order="1">
                 <action android:name="android.intent.action.VIEW"/>
 
