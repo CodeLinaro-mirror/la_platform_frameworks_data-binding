@@ -72,8 +72,10 @@ java_jarjar(
     rules = "jarjar_rules.txt",
 )
 
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+
 # managed by go/iml_to_build
-java_import(
+jvm_import(
     name = "compilerCommon.antlr_runtime.shaded",
     jars = ["//tools/data-binding:compilerCommon.antlr_runtime.shaded_jar.jar"],
     visibility = ["//visibility:public"],
@@ -99,7 +101,7 @@ java_jarjar(
 )
 
 # managed by go/iml_to_build
-java_import(
+jvm_import(
     name = "compilerCommon.antlr.shaded",
     jars = ["//tools/data-binding:compilerCommon.antlr.shaded_jar.jar"],
     visibility = ["//visibility:public"],
