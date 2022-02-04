@@ -84,18 +84,10 @@ fun parseRTxtFiles(
     val symbolTables = ImmutableList.builder<SymbolTable>()
     // local resources at the front of the list
     symbolTables.add(parseLocalRTxt(localRFile))
-    when {
-        dependenciesRFiles != null -> {
-            // then add the rest of the dependencies, in order
-            dependenciesRFiles.forEach { symbolTables.add(parsePackageAwareRTxt(it)) }
-        }
-        mergedDependenciesRFile != null -> {
-            parseMergedPackageAwareRTxt(mergedDependenciesRFile, symbolTables)
-        }
-        else -> {
-            error("Unexpected error: Missing dependency resources")
-        }
-    }
+
+    // then add the rest of the dependencies, in order
+    dependenciesRFiles?.forEach { symbolTables.add(parsePackageAwareRTxt(it)) }
+    mergedDependenciesRFile?.let { parseMergedPackageAwareRTxt(it, symbolTables) }
 
     return Resources(symbolTables.build())
 }

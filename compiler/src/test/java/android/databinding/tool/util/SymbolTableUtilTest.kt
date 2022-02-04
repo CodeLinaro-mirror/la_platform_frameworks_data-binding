@@ -17,11 +17,13 @@
 package android.databinding.tool.util
 
 import com.google.common.collect.ImmutableList
+import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.lang.IllegalStateException
 import java.nio.file.Files
+import kotlin.test.assertFailsWith
 
 class SymbolTableUtilTest {
 
@@ -114,6 +116,30 @@ class SymbolTableUtilTest {
 
         assertEquals(result.getRPackagePrefix(null, "string", "first"), "")
         assertEquals(result.getRPackagePrefix(null, "string", "second"), "com.test.lib.")
+        assertEquals(result.getRPackagePrefix("android", "string", "not_found"), "android.")
+    }
+
+    @Test
+    fun testParsingWithEmptyDependencies() {
+        val localFile = Files.createTempFile("local", "R.txt")
+        Files.write(
+            localFile,
+            """
+                // This is a comment expected in package-aware R.txt
+                local
+                string first
+                """.trimIndent().toByteArray())
+        val result =
+            parseRTxtFiles(localFile.toFile(), null, null)
+
+        assertEquals(result.symbolTables!!.size, 1)
+        assertEquals(result.symbolTables!![0].rPackage, "")
+
+        assertEquals(result.getRPackagePrefix(null, "string", "first"), "")
+        val failure = assertFailsWith<Exception> {
+            result.getRPackagePrefix(null, "string", "second")
+        }
+        assertThat(failure).hasMessageThat().contains("not found")
         assertEquals(result.getRPackagePrefix("android", "string", "not_found"), "android.")
     }
 
