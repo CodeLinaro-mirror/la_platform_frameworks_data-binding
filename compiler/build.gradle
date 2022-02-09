@@ -48,6 +48,7 @@ dependencies {
     implementation libs.juniversalchardet
     implementation libs.jaxb_runtime
     testImplementation libs.junit
+    testImplementation libs.kotlin_test
     testImplementation libs.mockito_core
     testImplementation libs.compile_testing
     testImplementation libs.truth
