@@ -59,16 +59,11 @@ buildscript {
     def autoConfigured = !gradle.startParameter.getInitScripts().isEmpty() && !runningInIde
     ext.autoConfigured = autoConfigured
 
-    def TOOLS_VERSION = project.providers.environmentVariable("VERSION")
-            .forUseAtConfigurationTime()
-            .orElse(buildToolsProperties.get("buildVersion").toString())
-            .get()
-    def OUT_REPO = project.providers.environmentVariable("OUT_REPO")
-            .forUseAtConfigurationTime()
-            .orElse(project.providers.environmentVariable("BUILD_DIR").forUseAtConfigurationTime())
-            .orNull
-    def MAVEN_REPO = project.providers.environmentVariable("MAVEN_REPO").forUseAtConfigurationTime().orNull
-    def PREBUILTS_REPO = project.providers.environmentVariable("PREBUILTS_REPO").forUseAtConfigurationTime().orNull
+    def TOOLS_VERSION =
+            System.getenv("VERSION") ?: buildToolsProperties.get("buildVersion").toString()
+    def OUT_REPO = System.getenv("OUT_REPO") ?: System.getenv("BUILD_DIR")
+    def MAVEN_REPO = System.getenv("MAVEN_REPO")
+    def PREBUILTS_REPO = System.getenv("PREBUILTS_REPO")
     if (runningInIde) {
         Properties devVersions = new Properties()
         devVersions.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
@@ -161,9 +156,9 @@ task createArchive(type: Zip) {
 }
 
 subprojects {
-    def BUILD_DIR = project.providers.environmentVariable("BUILD_DIR").forUseAtConfigurationTime()
-    if (BUILD_DIR.isPresent()) {
-        buildDir = new File(BUILD_DIR.get(), "$name-build")
+    def BUILD_DIR = System.getenv("BUILD_DIR")
+    if (BUILD_DIR != null) {
+        buildDir = new File(BUILD_DIR, "$name-build")
     }
     if (project.path == ":doclava") {
         return
