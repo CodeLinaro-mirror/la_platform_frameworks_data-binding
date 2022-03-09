@@ -17,6 +17,7 @@
 apply plugin: 'com.android.application'
 
 android {
+    namespace "com.example.viewbinding"
     compileSdkVersion rootProject.latestCompileSdk
 
     defaultConfig {

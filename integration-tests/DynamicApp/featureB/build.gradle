@@ -17,6 +17,7 @@
 apply plugin: 'com.android.dynamic-feature'
 
 android {
+    namespace "com.example.android.dynamicapp.featureB"
     compileSdkVersion rootProject.latestCompileSdk
     defaultConfig {
         minSdkVersion 14
