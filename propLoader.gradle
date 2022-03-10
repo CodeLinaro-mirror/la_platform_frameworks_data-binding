@@ -1,6 +1,5 @@
 boolean getBooleanValue(Project proj, String propertyName, boolean defaultValue) {
     return proj.providers.gradleProperty(propertyName)
-            .forUseAtConfigurationTime()
             .map { Boolean.valueOf(it) }
             .orElse(defaultValue)
             .get()

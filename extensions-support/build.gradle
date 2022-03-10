@@ -56,13 +56,12 @@ buildscript {
     ext.autoConfigured = autoConfigured
 
 
-    def TOOLS_VERSION = project.providers.environmentVariable("VERSION").forUseAtConfigurationTime().orElse(buildToolsProperties.get("buildVersion").toString()).get()
+    def TOOLS_VERSION = project.providers.environmentVariable("VERSION").orElse(buildToolsProperties.get("buildVersion").toString()).get()
     def OUT_REPO = project.providers.environmentVariable("OUT_REPO")
-            .forUseAtConfigurationTime()
-            .orElse(project.providers.environmentVariable("BUILD_DIR").forUseAtConfigurationTime())
+            .orElse(project.providers.environmentVariable("BUILD_DIR"))
             .orNull
-    def MAVEN_REPO = project.providers.environmentVariable("MAVEN_REPO").forUseAtConfigurationTime().orNull
-    def PREBUILTS_REPO = project.providers.environmentVariable("PREBUILTS_REPO").forUseAtConfigurationTime().orNull
+    def MAVEN_REPO = project.providers.environmentVariable("MAVEN_REPO").orNull
+    def PREBUILTS_REPO = project.providers.environmentVariable("PREBUILTS_REPO").orNull
     if (runningInIde) {
         Properties devVersions = new Properties()
         devVersions.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
@@ -145,9 +144,9 @@ task createArchive(type: Zip) {
 }
 
 subprojects {
-    def BUILD_DIR = project.providers.environmentVariable("BUILD_DIR").forUseAtConfigurationTime()
-    if (BUILD_DIR.isPresent()) {
-        buildDir = new File(BUILD_DIR.get(), "$name-build")
+    def BUILD_DIR = System.getenv("BUILD_DIR")
+    if (BUILD_DIR != null) {
+        buildDir = new File(BUILD_DIR, "$name-build")
     }
     if (project.path == ":doclava") {
         return
