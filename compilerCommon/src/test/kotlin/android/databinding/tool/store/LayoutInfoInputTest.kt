@@ -379,7 +379,7 @@ class LayoutInfoInputTest {
                         outOfDate = added,
                         removed = removed,
                         infoFolder = infoFolder,
-                        dependencyClassesFolder = dependencyClassFolder,
+                        dependencyClassesFolders = listOf(dependencyClassFolder),
                         incremental = incremental,
                         logFolder = baseBinderLogFolder,
                         artifactFolder = artifactFolder,

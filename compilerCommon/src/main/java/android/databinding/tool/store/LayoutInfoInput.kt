@@ -61,7 +61,7 @@ class LayoutInfoInput(val args: Args) {
     }
 
     val deps by lazy(LazyThreadSafetyMode.NONE) {
-        val v2 = ResourceBundle.loadClassInfoFromFolder(args.dependencyClassesFolder)
+        val v2 = ResourceBundle.loadClassInfoFromFolders(args.dependencyClassesFolders)
         args.v1ArtifactsFolder?.let {
             val v1 = V1CompatLayoutInfoLoader().load(it)
             v2.addAll(v1)
@@ -157,7 +157,7 @@ class LayoutInfoInput(val args: Args) {
     data class Args(val outOfDate: List<File>,
                     val removed: List<File>,
                     val infoFolder: File,
-                    val dependencyClassesFolder: File,
+                    val dependencyClassesFolders: List<File>,
                     val artifactFolder: File,
                     val logFolder: File,
                     val packageName : String,
