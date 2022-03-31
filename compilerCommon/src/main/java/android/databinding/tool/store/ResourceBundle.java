@@ -189,37 +189,44 @@ public class ResourceBundle implements Serializable {
      * in previous steps.
      */
     public static GenClassInfoLog loadClassInfoFromFolder(File folder) throws IOException {
+        return loadClassInfoFromFolders(Collections.singletonList(folder));
+    }
+
+    public static GenClassInfoLog loadClassInfoFromFolders(List<File> folders) throws IOException {
         GenClassInfoLog merged = new GenClassInfoLog();
         // blaze might pass a zip instead of a folder
-        if (folder.isFile()) { //bazel
-            // unzip it into a tmp folder and use it.
-            try (ZipFile zipFile = new ZipFile(folder)) {
-                zipFile.stream().forEach(zipEntry -> {
-                    if (zipEntry.getName().endsWith(DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX)) {
-                        try {
-                            merged.addAll(GenClassInfoLog.fromInputStream(zipFile.getInputStream
-                                    (zipEntry)));
-                        } catch (IOException e) {
-                            L.e(
-                                    e,
-                                    "failed to read gen class info log from entry %s",
-                                    zipEntry.getName());
+        for (File folder: folders) {
+            if (folder.isFile()) { //bazel
+                // unzip it into a tmp folder and use it.
+                try (ZipFile zipFile = new ZipFile(folder)) {
+                    zipFile.stream().forEach(zipEntry -> {
+                        if (zipEntry.getName()
+                                .endsWith(DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX)) {
+                            try {
+                                merged.addAll(GenClassInfoLog.fromInputStream(zipFile.getInputStream
+                                        (zipEntry)));
+                            } catch (IOException e) {
+                                L.e(
+                                        e,
+                                        "failed to read gen class info log from entry %s",
+                                        zipEntry.getName());
+                            }
                         }
-                    }
-                });
+                    });
+                }
+            } else if (folder.isDirectory()) {
+                SuffixFileFilter fileFilter = new SuffixFileFilter(
+                        DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
+                        IOCase.SYSTEM);
+                List<File> files = FileUtil.listAndSortFiles(folder, fileFilter,
+                        TrueFileFilter.INSTANCE);
+                for (File file : files) {
+                    merged.addAll(GenClassInfoLog.fromFile(file));
+                }
+            } else {
+                // happens w/ blaze
+                L.w("no info log is passed. There are no resources?");
             }
-        } else if (folder.isDirectory()){
-            SuffixFileFilter fileFilter = new SuffixFileFilter(
-                DataBindingBuilder.BINDING_CLASS_LIST_SUFFIX,
-                IOCase.SYSTEM);
-            List<File> files = FileUtil.listAndSortFiles(folder, fileFilter,
-                TrueFileFilter.INSTANCE);
-            for (File file : files) {
-                merged.addAll(GenClassInfoLog.fromFile(file));
-            }
-        } else {
-            // happens w/ blaze
-            L.w("no info log is passed. There are no resources?");
         }
         return merged;
     }

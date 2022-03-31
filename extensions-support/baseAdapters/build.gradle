@@ -16,6 +16,7 @@
 apply plugin: 'com.android.library'
 
 android {
+    namespace "com.android.databinding.library.baseAdapters"
     compileSdkVersion dataBindingConfig.compileSdkVersion
     buildToolsVersion dataBindingConfig.buildToolsVersion
     buildFeatures {

@@ -13,8 +13,7 @@
   ~ limitations under the License.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="android.databinding.test.independentlibrary">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application android:allowBackup="true"
                  android:label="@string/app_name">
