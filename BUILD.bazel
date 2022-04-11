@@ -41,10 +41,7 @@ maven_library(
     srcs = glob(["baseLibrary/src/main/java/**"]),
     coordinates = "androidx.databinding:databinding-common:" + BUILD_VERSION,
     description = "Shared library between Data Binding runtime lib and compiler",
-    javacopts = [
-        "-source 6",
-        "-target 6",
-    ],
+    javacopts = ["--release 8"],
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
     visibility = ["//visibility:public"],
@@ -55,10 +52,7 @@ maven_library(
     srcs = glob(["baseLibrarySupport/src/main/java/**"]),
     coordinates = "com.android.databinding:baseLibrary:" + BUILD_VERSION,
     description = "Shared library between Data Binding runtime lib and compiler",
-    javacopts = [
-        "-source 6",
-        "-target 6",
-    ],
+    javacopts = ["--release 8"],
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
     visibility = ["//visibility:public"],
