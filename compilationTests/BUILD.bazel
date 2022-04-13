@@ -5,6 +5,7 @@ load("//tools/base/bazel:maven.bzl", "maven_repository")
 iml_module(
     name = "studio.compilationTests",
     iml_files = ["db-compilationTests.iml"],
+    jvm_target = "8",
     tags = [
         "no_test_mac",  # b/178123368
         "no_test_windows",  # b/177936851
