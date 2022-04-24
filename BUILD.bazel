@@ -13,6 +13,7 @@ iml_module(
     name = "studio.baseLibrary",
     srcs = ["baseLibrary/src/main/java"],
     iml_files = ["baseLibrary/db-baseLibrary.iml"],
+    jvm_target = "8",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
@@ -27,6 +28,7 @@ iml_module(
     name = "studio.baseLibrarySupport",
     srcs = ["baseLibrarySupport/src/main/java"],
     iml_files = ["baseLibrarySupport/db-baseLibrarySupport.iml"],
+    jvm_target = "8",
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
@@ -110,6 +112,7 @@ iml_module(
         "compilerCommon/src/main/kotlin",
     ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
+    jvm_target = "8",
     test_srcs = [
         "compilerCommon/src/test/java",
         "compilerCommon/src/test/kotlin",
@@ -221,6 +224,7 @@ iml_module(
         "compiler/src/main/kotlin",
     ],
     iml_files = ["compiler/db-compiler.iml"],
+    jvm_target = "8",
     resources = ["compiler/src/main/resources"],
     test_data = [
         "//prebuilts/studio/sdk:platforms/latest",
