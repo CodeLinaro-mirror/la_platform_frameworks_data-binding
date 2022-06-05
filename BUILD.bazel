@@ -242,6 +242,7 @@ iml_module(
         "//tools/data-binding:compilerCommon.antlr_runtime.shaded",
         "//tools/data-binding:compilerCommon.antlr.shaded",
         "//prebuilts/studio/intellij-sdk:studio-sdk",
+        "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
         "//tools/data-binding:studio.baseLibrary[module]",
         "//tools/data-binding:studio.baseLibrarySupport[module]",
         "//tools/base/annotations:studio.android.sdktools.android-annotations[module]",
