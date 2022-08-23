@@ -46,7 +46,7 @@ private const val TEST_DATA_PATH = "tools/data-binding/compilationTests/testData
 
 private val pattern: Pattern = Pattern.compile("!@\\{([A-Za-z0-9_-]*)}")
 
-const val KEY_MANIFEST_PACKAGE = "PACKAGE"
+const val KEY_NAMESPACE = "NAMESPACE"
 const val KEY_DEPENDENCIES = "DEPENDENCIES"
 const val KEY_SETTINGS_INCLUDES = "SETTINGS_INCLUDES"
 const val DEFAULT_APP_PACKAGE = "com.android.databinding.compilationTest.test"
@@ -193,7 +193,7 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
      * depending on the key.
      *
      * If key is [KEY_DEPENDENCIES], then append the replacement.
-     * If key is [KEY_MANIFEST_PACKAGE] or [KEY_SETTINGS_INCLUDES],
+     * If key is [KEY_NAMESPACE] or [KEY_SETTINGS_INCLUDES],
      *   then put if value doesn't already exist.
      */
     private fun appendTestReplacements(
@@ -205,8 +205,8 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
         } else {
             mutableMap[KEY_DEPENDENCIES] = TEST_DEPENDENCIES
         }
-        if (!mutableMap.containsKey(KEY_MANIFEST_PACKAGE)) {
-            mutableMap[KEY_MANIFEST_PACKAGE] = DEFAULT_APP_PACKAGE
+        if (!mutableMap.containsKey(KEY_NAMESPACE)) {
+            mutableMap[KEY_NAMESPACE] = DEFAULT_APP_PACKAGE
         }
         if (!mutableMap.containsKey(KEY_SETTINGS_INCLUDES)) {
             mutableMap[KEY_SETTINGS_INCLUDES] = DEFAULT_SETTINGS_GRADLE

@@ -59,7 +59,7 @@ class TooManyLayoutsTest : DataBindingCompilationTestCase() {
             )
         )
         (0 until moduleCount).forEach {
-            loadModule("module$it", mapOf(KEY_MANIFEST_PACKAGE to "com.example.module$it"))
+            loadModule("module$it", mapOf(KEY_NAMESPACE to "com.example.module$it"))
             (0 until layoutsPerModule).forEach { layoutId ->
                 copyTestData(
                     "layout/basic_layout.xml",
@@ -97,7 +97,7 @@ class TooManyLayoutsTest : DataBindingCompilationTestCase() {
             loadModule(
                 "module$it",
                 mapOf(
-                    KEY_MANIFEST_PACKAGE to "com.example.module$it",
+                    KEY_NAMESPACE to "com.example.module$it",
                     KEY_DEPENDENCIES to deps
                 )
             ) // add dependency ?

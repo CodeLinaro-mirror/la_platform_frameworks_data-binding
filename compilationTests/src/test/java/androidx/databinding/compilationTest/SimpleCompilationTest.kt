@@ -253,7 +253,7 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
                 KEY_SETTINGS_INCLUDES to "include ':app'\ninclude ':module1'"
             )
         )
-        loadModule("module1", mapOf(KEY_MANIFEST_PACKAGE to "com.example.module1"))
+        loadModule("module1", mapOf(KEY_NAMESPACE to "com.example.module1"))
         copyTestData("layout/basic_layout.xml", "module1/src/main/res/layout/module_layout.xml")
         copyTestData("layout/basic_layout.xml", "app/src/main/res/layout/app_layout.xml")
 
@@ -335,7 +335,7 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         loadModule(
             "module1", mapOf(
                 KEY_DEPENDENCIES to "implementation 'com.android.support:appcompat-v7:23.1.1'",
-                KEY_MANIFEST_PACKAGE to "com.example.module1"
+                KEY_NAMESPACE to "com.example.module1"
             )
         )
         copyTestData("layout/basic_layout.xml", "module1/src/main/res/layout/module_layout.xml")
@@ -361,10 +361,10 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
             "module1",
             mapOf(
                 KEY_DEPENDENCIES to "implementation project(':module2')",
-                KEY_MANIFEST_PACKAGE to "com.example.module1"
+                KEY_NAMESPACE to "com.example.module1"
             )
         )
-        loadModule("module2", mapOf(KEY_MANIFEST_PACKAGE to "com.example.module2"))
+        loadModule("module2", mapOf(KEY_NAMESPACE to "com.example.module2"))
         copyTestData(
             "layout/basic_layout.xml",
             "module2/src/main/res/layout/module2_layout.xml"
