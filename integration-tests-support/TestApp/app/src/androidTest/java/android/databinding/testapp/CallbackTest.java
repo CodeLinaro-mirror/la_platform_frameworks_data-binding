@@ -36,13 +36,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(AndroidJUnit4.class)
@@ -70,7 +70,7 @@ public class CallbackTest {
         mBindingRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                verifyZeroInteractions(mObj);
+                verifyNoInteractions(mObj);
             }
         });
 
@@ -151,7 +151,7 @@ public class CallbackTest {
 
             }
         });
-        verifyZeroInteractions(mObj);
+        verifyNoInteractions(mObj);
     }
 
     // long click
@@ -285,12 +285,12 @@ public class CallbackTest {
         mBindingRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                verifyZeroInteractions(objects);
+                verifyNoInteractions(objects);
                 mBinding.view7.performClick();
                 verify(objects[1]).onClick(mBinding.view7);
                 mBinding.view7.performLongClick();
                 verify(objects[2]).onLongClick(mBinding.view7);
-                verifyZeroInteractions(objects[0]);
+                verifyNoInteractions(objects[0]);
             }
         });
     }
