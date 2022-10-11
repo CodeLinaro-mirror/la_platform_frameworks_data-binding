@@ -135,7 +135,7 @@ task createArchive(type: Zip) {
             " project, without any history from prebuilts."
     from dataBindingConfig.maven.out_repo
     if (dataBindingConfig.maven.zip_out != null) {
-        destinationDir dataBindingConfig.maven.zip_out
+        destinationDirectory.set(dataBindingConfig.maven.zip_out)
     }
     archiveBaseName.set("dataBindingRuntimeRepo")
     doLast {
