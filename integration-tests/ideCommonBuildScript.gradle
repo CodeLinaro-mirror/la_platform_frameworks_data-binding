@@ -7,7 +7,7 @@ rootProject.buildscript {
     String bundledKotlinVersion= kotlinStdLibProperty.substring(kotlinStdLibProperty.lastIndexOf(":")+1)
 
     apply from: "${rootProject.ext.checkoutDir}/tools/buildSrc/base/version.gradle"
-    rootProject.ext.latestCompileSdk = 32
+    rootProject.ext.latestCompileSdk = 33
     rootProject.ext.buildToolsVersion = "29.0.2"
     rootProject.ext.kotlinVersion = bundledKotlinVersion
 
