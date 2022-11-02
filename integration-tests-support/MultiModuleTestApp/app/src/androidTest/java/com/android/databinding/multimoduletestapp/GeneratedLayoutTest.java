@@ -38,7 +38,7 @@ public class GeneratedLayoutTest {
             public void run() {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
-                View view = inflater.inflate(R.layout.library_layout, null);
+                View view = inflater.inflate(android.databinding.test.independentlibrary.R.layout.library_layout, null);
                 // force override tag
                 view.setTag("layout/library_layout_0");
                 ViewDataBinding bind = DataBindingUtil.bind(view);
@@ -55,7 +55,7 @@ public class GeneratedLayoutTest {
             public void run() {
                 LayoutInflater inflater = LayoutInflater.from(
                         InstrumentationRegistry.getTargetContext());
-                View view = inflater.inflate(R.layout.library_layout, null);
+                View view = inflater.inflate(android.databinding.test.independentlibrary.R.layout.library_layout, null);
                 // force override tag
                 view.setTag("layout-sw600dp-land/library_layout_0");
                 ViewDataBinding bind = DataBindingUtil.bind(view);
