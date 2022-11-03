@@ -19,6 +19,7 @@ import android.databinding.tool.processing.ErrorMessages
 import android.databinding.tool.processing.ScopedException
 import android.databinding.tool.util.FileUtil
 import com.google.common.base.Joiner
+import com.google.common.truth.Truth.assertThat
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.NameFileFilter
 import org.apache.commons.io.filefilter.PrefixFileFilter
@@ -385,7 +386,10 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         val result = assembleDebug()
         Assert.assertNotEquals(0, result.resultCode.toLong())
         val errors = ScopedException.extractErrors(result.error)
-        Assert.assertEquals(result.error, 1, errors.size.toLong())
+
+        // mergeDebugResources and packageDebugResources might both generate the same error, so we
+        // take the first error
+        assertThat(errors).isNotEmpty()
         val ex = errors[0]
         val report = ex.scopedErrorReport
         val errorFile = requireErrorFile(report)
