@@ -48,7 +48,7 @@ buildscript {
     Properties databindingProperties = new Properties()
     databindingProperties.load(new FileInputStream("$projectDir/../databinding.properties"))
     Properties buildToolsProperties = new Properties()
-    buildToolsProperties.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
+    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/version.bzl"))
 
     def runningInIde = project.hasProperty('android.injected.invoked.from.ide')
     // this is done by bazel but if we are in IDE it also configures so we need to distinguish
@@ -56,18 +56,14 @@ buildscript {
     ext.autoConfigured = autoConfigured
 
 
-    def TOOLS_VERSION = project.providers.environmentVariable("VERSION").orElse(buildToolsProperties.get("buildVersion").toString()).get()
+    def TOOLS_VERSION = project.providers.environmentVariable("VERSION").orElse(buildToolsProperties.get("BUILD_VERSION").toString()).get() - '"' - '"'
     def OUT_REPO = project.providers.environmentVariable("OUT_REPO")
             .orElse(project.providers.environmentVariable("BUILD_DIR"))
             .orNull
     def MAVEN_REPO = project.providers.environmentVariable("MAVEN_REPO").orNull
     def PREBUILTS_REPO = project.providers.environmentVariable("PREBUILTS_REPO").orNull
     if (runningInIde) {
-        Properties devVersions = new Properties()
-        devVersions.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
-        // invoked in the IDE, go w/ defaults.
-        TOOLS_VERSION = devVersions.buildVersion
-        if (TOOLS_VERSION .contains('-')) {
+        if (TOOLS_VERSION.contains('-')) {
             TOOLS_VERSION = TOOLS_VERSION .substring(0, TOOLS_VERSION.indexOf('-')) + "-dev"
         }
         MAVEN_REPO = MAVEN_REPO ?: "${projectDir}/../../../out/repo"

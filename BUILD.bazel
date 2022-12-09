@@ -2,7 +2,7 @@ load("//tools/base/bazel:bazel.bzl", "iml_module")
 load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
 load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
-load("//tools/base/bazel:maven.bzl", "maven_repository", "maven_library")
+load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
 load("//tools/base/bazel:utils.bzl", "java_jarjar", "merged_zip")
 load("//tools/base/common:version.bzl", "BUILD_VERSION")
 
@@ -142,7 +142,7 @@ iml_module(
 merged_properties(
     name = "data_binding_version_info",
     srcs = [
-        "//tools/buildSrc/base:version.properties",
+        "//tools/base/common/version/com/android:version.properties",
         "//tools/data-binding:databinding.properties",
     ],
     mappings = [
@@ -352,7 +352,7 @@ gradle_build(
         "//prebuilts/studio/sdk:platforms/latest",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:build-tools/latest",
-        "//tools/buildSrc/base:version.properties",
+        "//tools/base/common:agp_gradle_build_files",
         "//tools/buildSrc/base:dependencies.properties",
         "//tools/data-binding:databinding.properties",
     ] + glob(
@@ -389,7 +389,7 @@ gradle_build(
         "//prebuilts/studio/sdk:platforms/latest",
         "//prebuilts/studio/sdk:platform-tools",
         "//prebuilts/studio/sdk:build-tools/latest",
-        "//tools/buildSrc/base:version.properties",
+        "//tools/base/common:agp_gradle_build_files",
         "//tools/data-binding:databinding.properties",
     ] + glob(
         ["extensions-support/**"],

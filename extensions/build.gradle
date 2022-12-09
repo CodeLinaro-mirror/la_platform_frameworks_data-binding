@@ -50,7 +50,7 @@ buildscript {
     Properties databindingProperties = new Properties()
     databindingProperties.load(new FileInputStream("$projectDir/../databinding.properties"))
     Properties buildToolsProperties = new Properties()
-    buildToolsProperties.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
+    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/version.bzl"))
     Properties dependencyProperties = new Properties()
     dependencyProperties.load(new FileInputStream("$projectDir/../../buildSrc/base/dependencies.properties"))
 
@@ -60,15 +60,11 @@ buildscript {
     ext.autoConfigured = autoConfigured
 
     def TOOLS_VERSION =
-            System.getenv("VERSION") ?: buildToolsProperties.get("buildVersion").toString()
+            System.getenv("VERSION") ?: buildToolsProperties.get("BUILD_VERSION").toString() - '"' - '"'
     def OUT_REPO = System.getenv("OUT_REPO") ?: System.getenv("BUILD_DIR")
     def MAVEN_REPO = System.getenv("MAVEN_REPO")
     def PREBUILTS_REPO = System.getenv("PREBUILTS_REPO")
     if (runningInIde) {
-        Properties devVersions = new Properties()
-        devVersions.load(new FileInputStream("$projectDir/../../buildSrc/base/version.properties"))
-        // invoked in the IDE, go w/ defaults.
-        TOOLS_VERSION = devVersions.buildVersion
         if (TOOLS_VERSION .contains('-')) {
             TOOLS_VERSION = TOOLS_VERSION .substring(0, TOOLS_VERSION.indexOf('-')) + "-dev"
         }
