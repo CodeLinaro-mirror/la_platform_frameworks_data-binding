@@ -4,7 +4,7 @@ load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
 load("//tools/base/bazel:utils.bzl", "java_jarjar", "merged_zip")
-load("//tools/base/common:version.bzl", "BUILD_VERSION")
+load("//tools/base/common:version.bzl", "BUILD_VERSION", "DEV_BUILD_VERSION", "RELEASE_BUILD_VERSION")
 
 exports_files(["databinding.properties"])
 
@@ -348,6 +348,15 @@ maven_repository(
     ],
 )
 
+GRADLE_PROPERTIES = select({
+    "//tools/base/bazel:release": {
+        "version": RELEASE_BUILD_VERSION,
+    },
+    "//conditions:default": {
+        "version": DEV_BUILD_VERSION,
+    },
+})
+
 gradle_build(
     name = "runtimeLibrariesAndroidX",
     build_file = "extensions/build.gradle",
@@ -371,6 +380,7 @@ gradle_build(
             "extensions/gradlew.bat",
         ],
     ),
+    gradle_properties = GRADLE_PROPERTIES,
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_androidx.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",
@@ -407,6 +417,7 @@ gradle_build(
             "extensions-support/gradlew.bat",
         ],
     ),
+    gradle_properties = GRADLE_PROPERTIES,
     max_workers = 1,  # b/155772061
     output_file = "data_binding_runtime_support.zip",
     output_file_source = "local_repo_zip/dataBindingRuntimeRepo.zip",

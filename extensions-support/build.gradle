@@ -48,7 +48,7 @@ buildscript {
     Properties databindingProperties = new Properties()
     databindingProperties.load(new FileInputStream("$projectDir/../databinding.properties"))
     Properties buildToolsProperties = new Properties()
-    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/version.bzl"))
+    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/release_version.bzl"))
 
     def runningInIde = project.hasProperty('android.injected.invoked.from.ide')
     // this is done by bazel but if we are in IDE it also configures so we need to distinguish
@@ -56,7 +56,7 @@ buildscript {
     ext.autoConfigured = autoConfigured
 
 
-    def TOOLS_VERSION = project.providers.environmentVariable("VERSION").orElse(buildToolsProperties.get("BUILD_VERSION").toString()).get() - '"' - '"'
+    def TOOLS_VERSION = project.providers.gradleProperty("version").orElse(project.providers.environmentVariable("VERSION")).orElse(buildToolsProperties.get("BUILD_VERSION").toString()).get() - '"' - '"'
     def OUT_REPO = project.providers.environmentVariable("OUT_REPO")
             .orElse(project.providers.environmentVariable("BUILD_DIR"))
             .orNull
