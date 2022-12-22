@@ -41,22 +41,24 @@ iml_module(
 maven_library(
     name = "tools.baseLibrary",
     srcs = glob(["baseLibrary/src/main/java/**"]),
-    coordinates = "androidx.databinding:databinding-common:" + BUILD_VERSION,
+    coordinates = "androidx.databinding:databinding-common",
     description = "Shared library between Data Binding runtime lib and compiler",
     javacopts = ["--release 8"],
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
 )
 
 maven_library(
     name = "tools.baseLibrarySupport",
     srcs = glob(["baseLibrarySupport/src/main/java/**"]),
-    coordinates = "com.android.databinding:baseLibrary:" + BUILD_VERSION,
+    coordinates = "com.android.databinding:baseLibrary",
     description = "Shared library between Data Binding runtime lib and compiler",
     javacopts = ["--release 8"],
     notice = "baseLibrary/NOTICE",
     resource_strip_prefix = "tools/data-binding/baseLibrary",
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
 )
 
@@ -175,12 +177,13 @@ maven_library(
         ":compilerCommon.antlr_runtime.shaded",
         ":compilerCommon.antlr.shaded",
     ],
-    coordinates = "androidx.databinding:databinding-compiler-common:" + BUILD_VERSION,
+    coordinates = "androidx.databinding:databinding-compiler-common",
     description = "Common library that can be shared between different build tools",
     module_name = "databinding-compiler-common",
     notice = "compilerCommon/NOTICE",
     resource_strip_prefix = "tools/data-binding",
     resources = [":tools.compilerCommon.resources"],
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         ":tools.baseLibrary",
@@ -265,7 +268,7 @@ maven_library(
         "compiler/src/main/java/**/*.kt",
         "compiler/src/main/kotlin/**/*.kt",
     ]),
-    coordinates = "androidx.databinding:databinding-compiler:" + BUILD_VERSION,
+    coordinates = "androidx.databinding:databinding-compiler",
     description = "The annotation processor for Data Binding. Generates binding classes for runtime.",
     module_name = "databinding-compiler",
     notice = "compiler/src/main/resources/NOTICE.txt",
@@ -274,6 +277,7 @@ maven_library(
         include = ["compiler/src/main/resources/**"],
         exclude = ["compiler/src/main/resources/NOTICE.txt"],
     ),
+    version = BUILD_VERSION,
     visibility = ["//visibility:public"],
     deps = [
         ":tools.baseLibrary",

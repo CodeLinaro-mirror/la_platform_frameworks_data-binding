@@ -71,7 +71,7 @@ android.libraryVariants.all { variant ->
     def suffix = name.capitalize()
 
     def sourcesJarTask = project.tasks.create(name: "sourceJar${suffix}", type: Jar) {
-        classifier = 'sources'
+        archiveClassifier.set('sources')
         from android.sourceSets.main.java.srcDirs
     }
 }
