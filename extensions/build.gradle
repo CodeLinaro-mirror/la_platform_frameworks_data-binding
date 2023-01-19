@@ -50,7 +50,7 @@ buildscript {
     Properties databindingProperties = new Properties()
     databindingProperties.load(new FileInputStream("$projectDir/../databinding.properties"))
     Properties buildToolsProperties = new Properties()
-    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/version.bzl"))
+    buildToolsProperties.load(new FileInputStream("$projectDir/../../base/common/release_version.bzl"))
     Properties dependencyProperties = new Properties()
     dependencyProperties.load(new FileInputStream("$projectDir/../../buildSrc/base/dependencies.properties"))
 
@@ -59,8 +59,7 @@ buildscript {
     def autoConfigured = !gradle.startParameter.getInitScripts().isEmpty() && !runningInIde
     ext.autoConfigured = autoConfigured
 
-    def TOOLS_VERSION =
-            System.getenv("VERSION") ?: buildToolsProperties.get("BUILD_VERSION").toString() - '"' - '"'
+    def TOOLS_VERSION = project.providers.gradleProperty("version").orElse(project.providers.environmentVariable("VERSION")).orElse(buildToolsProperties.get("BUILD_VERSION").toString()).get() - '"' - '"'
     def OUT_REPO = System.getenv("OUT_REPO") ?: System.getenv("BUILD_DIR")
     def MAVEN_REPO = System.getenv("MAVEN_REPO")
     def PREBUILTS_REPO = System.getenv("PREBUILTS_REPO")
