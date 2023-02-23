@@ -31,6 +31,5 @@ if (!rootProject.ext.runningInIde) {
     apply from: "../commonHeader.gradle"
     subprojects {
         project.apply from: "../../commonHeader.gradle"
-        project.apply from: "../../commonLocalRepo.gradle"
     }
 }

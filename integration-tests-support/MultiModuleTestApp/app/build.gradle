@@ -46,14 +46,6 @@ android {
     }
 }
 
-if(project.hasProperty('maven_repo')) {
-    repositories {
-        maven {
-            url "file://${project.getProperty("maven_repo")}"
-        }
-    }
-}
-
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation project(':testlibrary1')

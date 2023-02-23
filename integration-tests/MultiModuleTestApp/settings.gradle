@@ -15,3 +15,11 @@
  */
 
 include ':app', ':testlibrary1', ':testlibrary2', ':inheritedmodule'
+
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url "testlibrary1/repo"
+        }
+    }
+}
