@@ -33,7 +33,7 @@ android {
 
 dependencies {
     def supportVersion = "1.0.0"
-    def lifecycleVersion = "2.4.0"
+    def lifecycleVersion = "2.6.1"
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "androidx.annotation:annotation:$supportVersion"
     compileOnly 'javax.annotation:jsr250-api:1.0'
