@@ -1,0 +1,4 @@
+extensions={BUILD_VERSION}
+compiler={BUILD_VERSION}
+compilerCommon={BUILD_VERSION}
+baseLibrary={BUILD_VERSION}

@@ -141,18 +141,31 @@ iml_module(
     ],
 )
 
-merged_properties(
+load("//tools/base/bazel:expand_template.bzl", "expand_template")
+load(
+    "//tools/base/common:version.bzl",
+    "DEV_BUILD_VERSION",
+    "RELEASE_BUILD_VERSION",
+)
+
+LATEST_STABLE_DATA_BINDING_BUILD_VERSION = "8.0.1"
+
+expand_template(
     name = "data_binding_version_info",
-    srcs = [
-        "//tools/base/common/version/com/android:version.properties",
-        "//tools/data-binding:databinding.properties",
-    ],
-    mappings = [
-        "buildVersion:extensions",
-        "buildVersion:compiler",
-        "buildVersion:compilerCommon",
-        "buildVersion:baseLibrary",
-    ],
+    out = "data_binding_version_info.properties",
+    substitutions = select({
+        "//tools/base/bazel:without_vendor": {
+            "{BUILD_VERSION}": LATEST_STABLE_DATA_BINDING_BUILD_VERSION,
+        },
+        "//tools/base/bazel:release": {
+            "{BUILD_VERSION}": RELEASE_BUILD_VERSION,
+        },
+        "//conditions:default": {
+            "{BUILD_VERSION}": DEV_BUILD_VERSION,
+        },
+    }),
+    template = "runtime_version.properties.template",
+    visibility = ["//visibility:public"],
 )
 
 fileset(
