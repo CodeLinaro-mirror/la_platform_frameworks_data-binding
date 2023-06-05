@@ -320,6 +320,7 @@ def createExtensionsBuildTask(folder, taskName) {
         def fullSdkPath = getFullSdkPath()
         if (fullSdkPath.exists()) {
             environment ANDROID_HOME: fullSdkPath
+            environment ANDROID_SDK_ROOT: null
         }
     }
     return buildRuntimeLibrary
