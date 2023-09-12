@@ -20,6 +20,7 @@ import android.databinding.tool.processing.ScopedException
 import android.databinding.tool.util.FileUtil
 import com.google.common.base.Joiner
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.NameFileFilter
 import org.apache.commons.io.filefilter.PrefixFileFilter
@@ -39,15 +40,15 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
     @Test
     fun listTasks() {
         loadApp()
-        val result = invokeGradleTasks(project, "tasks")
-        assertTrue("Empty project tasks failed", result.isBuildSuccessful)
+        val result = androidGradleProjectRule.invokeTasks("tasks")
+        assertWithMessage("Empty project tasks failed").that(result.isBuildSuccessful).isTrue()
     }
 
     @Test
     fun testEmptyCompilation() {
         loadApp()
-        val result = invokeGradleTasks(project, "assembleDebug")
-        assertTrue("Basic compile failed", result.isBuildSuccessful)
+        val result = androidGradleProjectRule.invokeTasks("assembleDebug")
+        assertWithMessage("Basic compile failed").that(result.isBuildSuccessful).isTrue()
     }
 
     @Test
@@ -61,8 +62,8 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
             "layout/basic_layout.xml",
             "app/src/main/res/layout-sw100dp/main.xml"
         )
-        val result = invokeGradleTasks(project, "assembleDebug")
-        assertTrue(result.isBuildSuccessful)
+        val result = androidGradleProjectRule.invokeTasks("assembleDebug")
+        assertThat(result.isBuildSuccessful).isTrue()
         val debugOut = File(
             projectRoot,
             "app/build/intermediates/incremental/debug/mergeDebugResources/stripped.dir"
@@ -71,19 +72,17 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
             debugOut, NameFileFilter("main.xml"),
             PrefixFileFilter("layout")
         )
-        assertTrue("Unexpected generated layout count", layoutFiles.size > 1)
+        assertWithMessage("Unexpected generated layout count").that(layoutFiles.size > 1).isTrue()
         for (layout: File in layoutFiles) {
             val contents = FileUtils.readFileToString(layout, StandardCharsets.UTF_8)
             if (layout.parent.contains("sw100")) {
-                assertTrue(
-                    "File has wrong tag:" + layout.path,
-                    contents.indexOf("android:tag=\"layout-sw100dp/main_0\"") > 0
-                )
+                assertWithMessage("File has wrong tag:" + layout.path)
+                    .that(contents)
+                    .contains("android:tag=\"layout-sw100dp/main_0\"")
             } else {
-                assertTrue(
-                    "File has wrong tag:" + layout.path + "\n" + contents,
-                    contents.indexOf("android:tag=\"layout/main_0\"") > 0
-                )
+                assertWithMessage("File has wrong tag:" + layout.path + "\n" + contents)
+                    .that(contents)
+                    .contains("android:tag=\"layout/main_0\"")
             }
         }
     }
@@ -259,7 +258,7 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         copyTestData("layout/basic_layout.xml", "app/src/main/res/layout/app_layout.xml")
 
         val result: CompilationResult = assembleDebug()
-        assertEquals(result.error, 0, result.resultCode.toLong())
+        assertWithMessage(result.error).that(result.resultCode).isEqualTo(0)
     }
 
     @Test
@@ -562,13 +561,13 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
         loadApp()
         copyTestData(resource, targetFile)
         val result = assembleDebug()
-        assertFalse(result.isBuildSuccessful)
+        assertThat(result.isBuildSuccessful).isFalse()
         val scopedException = result.bindingException ?: throw AssertionError(
             result.error
         )
         val report = scopedException.scopedErrorReport
-        assertNotNull(result.error, report)
-        assertEquals(1, report.locations.size.toLong())
+        assertWithMessage(result.error).that(report).isNotNull()
+        assertThat(report.locations).hasSize(1)
         val loc = report.locations[0]
         if (expectedExtract != null) {
             val extract: String = extract(targetFile, loc)

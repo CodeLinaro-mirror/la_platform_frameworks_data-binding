@@ -30,7 +30,10 @@ import java.util.Collections;
 import java.util.List;
 
 import static androidx.databinding.compilationTest.DataBindingCompilationTestCaseKt.DEFAULT_APP_PACKAGE;
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotEquals;
+import static junit.framework.TestCase.fail;
 
 
 @RunWith(JUnit4.class)
@@ -54,46 +57,49 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
         CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
-        assertEquals(result.error, 2, exceptions.size());
+        assertWithMessage(result.error).that(exceptions).hasSize(2);
         boolean foundNormal = false;
         boolean foundLandscape = false;
         for (ScopedException exception : exceptions) {
             ScopedErrorReport report = exception.getScopedErrorReport();
-            assertNotNull(report);
+            assertThat(report).isNotNull();
             File file = requireErrorFile(report);
-            assertEquals(1, report.getLocations().size());
+            assertThat(report.getLocations()).hasSize(1);
             Location location = report.getLocations().get(0);
             String name = file.getParentFile().getName();
             if ("layout".equals(name)) {
-                assertEquals(new File(getProjectRoot(),
-                        "/app/src/main/res/layout/with_class_name.xml")
-                        .getCanonicalFile(), file.getCanonicalFile());
+                File expected = getExpectedCanonicalFile(
+                        "/app/src/main/res/layout/with_class_name.xml");
+                assertThat(file.getCanonicalFile()).isEqualTo(
+                        expected);
                 String extract = extract("/app/src/main/res/layout/with_class_name.xml",
-                        location);
-                assertEquals(extract, "AClassName");
-                assertEquals(String.format(
+                                         location);
+                assertThat(extract).isEqualTo("AClassName");
+                assertThat(exception.getBareMessage()).isEqualTo(String.format(
                         ErrorMessages.MULTI_CONFIG_LAYOUT_CLASS_NAME_MISMATCH,
                         DEFAULT_APP_PACKAGE + ".databinding.AClassName",
-                        "layout/with_class_name"), exception.getBareMessage());
+                        "layout/with_class_name"));
                 foundNormal = true;
             } else if ("layout-land".equals(name)) {
-                    assertEquals(new File(getProjectRoot(),
-                            "/app/src/main/res/layout-land/with_class_name.xml")
-                            .getCanonicalFile(), file.getCanonicalFile());
-                    String extract = extract("/app/src/main/res/layout-land/with_class_name.xml",
-                            location);
-                    assertEquals("SomeOtherClassName", extract);
-                    assertEquals(String.format(
-                            ErrorMessages.MULTI_CONFIG_LAYOUT_CLASS_NAME_MISMATCH,
-                            DEFAULT_APP_PACKAGE + ".databinding.SomeOtherClassName",
-                            "layout-land/with_class_name"), exception.getBareMessage());
-                    foundLandscape = true;
+                File expected = getExpectedCanonicalFile(
+                        "/app/src/main/res/layout-land/with_class_name.xml");
+                assertThat(file.getCanonicalFile()).isEqualTo(expected);
+                String extract = extract("/app/src/main/res/layout-land/with_class_name.xml",
+                                         location);
+                assertThat(extract).isEqualTo("SomeOtherClassName");
+                assertThat(exception.getBareMessage()).isEqualTo(String.format(
+                        ErrorMessages.MULTI_CONFIG_LAYOUT_CLASS_NAME_MISMATCH,
+                        DEFAULT_APP_PACKAGE + ".databinding.SomeOtherClassName",
+                        "layout-land/with_class_name"));
+                foundLandscape = true;
             } else {
                 fail("unexpected error file");
             }
         }
-        assertTrue("should find default config error\n" + result.error, foundNormal);
-        assertTrue("should find landscape error\n" + result.error, foundLandscape);
+        assertWithMessage("should find default config error\n" + result.error)
+                .that(foundNormal).isTrue();
+        assertWithMessage("should find landscape error\n" + result.error)
+                .that(foundLandscape).isTrue();
     }
 
     @Test
@@ -109,14 +115,14 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
         CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
-        assertEquals(result.error, 2, exceptions.size());
+        assertWithMessage(result.error).that(exceptions).hasSize(2);
         boolean foundNormal = false;
         boolean foundLandscape = false;
         for (ScopedException exception : exceptions) {
             ScopedErrorReport report = exception.getScopedErrorReport();
-            assertNotNull(report);
+            assertThat(report).isNotNull();
             File file = requireErrorFile(report);
-            assertEquals(result.error, 1, report.getLocations().size());
+            assertWithMessage(result.error).that(report.getLocations()).hasSize(1);
             Location location = report.getLocations().get(0);
             // validated in switch
             String name = file.getParentFile().getName();
@@ -130,19 +136,21 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(getProjectRoot(),
-                                  "/app/src/main/res/" + name + "/layout_with_variable_type.xml")
-                    .getCanonicalFile(), file.getCanonicalFile());
+            assertThat(file.getCanonicalFile()).isEqualTo(
+                    getExpectedCanonicalFile(
+                             "/app/src/main/res/"
+                             + name
+                             + "/layout_with_variable_type.xml"));
             String extract = extract("/app/src/main/res/" + name +
                                      "/layout_with_variable_type.xml", location);
-            assertEquals(extract, "<variable name=\"myVariable\" type=\"" + type + "\"/>");
-            assertEquals(String.format(
+            assertThat(extract).isEqualTo("<variable name=\"myVariable\" type=\"" + type + "\"/>");
+            assertThat(exception.getBareMessage()).isEqualTo(String.format(
                     ErrorMessages.MULTI_CONFIG_VARIABLE_TYPE_MISMATCH,
                     "myVariable", type,
-                    name + "/layout_with_variable_type"), exception.getBareMessage());
+                    name + "/layout_with_variable_type"));
         }
-        assertTrue(result.error, foundNormal);
-        assertTrue(result.error, foundLandscape);
+        assertWithMessage(result.error).that(foundNormal).isTrue();
+        assertWithMessage(result.error).that(foundLandscape).isTrue();
     }
 
     @Test
@@ -161,14 +169,14 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
         CompilationResult result = assembleDebug();
         assertNotEquals(result.output, 0, result.resultCode);
         List<ScopedException> exceptions = result.getBindingExceptions();
-        assertEquals(result.error, 2, exceptions.size());
+        assertWithMessage(result.error).that(exceptions).hasSize(2);
         boolean foundNormal = false;
         boolean foundLandscape = false;
         for (ScopedException exception : exceptions) {
             ScopedErrorReport report = exception.getScopedErrorReport();
-            assertNotNull(report);
+            assertThat(report).isNotNull();
             File file = requireErrorFile(report);
-            assertEquals(result.error, 1, report.getLocations().size());
+            assertWithMessage(result.error).that(report.getLocations()).hasSize(1);
             Location location = report.getLocations().get(0);
             // validated in switch
             String name = file.getParentFile().getName();
@@ -182,19 +190,19 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(getProjectRoot(),
-                                  "/app/src/main/res/" + name + "/layout_with_import_type.xml")
-                    .getCanonicalFile(), file.getCanonicalFile());
+            assertThat(file.getCanonicalFile()).isEqualTo(
+                    getExpectedCanonicalFile(
+                            "/app/src/main/res/" + name + "/layout_with_import_type.xml"));
             String extract = extract("/app/src/main/res/" + name + "/layout_with_import_type.xml",
                     location);
-            assertEquals(extract, "<import alias=\"Blah\" type=\"" + type + "\"/>");
-            assertEquals(String.format(
+            assertThat(extract).isEqualTo("<import alias=\"Blah\" type=\"" + type + "\"/>");
+            assertThat(exception.getBareMessage()).isEqualTo(String.format(
                     ErrorMessages.MULTI_CONFIG_IMPORT_TYPE_MISMATCH,
                     "Blah", type,
-                    name + "/layout_with_import_type"), exception.getBareMessage());
+                    name + "/layout_with_import_type"));
         }
-        assertTrue(result.error, foundNormal);
-        assertTrue(result.error, foundLandscape);
+        assertWithMessage(result.error).that(foundNormal).isTrue();
+        assertWithMessage(result.error).that(foundLandscape).isTrue();
     }
 
     @Test
@@ -216,37 +224,41 @@ public class MultiLayoutVerificationTest extends DataBindingCompilationTestCase 
         boolean foundLandscape = false;
         for (ScopedException exception : exceptions) {
             ScopedErrorReport report = exception.getScopedErrorReport();
-            assertNotNull(report);
+            assertThat(report).isNotNull();
             if (exception.getBareMessage().startsWith("Cannot find a setter")) {
                 continue;
             }
             File file = requireErrorFile(report);
-            assertEquals(result.error, 1, report.getLocations().size());
+            assertWithMessage(result.error).that(report.getLocations()).hasSize(1);
             Location location = report.getLocations().get(0);
             // validated in switch
             String config = file.getParentFile().getName();
             if ("layout".equals(config)) {
                 String extract = extract("/app/src/main/res/" + config + "/foo.xml", location);
-                assertEquals(extract, "<include layout=\"@layout/basic_layout\" "
+                assertThat(extract).isEqualTo(
+                        "<include layout=\"@layout/basic_layout\" "
                         + "android:id=\"@+id/sharedId\" bind:myVariable=\"@{myVariable}\"/>");
                 foundNormal = true;
             } else if ("layout-land".equals(config)) {
                 String extract = extract("/app/src/main/res/" + config + "/foo.xml", location);
-                assertEquals(extract, "<TextView android:layout_width=\"wrap_content\" "
+                assertThat(extract).isEqualTo(
+                        "<TextView android:layout_width=\"wrap_content\" "
                         + "android:layout_height=\"wrap_content\" android:id=\"@+id/sharedId\" "
                         + "android:text=\"@{myVariable}\"/>");
                 foundLandscape = true;
             } else {
                 fail("unexpected error file");
             }
-            assertEquals(new File(getProjectRoot(),
-                    "/app/src/main/res/" + config + "/foo.xml").getCanonicalFile(),
-                    file.getCanonicalFile());
-            assertEquals(String.format(
-                    ErrorMessages.MULTI_CONFIG_ID_USED_AS_IMPORT, "@+id/sharedId"),
-                    exception.getBareMessage());
+            assertThat(file.getCanonicalFile()).isEqualTo(
+                    getExpectedCanonicalFile("/app/src/main/res/" + config + "/foo.xml"));
+            assertThat(exception.getBareMessage()).isEqualTo(String.format(
+                    ErrorMessages.MULTI_CONFIG_ID_USED_AS_IMPORT, "@+id/sharedId"));
         }
-        assertTrue(result.error, foundNormal);
-        assertTrue(result.error, foundLandscape);
+        assertWithMessage(result.error).that(foundNormal).isTrue();
+        assertWithMessage(result.error).that(foundLandscape).isTrue();
+    }
+
+    private File getExpectedCanonicalFile(String relativePath) throws IOException {
+        return new File(getProjectRoot(), relativePath).getCanonicalFile();
     }
 }

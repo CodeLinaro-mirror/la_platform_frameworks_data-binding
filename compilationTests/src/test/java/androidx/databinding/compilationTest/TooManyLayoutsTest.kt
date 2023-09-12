@@ -15,6 +15,7 @@
  */
 package androidx.databinding.compilationTest
 
+import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -37,7 +38,7 @@ class TooManyLayoutsTest : DataBindingCompilationTestCase() {
             )
         }
         val result = assembleDebug()
-        assertEquals(result.error, 0, result.resultCode.toLong())
+        assertWithMessage(result.error).that(result.resultCode).isEqualTo(0)
     }
 
     @Test
@@ -69,7 +70,7 @@ class TooManyLayoutsTest : DataBindingCompilationTestCase() {
 
         }
         val result = assembleDebug()
-        assertEquals(result.error, 0, result.resultCode)
+        assertWithMessage(result.error).that(result.resultCode).isEqualTo(0)
     }
 
     @Test
@@ -110,6 +111,6 @@ class TooManyLayoutsTest : DataBindingCompilationTestCase() {
 
         }
         val result = assembleDebug()
-        assertEquals(result.error, 0, result.resultCode)
+        assertWithMessage(result.error).that(result.resultCode).isEqualTo(0)
     }
 }
