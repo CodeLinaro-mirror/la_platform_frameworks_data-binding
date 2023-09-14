@@ -23,6 +23,8 @@ import org.junit.runners.JUnit4;
 
 import java.io.File;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 import static org.junit.Assert.assertNotEquals;
 
 @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
@@ -71,14 +73,19 @@ public class InverseMethodTest extends DataBindingCompilationTestCase {
                                                Lists.newArrayList("--stacktrace"));
         assertNotEquals(0, result.resultCode);
         String error = getErrorLine(result.error);
-        assertNotNull("Couldn't find error in \n" + result.error, error);
+        assertWithMessage("Couldn't find error in \n" + result.error).that(error).isNotNull();
         File errorFile = new File(getProjectRoot(),
                                   "app/src/main/java/androidx/databinding/compilationTest/badJava/"
                                   +
                                   className
                                   + ".java");
-        assertEquals(errorFile.getCanonicalPath() + ":" + lineNumber + ": error: " + expectedError,
-                     error);
+        String expected = errorFile.getCanonicalPath()
+                          + ":"
+                          + lineNumber
+                          + ": error: "
+                          + expectedError;
+        assertThat(error)
+                .isEqualTo(expected);
     }
 
     private static String getErrorLine(String err) {

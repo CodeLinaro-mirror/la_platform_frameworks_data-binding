@@ -21,22 +21,28 @@ import com.android.testutils.TestUtils
 import com.android.tools.analytics.Environment
 import com.android.tools.analytics.EnvironmentFakes
 import com.android.tools.idea.gradle.project.build.invoker.GradleBuildInvoker
+import com.android.tools.idea.gradle.project.build.invoker.GradleBuildResult
+import com.android.tools.idea.testing.AndroidGradleProjectRule
 import com.android.tools.idea.testing.AndroidGradleTestCase
 import com.android.tools.idea.testing.TestProjectPaths
+import com.google.common.util.concurrent.ListenableFuture
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil.toSystemDependentName
 import com.intellij.util.io.createDirectories
 import com.intellij.util.io.readText
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.util.function.Function
 import java.util.regex.Pattern
 
 private const val TEST_DEPENDENCIES = "implementation 'androidx.fragment:fragment:+'"
@@ -51,9 +57,12 @@ const val KEY_DEPENDENCIES = "DEPENDENCIES"
 const val KEY_SETTINGS_INCLUDES = "SETTINGS_INCLUDES"
 const val DEFAULT_APP_PACKAGE = "com.android.databinding.compilationTest.test"
 
-abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
+abstract class DataBindingCompilationTestCase {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
+
+    @get:Rule
+    val androidGradleProjectRule = AndroidGradleProjectRule()
 
     @Before
     fun setup() {
@@ -73,7 +82,7 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
     }
 
     protected fun loadApp(appReplacements: Map<String, String>) {
-        loadProject(TestProjectPaths.DATA_BINDING_COMPILATION)
+        androidGradleProjectRule.loadProject(TestProjectPaths.DATA_BINDING_COMPILATION)
         projectRoot.toPath().resolve("app/src/main").createDirectories()
         val replacements = appendTestReplacements(appReplacements)
         copyTestDataWithReplacement(
@@ -126,14 +135,15 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
         }
         val request =
             GradleBuildInvoker.Request.builder(
-                project,
-                File(toSystemDependentName(project.basePath!!)),
+                androidGradleProjectRule.project,
+                File(toSystemDependentName(androidGradleProjectRule.project.basePath!!)),
                 tasks
             )
                 .setCommandLineArguments(listOf("--offline") + args)
                 .setListener(taskListener)
                 .build()
-        val result = invokeGradle(project) { gradleInvoker ->
+
+        val result = DelegateGradleTestCase.doInvokeGradle(androidGradleProjectRule.project) { gradleInvoker ->
             gradleInvoker.executeTasks(request)
         }
         return CompilationResult(
@@ -143,8 +153,26 @@ abstract class DataBindingCompilationTestCase : AndroidGradleTestCase() {
         )
     }
 
-    protected val projectRoot: File
-        get() = File(toSystemDependentName(project.basePath!!))
+    /**
+     * Inheritance is used here to allow access to this protected static method;
+     * [AndroidGradleProjectRule] does effectively the same thing to use this, but the data binding
+     * tests need to be able to invoke Gradle directly so that they can get the error output.
+     */
+    @Ignore
+    private class DelegateGradleTestCase : AndroidGradleTestCase() {
+        companion object {
+            fun <T : GradleBuildResult> doInvokeGradle(
+                project: Project,
+                gradleInvocationTask: Function<GradleBuildInvoker, ListenableFuture<T>?>
+            ): T {
+                return invokeGradle(project, gradleInvocationTask)
+            }
+        }
+    }
+
+    protected val projectRoot by lazy {
+        File(toSystemDependentName(androidGradleProjectRule.project.basePath!!))
+    }
 
     /**
      * Copies the file in the testData directory to the target directory.
