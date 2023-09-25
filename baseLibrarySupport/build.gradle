@@ -39,7 +39,9 @@ dependencies {
 group = "com.android.databinding"
 
 if (dataBindingConfig.isIndependent) {
-    archivesBaseName = "baseLibrary"
+    base {
+        archivesName.set("baseLibrary")
+    }
     uploadArchives {
         repositories {
             mavenDeployer {
