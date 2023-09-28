@@ -56,7 +56,9 @@ if (dataBindingConfig.isIndependent) {
     javadoc {
         options.addStringOption('Xdoclint:none', '-quiet')
     }
-    archivesBaseName = "databinding-common"
+    base {
+        archivesName.set("databinding-common")
+    }
 } else {
     enablePublishing(this, true)
 
