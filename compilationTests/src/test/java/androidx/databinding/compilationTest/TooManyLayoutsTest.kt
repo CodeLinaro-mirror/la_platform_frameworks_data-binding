@@ -15,7 +15,9 @@
  */
 package androidx.databinding.compilationTest
 
+import com.android.testutils.AssumeUtil
 import com.google.common.truth.Truth.assertWithMessage
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -25,6 +27,16 @@ import org.junit.runners.JUnit4
  */
 @RunWith(JUnit4::class)
 class TooManyLayoutsTest : DataBindingCompilationTestCase() {
+
+    @Before
+    fun setUp() {
+        // This test takes a long time to run and also has high variance in running time.
+        // We disable it on Windows to reduce build latency (b/301266550) and avoid potential
+        // timeouts (b/300720819).
+        // We probably don't need to re-enable this test later as having it run on other platforms
+        // is probably enough.
+        AssumeUtil.assumeNotWindows()
+    }
 
     @Test
     fun tooManyLayouts() {
