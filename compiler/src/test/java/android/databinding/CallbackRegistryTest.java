@@ -25,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("BoxedPrimitiveEquality")
 public class CallbackRegistryTest {
 
     final Integer callback1 = 1;
