@@ -1,9 +1,10 @@
 load("//tools/base/bazel:bazel.bzl", "iml_module")
-load("//tools/base/bazel:kotlin.bzl", "kotlin_library", "kotlin_test")
-load("//tools/base/bazel:utils.bzl", "fileset", "merged_properties")
+load("//tools/base/bazel:expand_template.bzl", "expand_template")
 load("//tools/base/bazel:gradle.bzl", "gradle_build")
+load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
+load("//tools/base/bazel:kotlin.bzl", "kotlin_test")
 load("//tools/base/bazel:maven.bzl", "maven_library", "maven_repository")
-load("//tools/base/bazel:utils.bzl", "java_jarjar", "merged_zip")
+load("//tools/base/bazel:utils.bzl", "fileset", "java_jarjar", "merged_zip")
 load("//tools/base/common:version.bzl", "BUILD_VERSION", "DEV_BUILD_VERSION", "RELEASE_BUILD_VERSION")
 
 exports_files(["databinding.properties"])
@@ -70,8 +71,6 @@ java_jarjar(
     rules = "jarjar_rules.txt",
 )
 
-load("//tools/base/bazel:jvm_import.bzl", "jvm_import")
-
 # managed by go/iml_to_build
 jvm_import(
     name = "compilerCommon.antlr_runtime.shaded",
@@ -81,6 +80,7 @@ jvm_import(
 
 java_library(
     name = "compilerCommon.antlr",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "compilerCommon/src/main/xml-gen/**/*.java",
         "compilerCommon/src/main/grammar-gen/**/*.java",
@@ -115,6 +115,7 @@ iml_module(
     ],
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
     jvm_target = "8",
+    lint_baseline = "lint_baseline.xml",
     test_srcs = [
         "compilerCommon/src/test/java",
         "compilerCommon/src/test/kotlin",
@@ -139,13 +140,6 @@ iml_module(
         "//tools/adt/idea/.idea/libraries:compile-testing[test]",
         "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
-)
-
-load("//tools/base/bazel:expand_template.bzl", "expand_template")
-load(
-    "//tools/base/common:version.bzl",
-    "DEV_BUILD_VERSION",
-    "RELEASE_BUILD_VERSION",
 )
 
 LATEST_STABLE_DATA_BINDING_BUILD_VERSION = "8.0.1"
@@ -180,6 +174,7 @@ fileset(
 
 maven_library(
     name = "tools.compilerCommon",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "compilerCommon/src/main/java/**/*.java",
         "compilerCommon/src/main/java/**/*.kt",
@@ -215,6 +210,7 @@ maven_library(
 
 kotlin_test(
     name = "tools.compilerCommon_tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "compilerCommon/src/test/**/*.kt",
         "compilerCommon/src/test/**/*.java",
@@ -241,6 +237,7 @@ iml_module(
     ],
     iml_files = ["compiler/db-compiler.iml"],
     jvm_target = "8",
+    lint_baseline = "studio_compiler_lint_baseline.xml",
     resources = ["compiler/src/main/resources"],
     test_data = [
         "//prebuilts/studio/sdk:platform-tools",
@@ -276,6 +273,7 @@ iml_module(
 # TODO: Use the right version of kotlin-compiler.
 maven_library(
     name = "tools.compiler",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "compiler/src/main/java/**/*.java",
         "compiler/src/main/java/**/*.kt",
@@ -310,6 +308,7 @@ maven_library(
 
 kotlin_test(
     name = "tools.compiler_tests",
+    # buildifier: disable=bad-recursive-glob
     srcs = glob([
         "compiler/src/test/**/*.kt",
         "compiler/src/test/**/*.java",
