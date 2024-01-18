@@ -18,6 +18,7 @@ package androidx.databinding.compilationTest
 import android.databinding.tool.processing.ScopedErrorReport
 import android.databinding.tool.store.Location
 import com.android.testutils.TestUtils
+import com.android.tools.analytics.AnalyticsPaths
 import com.android.tools.analytics.Environment
 import com.android.tools.analytics.EnvironmentFakes
 import com.android.tools.idea.gradle.project.build.invoker.GradleBuildInvoker
@@ -66,15 +67,12 @@ abstract class DataBindingCompilationTestCase {
 
     @Before
     fun setup() {
-        EnvironmentFakes.setSingleProperty(
-            Environment.EnvironmentVariable.ANDROID_PREFS_ROOT.key,
-            temporaryFolder.newFolder().absolutePath
-        )
+        AnalyticsPaths.overrideAndroidSettingsHomeDirectory(temporaryFolder.newFolder().absolutePath)
     }
 
     @After
     fun restoreSystemProperty() {
-        EnvironmentFakes.setSystemEnvironment()
+        AnalyticsPaths.restoreAndroidSettingsHomeDirectory()
     }
 
     protected fun loadApp() {
