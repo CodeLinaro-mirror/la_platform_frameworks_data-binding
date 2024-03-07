@@ -32,7 +32,6 @@ import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotifica
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil.toSystemDependentName
 import com.intellij.util.io.createDirectories
-import com.intellij.util.io.readText
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -45,6 +44,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.function.Function
 import java.util.regex.Pattern
+import kotlin.io.path.readText
 
 private const val TEST_DEPENDENCIES = "implementation 'androidx.fragment:fragment:+'"
 private const val DEFAULT_SETTINGS_GRADLE = "include ':app'"
