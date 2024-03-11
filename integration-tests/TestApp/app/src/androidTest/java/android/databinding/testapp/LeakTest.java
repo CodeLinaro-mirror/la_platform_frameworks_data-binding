@@ -52,19 +52,14 @@ public class LeakTest {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        LeakTestBinding binding = LeakTestBinding.inflate(
-                                getActivity().getLayoutInflater());
-                        getActivity().setContentView(binding.getRoot());
-                        mWeakReference = new WeakReference<>(binding);
-                        binding.setName("hello world");
-                        binding.setLiveData(mLiveData);
-                        binding.setLifecycleOwner(getActivity());
-                        binding.executePendingBindings();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
-                    }
+                    LeakTestBinding binding = LeakTestBinding.inflate(
+                            getActivity().getLayoutInflater());
+                    getActivity().setContentView(binding.getRoot());
+                    mWeakReference = new WeakReference<>(binding);
+                    binding.setName("hello world");
+                    binding.setLiveData(mLiveData);
+                    binding.setLifecycleOwner(getActivity());
+                    binding.executePendingBindings();
                 }
             });
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
