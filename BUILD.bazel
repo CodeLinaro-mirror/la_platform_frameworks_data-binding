@@ -145,7 +145,7 @@ iml_module(
     ],
 )
 
-LATEST_STABLE_DATA_BINDING_BUILD_VERSION = "8.0.1"
+LATEST_STABLE_DATA_BINDING_BUILD_VERSION = "8.5.0"
 
 expand_template(
     name = "data_binding_version_info",
