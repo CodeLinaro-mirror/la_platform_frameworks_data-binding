@@ -6,9 +6,6 @@ iml_module(
     name = "studio.compilationTests",
     iml_files = ["db-compilationTests.iml"],
     jvm_target = "8",
-    tags = [
-        "no_test_mac",  # b/178123368
-    ],
     test_class = "androidx.databinding.compilationTest.bazel.DataBindingCompilationTestSuite",
     test_data = [
         ":test_deps",
