@@ -6,9 +6,6 @@ iml_module(
     name = "studio.compilationTests",
     iml_files = ["db-compilationTests.iml"],
     jvm_target = "8",
-    tags = [
-        "no_test_mac",  # b/178123368
-    ],
     test_class = "androidx.databinding.compilationTest.bazel.DataBindingCompilationTestSuite",
     test_data = [
         ":test_deps",
@@ -140,6 +137,6 @@ maven_repository(
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk7_1.4.32",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.4.31",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8_1.5.21",
-        "@maven//:org.mockito.mockito-core_5.6.0",
+        "@maven//:org.mockito.mockito-core_5.12.0",
     ],
 )
