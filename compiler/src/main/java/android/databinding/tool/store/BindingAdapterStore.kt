@@ -49,7 +49,9 @@ import java.util.TreeMap
  * serializes that inner class instead (to persist only the stuff from current module).
  */
 @Suppress("ReplacePutWithAssignment")
-internal class BindingAdapterStore : Intermediate {
+internal class BindingAdapterStore private constructor(
+    private val useAndroidX: Boolean
+) : Intermediate {
     @Suppress("unused")
     @field:SerializedName("version")
     private var version = 5
@@ -78,7 +80,6 @@ internal class BindingAdapterStore : Intermediate {
      */
     @field:Transient
     private var currentModuleStore: BindingAdapterStore? = null
-    private val useAndroidX: Boolean
 
     constructor(
             stores: MutableList<Intermediate>,
@@ -93,7 +94,6 @@ internal class BindingAdapterStore : Intermediate {
         }
     }
 
-
     // we only care about androidX for the current process' store, others can stay unprocessed
     constructor(v3: SetterStore.IntermediateV3) : this(false) {
         merge(adapterMethods, v3.adapterMethods)
@@ -104,10 +104,6 @@ internal class BindingAdapterStore : Intermediate {
         untaggableTypes.putAll(v3.untaggableTypes)
         multiValueAdapters.putAll(v3.multiValueAdapters)
         twoWayMethods.putAll(v3.twoWayMethods)
-    }
-
-    private constructor(useAndroidX: Boolean) {
-        this.useAndroidX = useAndroidX
     }
 
     private fun String.androidSupportArtifact() = this.startsWith("android.databinding.adapters")
