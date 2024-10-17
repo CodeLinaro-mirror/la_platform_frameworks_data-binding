@@ -183,9 +183,6 @@ public class DataBindingBuilder {
         } catch (FileNotFoundException e) {
             L.e(e, "Unable to read generated class list from %s",
                     generatedClassListFile.getAbsoluteFile());
-        } catch (IOException e) {
-            L.e(e, "Unexpected exception while reading %s",
-                    generatedClassListFile.getAbsoluteFile());
         } finally {
             IOUtils.closeQuietly(fis);
         }
