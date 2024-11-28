@@ -305,7 +305,6 @@ maven_library(
         "@maven//:com.google.guava.guava",
         "@maven//:com.googlecode.juniversalchardet.juniversalchardet",
         "@maven//:com.squareup.javapoet",
-        "@maven//:commons-codec.commons-codec",
         "@maven//:commons-io.commons-io",
         "@maven//:org.glassfish.jaxb.jaxb-runtime",
         "@maven//:org.jetbrains.kotlin.kotlin-stdlib-jdk8",
