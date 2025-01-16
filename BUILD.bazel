@@ -224,9 +224,11 @@ kotlin_test(
     runtime_deps = ["//tools/base/testutils:tools.testutils"],
     deps = [
         ":tools.compilerCommon",
+        "//prebuilts/tools/common/m2:javapoet",
         "//tools/base/bazel:langtools",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.truth.truth",
+        "@maven//:commons-io.commons-io",
         "@maven//:junit.junit",
     ],
 )
@@ -329,6 +331,7 @@ kotlin_test(
         ":tools.baseLibrary",
         ":tools.compiler",
         ":tools.compilerCommon",
+        "//prebuilts/tools/common/m2:javapoet",
         "//tools/base/bazel:langtools",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.truth.truth",
