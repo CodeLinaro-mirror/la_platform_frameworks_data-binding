@@ -17,7 +17,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    namespace "android.databinding.testlibrary1"
+    namespace = "android.databinding.testlibrary1"
     compileSdkVersion rootProject.latestCompileSdk
     buildToolsVersion rootProject.buildToolsVersion
 

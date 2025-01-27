@@ -17,7 +17,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.example.androidx.appwithdatabindingintests"
+    namespace = "com.example.androidx.appwithdatabindingintests"
     compileSdkVersion rootProject.latestCompileSdk
     buildToolsVersion rootProject.buildToolsVersion
     defaultConfig {

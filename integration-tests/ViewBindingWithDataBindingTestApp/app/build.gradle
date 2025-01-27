@@ -20,7 +20,7 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-kapt'
 android {
-    namespace "androidx.databinding.viewbinding.testapp"
+    namespace = "androidx.databinding.viewbinding.testapp"
     compileSdkVersion rootProject.latestCompileSdk
     defaultConfig {
         applicationId "androidx.databinding.viewbinding.testapp"

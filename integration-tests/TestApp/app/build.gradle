@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "android.databinding.testapp"
+    namespace = "android.databinding.testapp"
     compileSdkVersion rootProject.latestCompileSdk
 
     defaultConfig {
