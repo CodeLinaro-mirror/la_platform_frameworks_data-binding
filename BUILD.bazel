@@ -86,6 +86,7 @@ jvm_import(
     visibility = ["//visibility:public"],
 )
 
+# buildifier: disable=native-java-library
 java_library(
     name = "compilerCommon.antlr",
     # buildifier: disable=bad-recursive-glob
@@ -225,6 +226,10 @@ kotlin_test(
         "compilerCommon/src/test/**/*.kt",
         "compilerCommon/src/test/**/*.java",
     ]),
+    add_exports = [
+        # For com.sun.tools.javac.api.JavacTool access from compile-testing
+        "jdk.compiler/com.sun.tools.javac.api",
+    ],
     jvm_flags = ["-Dtest.suite.jar=tests.jar"],
     test_class = "com.android.testutils.JarTestSuite",
     runtime_deps = ["//tools/base/testutils:tools.testutils"],
