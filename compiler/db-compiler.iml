@@ -32,8 +32,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="library" name="studio-sdk" level="project" />
     <orderEntry type="library" name="studio-plugin-com.intellij.java" level="project" />
-    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
-    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="db-baseLibrary" exported="" />
     <orderEntry type="module" module-name="db-baseLibrarySupport" exported="" />
@@ -61,7 +59,6 @@
         </SOURCES>
       </library>
     </orderEntry>
-    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="module-library">
       <library name="javapoet">
         <CLASSES>
@@ -80,6 +77,9 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
     <orderEntry type="library" scope="TEST" name="compile-testing" level="project" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
   </component>

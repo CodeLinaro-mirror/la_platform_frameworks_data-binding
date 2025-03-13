@@ -21,13 +21,16 @@ iml_module(
     srcs = ["baseLibrary/src/main/java"],
     iml_files = ["baseLibrary/db-baseLibrary.iml"],
     jvm_target = "8",
+    # do not sort: must match IML order
+    test_deps = [
+        "//prebuilts/tools/common/m2:junit-4.12",
+        "//prebuilts/tools/common/m2:hamcrest-core-1.3",
+    ],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
-        "//prebuilts/tools/common/m2:junit-4.12[test]",
-        "//prebuilts/tools/common/m2:hamcrest-core-1.3[test]",
     ],
 )
 
@@ -37,13 +40,16 @@ iml_module(
     srcs = ["baseLibrarySupport/src/main/java"],
     iml_files = ["baseLibrarySupport/db-baseLibrarySupport.iml"],
     jvm_target = "8",
+    # do not sort: must match IML order
+    test_deps = [
+        "//prebuilts/tools/common/m2:junit-4.12",
+        "//prebuilts/tools/common/m2:hamcrest-core-1.3",
+    ],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
     deps = [
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
-        "//prebuilts/tools/common/m2:junit-4.12[test]",
-        "//prebuilts/tools/common/m2:hamcrest-core-1.3[test]",
     ],
 )
 
@@ -125,6 +131,12 @@ iml_module(
     iml_files = ["compilerCommon/db-compilerCommon.iml"],
     jvm_target = "8",
     lint_baseline = "lint_baseline.xml",
+    # do not sort: must match IML order
+    test_deps = [
+        "//tools/adt/idea/.idea/libraries:junit4",
+        "//tools/adt/idea/.idea/libraries:compile-testing",
+        "//tools/adt/idea/.idea/libraries:truth",
+    ],
     test_srcs = [
         "compilerCommon/src/test/java",
         "compilerCommon/src/test/kotlin",
@@ -147,9 +159,6 @@ iml_module(
         "//prebuilts/tools/common/m2:juniversalchardet",
         "//prebuilts/tools/common/m2:javapoet",
         "//prebuilts/tools/common/m2:jetifier-core",
-        "//tools/adt/idea/.idea/libraries:junit4[test]",
-        "//tools/adt/idea/.idea/libraries:compile-testing[test]",
-        "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
 )
 
@@ -260,6 +269,14 @@ iml_module(
         "//prebuilts/studio/sdk:platform-tools",
         "//tools/data-binding:data_binding_android_platform",
     ],
+    # do not sort: must match IML order
+    test_deps = [
+        "//tools/adt/idea/.idea/libraries:junit4",
+        "//tools/adt/idea/.idea/libraries:kotlin-test",
+        "//tools/adt/idea/.idea/libraries:mockito",
+        "//tools/adt/idea/.idea/libraries:compile-testing",
+        "//tools/adt/idea/.idea/libraries:truth",
+    ],
     test_srcs = ["compiler/src/test/java"],
     visibility = ["//visibility:public"],
     # do not sort: must match IML order
@@ -273,19 +290,14 @@ iml_module(
         "//tools/data-binding:compilerCommon.antlr.shaded",
         "@intellij//:intellij-sdk",
         "@intellij//:com.intellij.java",
-        "//tools/adt/idea/.idea/libraries:junit4[test]",
-        "//tools/adt/idea/.idea/libraries:kotlin-test[test]",
         "//tools/data-binding:studio.baseLibrary",
         "//tools/data-binding:studio.baseLibrarySupport",
         "//tools/base/annotations:studio.android.sdktools.android-annotations",
         "//tools/data-binding:studio.compilerCommon",
         "//prebuilts/tools/common/m2:juniversalchardet",
         "//prebuilts/tools/common/m2:commons-lang",
-        "//tools/adt/idea/.idea/libraries:mockito[test]",
         "//prebuilts/tools/common/m2:javapoet",
         "//prebuilts/tools/common/m2:auto-common",
-        "//tools/adt/idea/.idea/libraries:compile-testing[test]",
-        "//tools/adt/idea/.idea/libraries:truth[test]",
     ],
 )
 

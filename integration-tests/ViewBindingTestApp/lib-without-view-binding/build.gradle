@@ -17,7 +17,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    namespace "com.example.libwithout"
+    namespace = "com.example.libwithout"
     compileSdkVersion rootProject.latestCompileSdk
 
     defaultConfig {

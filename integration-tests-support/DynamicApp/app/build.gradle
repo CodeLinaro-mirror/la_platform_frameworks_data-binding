@@ -17,7 +17,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.example.android.dynamicapp.app"
+    namespace = "com.example.android.dynamicapp.app"
     compileSdkVersion rootProject.latestCompileSdk
     buildToolsVersion rootProject.buildToolsVersion
 

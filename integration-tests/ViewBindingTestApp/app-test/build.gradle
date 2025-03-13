@@ -17,7 +17,7 @@
 apply plugin: 'com.android.test'
 
 android {
-    namespace 'com.example.viewbinding.test'
+    namespace = 'com.example.viewbinding.test'
 
     targetProjectPath ':app'
 

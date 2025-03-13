@@ -17,7 +17,7 @@
 apply plugin: 'com.android.dynamic-feature'
 
 android {
-    namespace "com.example.feature"
+    namespace = "com.example.feature"
     compileSdkVersion rootProject.latestCompileSdk
 
     defaultConfig {

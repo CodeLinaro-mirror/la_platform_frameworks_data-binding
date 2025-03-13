@@ -16,7 +16,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.android.library'
 
 android {
-    namespace "android.databinding.test.independentlibrary"
+    namespace = "android.databinding.test.independentlibrary"
     compileSdkVersion rootProject.latestCompileSdk
     buildToolsVersion rootProject.buildToolsVersion
 
@@ -71,8 +71,8 @@ afterEvaluate {
             }
             repositories {
                 maven {
-                    url("${project.getProperty('maven_repo')}")
-                    name "TestRepo"
+                    url = "${project.getProperty('maven_repo')}"
+                    name = "TestRepo"
                 }
             }
         }

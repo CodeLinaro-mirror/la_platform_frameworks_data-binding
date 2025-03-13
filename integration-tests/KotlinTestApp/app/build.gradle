@@ -20,7 +20,7 @@ apply plugin: 'kotlin-android'
 
 apply plugin: 'kotlin-kapt'
 android {
-    namespace "androidx.databinding.kotlintestapp"
+    namespace = "androidx.databinding.kotlintestapp"
     compileSdkVersion rootProject.latestCompileSdk
 
     defaultConfig {
