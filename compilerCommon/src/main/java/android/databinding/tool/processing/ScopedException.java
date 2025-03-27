@@ -19,7 +19,6 @@ package android.databinding.tool.processing;
 
 import android.databinding.tool.store.Location;
 import android.databinding.tool.util.L;
-import com.android.annotations.NonNullByDefault;
 import com.android.annotations.Nullable;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -31,6 +30,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * An exception that contains scope information.
  */
@@ -41,7 +42,6 @@ public class ScopedException extends RuntimeException {
     private ScopedErrorReport mScopedErrorReport;
     private String mScopeLog;
 
-    @NonNullByDefault
     private static final class FileLocation {
         @SerializedName("line0")
         public final int lineStart;
@@ -59,17 +59,20 @@ public class ScopedException extends RuntimeException {
             colEnd = location.endOffset;
         }
 
+        @NotNull
         public Location toLocation() {
             return new Location(lineStart, colStart, lineEnd, colEnd);
         }
     }
 
-    @NonNullByDefault
     private static final class EncodedMessage {
+        @NotNull
         @SerializedName("msg")
         public final String message;
+        @NotNull
         @SerializedName("file")
         public final String filePath;
+        @NotNull
         @SerializedName("pos")
         public final List<FileLocation> positions = new ArrayList<>();
 
