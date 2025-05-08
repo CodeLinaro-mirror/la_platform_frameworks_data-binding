@@ -39,7 +39,6 @@ def addRepos(RepositoryHandler handler) {
         }
     }
     if (dataBindingConfig.addRemoteRepos) {
-        handler.jcenter()
         handler.mavenCentral()
     }
 }
