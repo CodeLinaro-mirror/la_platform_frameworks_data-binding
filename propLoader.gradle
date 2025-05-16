@@ -35,7 +35,7 @@ ext.dataBindingConfig.mavenRepoDir = rootProject.file("${databindingProperties.m
 def addRepos(RepositoryHandler handler) {
     dataBindingConfig.localRepositories.each { repo ->
         handler.maven {
-            url repo
+            url = repo
         }
     }
     if (dataBindingConfig.addRemoteRepos) {
