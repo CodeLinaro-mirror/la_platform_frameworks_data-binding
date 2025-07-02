@@ -18,8 +18,10 @@ import org.gradle.internal.jvm.Jvm
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
-sourceCompatibility = dataBindingConfig.compilerJavaTargetCompatibility
-targetCompatibility = dataBindingConfig.compilerJavaSourceCompatibility
+java {
+    sourceCompatibility = dataBindingConfig.compilerJavaTargetCompatibility
+    targetCompatibility = dataBindingConfig.compilerJavaSourceCompatibility
+}
 
 sourceSets {
     main.java.srcDirs += 'src/main/kotlin'

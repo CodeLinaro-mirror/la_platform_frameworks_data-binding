@@ -16,8 +16,10 @@
 
 apply plugin: 'java-library'
 
-sourceCompatibility = dataBindingConfig.javaTargetCompatibility
-targetCompatibility = dataBindingConfig.javaSourceCompatibility
+java {
+    sourceCompatibility = dataBindingConfig.javaTargetCompatibility
+    targetCompatibility = dataBindingConfig.javaSourceCompatibility
+}
 
 sourceSets {
     main {
