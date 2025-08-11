@@ -141,7 +141,7 @@ abstract class DataBindingCompilationTestCase {
                 .setListener(taskListener)
                 .build()
 
-        val result = DelegateGradleTestCase.doInvokeGradle(androidGradleProjectRule.project) { gradleInvoker ->
+        val result = androidGradleProjectRule.invokeGradle { gradleInvoker ->
             gradleInvoker.executeTasks(request)
         }
         return CompilationResult(
@@ -149,23 +149,6 @@ abstract class DataBindingCompilationTestCase {
             outBuilder.toString(),
             errBuilder.toString()
         )
-    }
-
-    /**
-     * Inheritance is used here to allow access to this protected static method;
-     * [AndroidGradleProjectRule] does effectively the same thing to use this, but the data binding
-     * tests need to be able to invoke Gradle directly so that they can get the error output.
-     */
-    @Ignore
-    private class DelegateGradleTestCase : AndroidGradleTestCase() {
-        companion object {
-            fun <T : GradleBuildResult> doInvokeGradle(
-                project: Project,
-                gradleInvocationTask: Function<GradleBuildInvoker, ListenableFuture<T>?>
-            ): T {
-                return invokeGradle(project, gradleInvocationTask)
-            }
-        }
     }
 
     protected val projectRoot by lazy {
