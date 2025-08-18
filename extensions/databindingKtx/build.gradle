@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
 
 android {
     namespace "androidx.databinding.ktx"
