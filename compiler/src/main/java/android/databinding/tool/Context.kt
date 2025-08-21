@@ -63,7 +63,7 @@ object Context {
                 .getTypeElement("androidx.databinding.Observable") != null
         if (hasAndroidXBinding && hasSupportBinding) {
             L.e("AndroidX Error: Both old and new data binding packages are available in dependencies. Make sure" +
-                    " you've setup jettifier  for any data binding dependencies and also set android.useAndroidx in" +
+                    " you've setup jettifier  for any data binding dependencies and also set android.useAndroidX in" +
                     " your gradle.properties file.")
         }
         return hasAndroidXBinding
