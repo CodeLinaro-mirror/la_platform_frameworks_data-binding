@@ -49,7 +49,7 @@
     <orderEntry type="module-library">
       <library name="javapoet">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.10.0/javapoet-1.10.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

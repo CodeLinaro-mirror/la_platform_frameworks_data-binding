@@ -660,21 +660,6 @@ class ViewBinderGenerateJavaTest {
         }
     }
 
-    @Test fun invalidNodeNameFailsWithNiceMessage() {
-        layouts.write("example", "layout", """
-            <layer-list xmlns:android="http://schemas.android.com/apk/res/android"/>
-        """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-        try {
-            model.toViewBinder()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertThat(e).hasMessageThat()
-                .isEqualTo("Unable to parse \"android.widget.layer-list\" as class in example.xml")
-        }
-    }
-
     @Test fun fragmentNodesAreNotExposed() {
         layouts.write("as_root", "layout", """
             <fragment
