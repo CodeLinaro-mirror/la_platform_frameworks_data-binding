@@ -454,7 +454,7 @@ class BindingMapperWriterV2(genClassInfoLog: GenClassInfoLog,
                     // only call the chunk that might have it
                     val methodIndexField = "methodIndex"
                     addStatement("// find which method will have it. -1 is necessary because" +
-                            "first id starts with 1")
+                            " first id starts with 1")
                     addStatement("$T $L = ($N - 1) / $L",
                             TypeName.INT,
                             methodIndexField,
