@@ -16,9 +16,8 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <application android:allowBackup="true"
-                 android:label="@string/app_name">
-        <activity android:name=".LibraryActivity"/>
+    <application>
+        <uses-library android:name="android.test.runner" />
     </application>
 
 </manifest>
