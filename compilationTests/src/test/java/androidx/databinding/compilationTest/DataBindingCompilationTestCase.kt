@@ -22,8 +22,9 @@ import com.android.tools.analytics.AnalyticsPaths
 import com.android.tools.idea.gradle.project.build.invoker.GradleBuildInvoker
 import com.android.tools.idea.testing.AndroidGradleProjectRule
 import com.android.tools.idea.testing.TestProjectPaths
+import com.intellij.execution.process.ProcessOutputType
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener
 import com.intellij.openapi.util.io.FileUtil.toSystemDependentName
 import com.intellij.util.io.createDirectories
 import org.junit.After
@@ -114,9 +115,9 @@ abstract class DataBindingCompilationTestCase {
     ): CompilationResult {
         val outBuilder = StringBuilder()
         val errBuilder = StringBuilder()
-        val taskListener = object : ExternalSystemTaskNotificationListenerAdapter() {
-            override fun onTaskOutput(id: ExternalSystemTaskId, text: String, stdOut: Boolean) {
-                if (stdOut) {
+        val taskListener = object : ExternalSystemTaskNotificationListener {
+            override fun onTaskOutput(id: ExternalSystemTaskId, text: String, processOutputType: ProcessOutputType) {
+                if (ProcessOutputType.isStdout(processOutputType)) {
                     outBuilder.append(text)
                 } else {
                     errBuilder.append(text)
