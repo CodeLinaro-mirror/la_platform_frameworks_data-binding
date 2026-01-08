@@ -296,7 +296,6 @@ iml_module(
         "//tools/base/annotations:studio.android.sdktools.android-annotations",
         "//tools/data-binding:studio.compilerCommon",
         "//prebuilts/tools/common/m2:juniversalchardet",
-        "//prebuilts/tools/common/m2:commons-lang",
         "//prebuilts/tools/common/m2:javapoet",
         "//prebuilts/tools/common/m2:auto-common",
     ],
