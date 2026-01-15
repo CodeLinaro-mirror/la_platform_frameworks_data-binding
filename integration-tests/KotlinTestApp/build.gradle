@@ -24,7 +24,7 @@ buildscript {
         apply from: "../commonBuildScript.gradle"
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$rootProject.kotlinVersion"
+        classpath "com.android.tools.build:gradle-kotlin:${libs.versions.buildVersion.get()}"
     }
 }
 if (!rootProject.ext.runningInIde) {
