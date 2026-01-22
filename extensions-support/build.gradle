@@ -1,46 +1,51 @@
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.AndroidComponentsExtension
 
-class VersionFileWriterTask extends DefaultTask {
-    static final String RESOURCE_DIRECTORY = "generatedResources"
-    static final VERSION_FILE_PATH = RESOURCE_DIRECTORY + "/META-INF/%s_%s.version"
+abstract class VersionFileWriterTask extends DefaultTask {
+    static final String RESOURCE_DIRECTORY = "generated%sResources"
+    static final VERSION_FILE_PATH = "META-INF/%s_%s.version"
     @Input
-    String version
-    @OutputFile
-    File outputFile
+    abstract Property<String> getVersion()
+
+    @Input
+    abstract Property<String> getFileName()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDirectory()
 
     @TaskAction
     void write() {
-        outputFile.write(version)
+        outputDirectory.get().asFile.mkdirs()
+        def file = new File(outputDirectory.get().asFile, getFileName().get())
+        file.getParentFile().mkdirs()
+        file.write(version.get())
     }
 
     /**
      * Sets up Android Library project to have a task that generates a version file.
-     * It must be called after [LibraryExtension] has been resolved.
      *
      * @param project an Android Library project.
      */
-    static void setUpAndroidLibrary(Project project, LibraryExtension library) {
+    static void setUpAndroidLibrary(Project project, LibraryAndroidComponentsExtension libraryExtension) {
         def group = project.properties["group"] as String
         def artifactId = project.properties["name"] as String
-        def version = project.properties["version"] as String
+        def libraryVersion = project.properties["version"] as String
 
         // Add a java resource file to the library jar for version tracking purposes.
-        def artifactName = new File(
-                project.buildDir,
-                String.format(VERSION_FILE_PATH, group, artifactId))
+        def artifactName = String.format(VERSION_FILE_PATH, group, artifactId)
 
-        def writeVersionFile = project.tasks.create("writeVersionFile",
-                VersionFileWriterTask.class)
-        writeVersionFile.version = version
-        writeVersionFile.outputFile = artifactName
-
-        library.libraryVariants.all {
-            it.processJavaResources.dependsOn(writeVersionFile)
+        if (libraryExtension != null) {
+            libraryExtension.onVariants(libraryExtension.selector().all(),  { variant ->
+                def folderName = String.format(RESOURCE_DIRECTORY, variant.name)
+                def writeVersionFileProvider = project.tasks.register("write" + variant.getName() + "VersionFile",
+                        VersionFileWriterTask.class) {
+                    version.set(libraryVersion)
+                    fileName.set(artifactName)
+                    outputDirectory.set(project.layout.buildDirectory.dir(folderName))
+                }
+                variant.sources.resources.addGeneratedSourceDirectory(writeVersionFileProvider, {it.outputDirectory})
+            })
         }
-
-        library.sourceSets.getByName("main").resources.srcDir(
-                new File(project.buildDir, RESOURCE_DIRECTORY)
-        )
     }
 }
 
@@ -170,7 +175,7 @@ subprojects {
     createArchive.dependsOn tasks.named('publish')
     project.afterEvaluate {
         VersionFileWriterTask.setUpAndroidLibrary(project,
-                project.extensions.findByType(LibraryExtension.class))
+                project.extensions.findByType(LibraryAndroidComponentsExtension.class))
     }
 }
 
@@ -220,18 +225,17 @@ def enableDoclava(p) {
     }
 
     def docsTask  = getRootDocsTask(p)
-    p.afterEvaluate {
-        p.android.libraryVariants.all { variant ->
-            def name = variant.buildType.name
 
-            if (name.equals(com.android.builder.core.BuilderConstants.DEBUG)) {
-                return // Skip debug builds.
+    def componentsExtension = project.extensions.getByType(AndroidComponentsExtension.class)
+    componentsExtension {
+        onVariants(slector().withBuildType("release"), { variant ->
+            variant.javaCompileProvider.configure { javaCompile ->
+                docsTask.classpath += p.files(javaCompile.classpath) +
+                        p.files(javaCompile.destinationDir)
+                docsTask.source += files(variant.sources.java.all)
+                docsTask.dependsOn javaCompile
             }
-            docsTask.classpath += p.files(variant.javaCompile.classpath) +
-                    p.files(variant.javaCompile.destinationDir)
-            docsTask.source += files(p.android.sourceSets.main.java.srcDirs)
-            docsTask.dependsOn variant.javaCompile
-        }
+        })
     }
 
 }
