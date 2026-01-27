@@ -32,3 +32,4 @@ fun TextView.setTextViaFloat(floatValue: Float) {
 fun TextView.setTextViaInt(intValue : Int) {
     text = intValue.toString()
 }
+

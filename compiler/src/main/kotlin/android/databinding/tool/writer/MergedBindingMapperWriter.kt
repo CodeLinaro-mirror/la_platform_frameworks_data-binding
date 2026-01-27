@@ -29,70 +29,72 @@ import com.squareup.javapoet.TypeSpec
 import javax.lang.model.element.Modifier
 
 class MergedBindingMapperWriter(
-        compilerArgs: CompilerArguments,
-        private val featurePackages : Set<String>,
-        private val hasV1CompatMapper: Boolean,
-        private val libTypes: LibTypes) {
-    private val generateAsTest = compilerArgs.isTestVariant && compilerArgs.isApp
-    private val generateTestOverride = !generateAsTest && compilerArgs.isEnabledForTests
-    private val overrideField = FieldSpec.builder(ClassName.bestGuess(libTypes.dataBinderMapper),
-            "sTestOverride")
-            .addModifiers(Modifier.STATIC)
-            .build()
+  compilerArgs: CompilerArguments,
+  private val featurePackages: Set<String>,
+  private val hasV1CompatMapper: Boolean,
+  private val libTypes: LibTypes,
+) {
+  private val generateAsTest = compilerArgs.isTestVariant && compilerArgs.isApp
+  private val generateTestOverride = !generateAsTest && compilerArgs.isEnabledForTests
+  private val overrideField =
+    FieldSpec.builder(ClassName.bestGuess(libTypes.dataBinderMapper), "sTestOverride").addModifiers(Modifier.STATIC).build()
 
-    companion object {
-        const val APP_CLASS_NAME = "DataBinderMapperImpl"
-        internal const val TEST_CLASS_NAME = "Test$APP_CLASS_NAME"
-    }
+  companion object {
+    const val APP_CLASS_NAME = "DataBinderMapperImpl"
+    internal const val TEST_CLASS_NAME = "Test$APP_CLASS_NAME"
+  }
 
-    val pkg = libTypes.bindingPackage
-    val qualifiedName = "$pkg.$APP_CLASS_NAME"
-    private val appPkg: String = compilerArgs.modulePackage
-    private val dataBinderMapper: ClassName = ClassName.bestGuess(libTypes.dataBinderMapper)
+  val pkg = libTypes.bindingPackage
+  val qualifiedName = "$pkg.$APP_CLASS_NAME"
+  private val appPkg: String = compilerArgs.modulePackage
+  private val dataBinderMapper: ClassName = ClassName.bestGuess(libTypes.dataBinderMapper)
 
-    private val mergedMapperBase: ClassName = ClassName.get(
-            libTypes.bindingPackage,
-            "MergedDataBinderMapper")
+  private val mergedMapperBase: ClassName = ClassName.get(libTypes.bindingPackage, "MergedDataBinderMapper")
 
-    private val testOverride: ClassName = ClassName.get(
-            libTypes.bindingPackage,
-            TEST_CLASS_NAME)
+  private val testOverride: ClassName = ClassName.get(libTypes.bindingPackage, TEST_CLASS_NAME)
 
-    fun write() = TypeSpec.classBuilder(APP_CLASS_NAME).apply {
+  fun write() =
+    TypeSpec.classBuilder(APP_CLASS_NAME)
+      .apply {
         superclass(mergedMapperBase)
         addModifiers(Modifier.PUBLIC)
-        addMethod(MethodSpec.constructorBuilder().apply {
-            val mapper = ClassName.get(appPkg, APP_CLASS_NAME)
-            addStatement("addMapper(new $T())", mapper)
-            if (hasV1CompatMapper) {
-                val compatMapper = ClassName.get(
-                    BindingMapperWriter.v1CompatMapperPkg(libTypes.useAndroidX),
-                    BindingMapperWriter.V1_COMPAT_MAPPER_NAME)
+        addMethod(
+          MethodSpec.constructorBuilder()
+            .apply {
+              val mapper = ClassName.get(appPkg, APP_CLASS_NAME)
+              addStatement("addMapper(new $T())", mapper)
+              if (hasV1CompatMapper) {
+                val compatMapper =
+                  ClassName.get(BindingMapperWriter.v1CompatMapperPkg(libTypes.useAndroidX), BindingMapperWriter.V1_COMPAT_MAPPER_NAME)
                 addStatement("addMapper(new $T())", compatMapper)
+              }
+              featurePackages.forEach { addStatement("addMapper($S)", it) }
+              if (generateTestOverride) {
+                beginControlFlow("if($N != null)", overrideField).apply { addStatement("addMapper($N)", overrideField) }.endControlFlow()
+              }
             }
-            featurePackages.forEach {
-                addStatement("addMapper($S)", it)
-            }
-            if (generateTestOverride) {
-                beginControlFlow("if($N != null)", overrideField).apply {
-                    addStatement("addMapper($N)", overrideField)
-                }.endControlFlow()
-            }
-        }.build())
+            .build()
+        )
         if (generateTestOverride) {
-            addField(overrideField)
-            addStaticBlock(CodeBlock.builder()
-                    .beginControlFlow("try").apply {
-                addStatement("$N = ($T) $T.class.getClassLoader().loadClass($S).newInstance()",
-                        overrideField, dataBinderMapper,
-                        dataBinderMapper,
-                        testOverride)
-            }.nextControlFlow("catch($T ignored)", ClassName.get(Throwable::class.java))
-                    .apply {
-                        addStatement("$N = null", overrideField)
-                    }
-                    .endControlFlow()
-                    .build())
+          addField(overrideField)
+          addStaticBlock(
+            CodeBlock.builder()
+              .beginControlFlow("try")
+              .apply {
+                addStatement(
+                  "$N = ($T) $T.class.getClassLoader().loadClass($S).newInstance()",
+                  overrideField,
+                  dataBinderMapper,
+                  dataBinderMapper,
+                  testOverride,
+                )
+              }
+              .nextControlFlow("catch($T ignored)", ClassName.get(Throwable::class.java))
+              .apply { addStatement("$N = null", overrideField) }
+              .endControlFlow()
+              .build()
+          )
         }
-    }.build()!!
+      }
+      .build()!!
 }

@@ -18,22 +18,20 @@ package android.databinding.tool
 
 import javax.lang.model.element.Element
 
-/**
- * Compat shim for Untaggable annotation
- */
-class UntaggableCompat(val value : Array<String>) {
-    companion object {
-        @JvmStatic
-        fun create(element : Element) : UntaggableCompat {
-            val support = element.getAnnotation(android.databinding.Untaggable::class.java)
-            if (support != null) {
-                return UntaggableCompat(support.value)
-            }
-            val androidX = element.getAnnotation(androidx.databinding.Untaggable::class.java)
-            if (androidX != null) {
-                return UntaggableCompat(androidX.value)
-            }
-            throw IllegalArgumentException("$element does not have Untaggable annotation")
-        }
+/** Compat shim for Untaggable annotation */
+class UntaggableCompat(val value: Array<String>) {
+  companion object {
+    @JvmStatic
+    fun create(element: Element): UntaggableCompat {
+      val support = element.getAnnotation(android.databinding.Untaggable::class.java)
+      if (support != null) {
+        return UntaggableCompat(support.value)
+      }
+      val androidX = element.getAnnotation(androidx.databinding.Untaggable::class.java)
+      if (androidX != null) {
+        return UntaggableCompat(androidX.value)
+      }
+      throw IllegalArgumentException("$element does not have Untaggable annotation")
     }
+  }
 }

@@ -16,14 +16,13 @@
 package android.databinding.tool.reflection
 
 import android.databinding.tool.reflection.java.JavaAnalyzer
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.assertTrue
 
 class JavaClassTest {
 
-  @Before
-  fun setUp() = JavaAnalyzer.initForTests()
+  @Before fun setUp() = JavaAnalyzer.initForTests()
 
   @Test
   fun getAllMethods() {
@@ -61,8 +60,8 @@ class JavaClassTest {
       .filter { it.isPublic }
       .let { publicFields ->
         // instance
-        assertTrue(publicFields.any { it.name == "width"})
-        assertTrue(publicFields.any { it.name == "height"})
+        assertTrue(publicFields.any { it.name == "width" })
+        assertTrue(publicFields.any { it.name == "height" })
         // static
         assertTrue(publicFields.any { it.name == "OUT_LEFT" })
       }

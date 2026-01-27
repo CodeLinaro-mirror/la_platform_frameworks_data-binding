@@ -19,55 +19,56 @@ package android.databinding.tool.writer
 import android.databinding.tool.CallbackWrapper
 
 fun CallbackWrapper.allArgsWithTypes() =
-        "int ${CallbackWrapper.SOURCE_ID} ${method.parameterTypes.withIndex().map { ", ${it.value.toJavaCode()} ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString("")}"
+  "int ${CallbackWrapper.SOURCE_ID} ${method.parameterTypes.withIndex().map { ", ${it.value.toJavaCode()} ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString("")}"
 
 fun CallbackWrapper.argsWithTypes() =
-        method.parameterTypes.withIndex().map { "${it.value.toJavaCode()} ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString(", ")
+  method.parameterTypes.withIndex().map { "${it.value.toJavaCode()} ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString(", ")
 
-fun CallbackWrapper.args() =
-        method.parameterTypes.withIndex().map { "${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString(", ")
+fun CallbackWrapper.args() = method.parameterTypes.withIndex().map { "${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString(", ")
 
 fun CallbackWrapper.allArgs() =
-        "mSourceId ${method.parameterTypes.withIndex().map { ", ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString("")}"
+  "mSourceId ${method.parameterTypes.withIndex().map { ", ${CallbackWrapper.ARG_PREFIX}${it.index}" }.joinToString("")}"
 
 /**
- * For any listener type we see, we create a class that can wrap around it. This wrapper has an
- * interface which is implemented by the ViewDataBinding.
+ * For any listener type we see, we create a class that can wrap around it. This wrapper has an interface which is implemented by the
+ * ViewDataBinding.
  */
 class CallbackWrapperWriter(val wrapper: CallbackWrapper) {
 
-    fun write() = kcode("") {
+  fun write() =
+    kcode("") {
         with(wrapper) {
-            @Suppress("RemoveCurlyBracesFromTemplate")
-            app("package ${`package`};")
-            val extendsImplements = if (klass.isInterface) {
-                "implements"
+          @Suppress("RemoveCurlyBracesFromTemplate") app("package ${`package`};")
+          val extendsImplements =
+            if (klass.isInterface) {
+              "implements"
             } else {
-                "extends"
+              "extends"
             }
-            block("public final class $className $extendsImplements ${klass.canonicalName}") {
-                // declare the actual listener interface
-                nl("final $listenerInterfaceName mListener;")
-                nl("final int mSourceId;")
-                block("public $className($listenerInterfaceName listener, int sourceId)") {
-                    nl("mListener = listener;")
-                    nl("mSourceId = sourceId;")
-                }
-                nl("")
-                nl("@Override")
-                block("public ${method.returnType.canonicalName} ${method.name}(${wrapper.argsWithTypes()})") {
-                    val evaluate = "mListener.$listenerMethodName(${wrapper.allArgs()});"
-                    if (method.returnType.isVoid) {
-                        nl(evaluate)
-                    } else {
-                        nl("return $evaluate")
-                    }
-                }
-                nl("")
-                block("public interface $listenerInterfaceName") {
-                    nl("${method.returnType} $listenerMethodName(${wrapper.allArgsWithTypes()});")
-                }
+          block("public final class $className $extendsImplements ${klass.canonicalName}") {
+            // declare the actual listener interface
+            nl("final $listenerInterfaceName mListener;")
+            nl("final int mSourceId;")
+            block("public $className($listenerInterfaceName listener, int sourceId)") {
+              nl("mListener = listener;")
+              nl("mSourceId = sourceId;")
             }
+            nl("")
+            nl("@Override")
+            block("public ${method.returnType.canonicalName} ${method.name}(${wrapper.argsWithTypes()})") {
+              val evaluate = "mListener.$listenerMethodName(${wrapper.allArgs()});"
+              if (method.returnType.isVoid) {
+                nl(evaluate)
+              } else {
+                nl("return $evaluate")
+              }
+            }
+            nl("")
+            block("public interface $listenerInterfaceName") {
+              nl("${method.returnType} $listenerMethodName(${wrapper.allArgsWithTypes()});")
+            }
+          }
         }
-    }.generate()
+      }
+      .generate()
 }

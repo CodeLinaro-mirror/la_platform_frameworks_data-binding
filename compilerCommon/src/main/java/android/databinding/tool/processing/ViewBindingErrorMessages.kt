@@ -18,27 +18,22 @@ package android.databinding.tool.processing
 
 import android.databinding.tool.store.LayoutFileParser.VIEW_BINDING_TYPE_ATTR
 
-/**
- * Error messages for ViewBinding code generator.
- */
+/** Error messages for ViewBinding code generator. */
 object ViewBindingErrorMessages {
-    fun viewBindingTypeInIncludeTag(
-        layoutFileName: String,
-        includeTagId: String
-    ): String = """
+  fun viewBindingTypeInIncludeTag(layoutFileName: String, includeTagId: String): String =
+    """
         Cannot use '$VIEW_BINDING_TYPE_ATTR' in <include> tags.
 
         <include id='$includeTagId'> in layout '$layoutFileName' will be ignored, as ViewBinding
         always uses the type from the included target.
-    """.trimIndent()
+    """
+      .trimIndent()
 
-    fun inconsistentViewBindingType(
-        layoutFileName: String,
-        bindingTypes: List<String>,
-        bindingTargetId: String,
-    ): String = """
+  fun inconsistentViewBindingType(layoutFileName: String, bindingTypes: List<String>, bindingTargetId: String): String =
+    """
         <View $VIEW_BINDING_TYPE_ATTR='$bindingTargetId'> is not defined consistently in '$layoutFileName'
 
         Types declared across layouts: ${bindingTypes.joinToString(", ")}
-    """.trimIndent()
+    """
+      .trimIndent()
 }

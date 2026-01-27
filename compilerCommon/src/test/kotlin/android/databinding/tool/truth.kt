@@ -25,26 +25,23 @@ import com.google.testing.compile.JavaSourceSubjectFactory
 import com.squareup.javapoet.JavaFile
 
 fun JavaFile.assert(assertions: JavaFileSubject.() -> Unit) {
-    assertAbout(::JavaFileSubject).that(this).apply(assertions)
+  assertAbout(::JavaFileSubject).that(this).apply(assertions)
 }
 
-class JavaFileSubject(
-    metadata: FailureMetadata,
-    actual: JavaFile
-) : Subject<JavaFileSubject, JavaFile>(metadata, actual) {
-    private val actualString by lazy(actual::toString)
+class JavaFileSubject(metadata: FailureMetadata, actual: JavaFile) : Subject<JavaFileSubject, JavaFile>(metadata, actual) {
+  private val actualString by lazy(actual::toString)
 
-    fun contains(expected: String) {
-        assertThat(actualString).contains(expected)
-    }
+  fun contains(expected: String) {
+    assertThat(actualString).contains(expected)
+  }
 
-    fun doesNotContain(expected: String) {
-        assertThat(actualString).doesNotContain(expected)
-    }
+  fun doesNotContain(expected: String) {
+    assertThat(actualString).doesNotContain(expected)
+  }
 
-    fun parsesAs(expected: String) {
-        assertAbout(JavaSourceSubjectFactory.javaSource())
-            .that(JavaFileObjects.forSourceString("Actual", actual().toString()))
-            .parsesAs(JavaFileObjects.forSourceString("Expected", expected))
-    }
+  fun parsesAs(expected: String) {
+    assertAbout(JavaSourceSubjectFactory.javaSource())
+      .that(JavaFileObjects.forSourceString("Actual", actual().toString()))
+      .parsesAs(JavaFileObjects.forSourceString("Expected", expected))
+  }
 }

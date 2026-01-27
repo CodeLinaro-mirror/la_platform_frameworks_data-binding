@@ -16,7 +16,6 @@ import android.databinding.tool.reflection.ModelClass
 import android.databinding.tool.reflection.MutableImportBag
 import android.databinding.tool.runProcessorTest
 import com.google.common.truth.Truth
-import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationRule
 import com.google.testing.compile.JavaFileObjects
 import org.junit.Rule
@@ -27,23 +26,24 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class AnnotationModelAssignabilityTest {
-  @JvmField
-  @Rule
-  val compilation = CompilationRule()
+  @JvmField @Rule val compilation = CompilationRule()
 
-  @JvmField
-  @Rule
-  val tmpFolder = TemporaryFolder()
+  @JvmField @Rule val tmpFolder = TemporaryFolder()
 
   @Test
   fun basic() {
-    val myGeneric = JavaFileObjects.forSourceString("foo.bar.GenericClass", """
-      package foo.bar;
-      public class GenericClass<T> {
-          public T value;
-          public java.util.List<T> listValue;
-      }
-    """.trimIndent())
+    val myGeneric =
+      JavaFileObjects.forSourceString(
+        "foo.bar.GenericClass",
+        """
+        package foo.bar;
+        public class GenericClass<T> {
+            public T value;
+            public java.util.List<T> listValue;
+        }
+        """
+          .trimIndent(),
+      )
     runProcessorTest(tmpFolder, jfos = *arrayOf(myGeneric)) { context, processingEnvironment ->
       val listOfString = context.requireClass("List<String>")
       val listOfBoolean = context.requireClass("List<Boolean>")
@@ -76,46 +76,31 @@ class AnnotationModelAssignabilityTest {
       listOfDefinedMaps.assertNotAssignableFrom(listOfIncompleteMaps)
 
       val incompleteGeneric = context.requireClass("foo.bar.GenericClass")
-      incompleteList.assertNotAssignableFrom(
-          incompleteGeneric.getField("value").fieldType
-      )
-      incompleteList.assertAssignableFrom(
-          incompleteGeneric.getField("listValue").fieldType
-      )
-      incompleteMap.assertNotAssignableFrom(
-          incompleteGeneric.getField("listValue").fieldType
-      )
+      incompleteList.assertNotAssignableFrom(incompleteGeneric.getField("value").fieldType)
+      incompleteList.assertAssignableFrom(incompleteGeneric.getField("listValue").fieldType)
+      incompleteMap.assertNotAssignableFrom(incompleteGeneric.getField("listValue").fieldType)
     }
   }
 
-  private fun ModelClass.getField(name:String) = allFields.first {
-    it.name == name
+  private fun ModelClass.getField(name: String) = allFields.first { it.name == name }
+
+  private fun android.databinding.tool.Context.requireClass(name: String): ModelClass {
+    return checkNotNull(modelAnalyzer?.findClass(name, IMPORTS)) { "cannot find required class for test: $name" }
   }
 
-  private fun android.databinding.tool.Context.requireClass(name : String): ModelClass {
-    return checkNotNull(
-      modelAnalyzer?.findClass(name, IMPORTS)
-    ) {
-      "cannot find required class for test: $name"
-    }
+  private fun ModelClass.assertAssignableFrom(other: ModelClass) {
+    Truth.assertWithMessage("$this should be assignable from $other").that(isAssignableFrom(other)).isTrue()
   }
 
-  private fun ModelClass.assertAssignableFrom(other:ModelClass) {
-    Truth.assertWithMessage(
-      "$this should be assignable from $other"
-    ).that(isAssignableFrom(other)).isTrue()
-  }
-
-  private fun ModelClass.assertNotAssignableFrom(other:ModelClass) {
-    Truth.assertWithMessage(
-      "$this should NOT be assignable from $other"
-    ).that(isAssignableFrom(other)).isFalse()
+  private fun ModelClass.assertNotAssignableFrom(other: ModelClass) {
+    Truth.assertWithMessage("$this should NOT be assignable from $other").that(isAssignableFrom(other)).isFalse()
   }
 
   companion object {
-    val IMPORTS = MutableImportBag().apply {
-      put("List", "java.util.List")
-      put("Map", "java.util.Map")
-    }
+    val IMPORTS =
+      MutableImportBag().apply {
+        put("List", "java.util.List")
+        put("Map", "java.util.Map")
+      }
   }
 }
