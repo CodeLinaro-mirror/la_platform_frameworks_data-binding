@@ -18,16 +18,10 @@ package android.databinding.cli
 import java.io.InputStream
 import java.util.zip.ZipFile
 
-fun ZipFile.hasFile(path : String) : Boolean {
-    return entries().asSequence().any {
-        it.name == path
-    }
+fun ZipFile.hasFile(path: String): Boolean {
+  return entries().asSequence().any { it.name == path }
 }
 
-fun ZipFile.entryInputStream(path : String) : InputStream {
-    return entries().asSequence().first {
-        it.name == path
-    }.run {
-        getInputStream(this)
-    }
+fun ZipFile.entryInputStream(path: String): InputStream {
+  return entries().asSequence().first { it.name == path }.run { getInputStream(this) }
 }

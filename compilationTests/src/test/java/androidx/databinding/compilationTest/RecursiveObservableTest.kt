@@ -26,23 +26,19 @@ import org.junit.runners.JUnit4
 @RunWith(JUnit4::class)
 class RecursiveObservableTest : DataBindingCompilationTestCase() {
 
-    @Test
-    fun recursiveObservableUsed() {
-        loadApp()
-        copyTestData(
-            "layout/recursive_layout.xml",
-            "app/src/main/res/layout/recursive.xml"
-        )
-        copyTestData(
-            "androidx/databinding/compilationTests/badJava/RecursiveLiveData.java",
-            "app/src/main/java/androidx/databinding/compilationTest/badJava/RecursiveLiveData.java"
-        )
-        val result = assembleDebug()
-        assertThat(
-            result.error, result.bindingExceptions.firstOrNull()?.createHumanReadableMessage(),
-            containsString(
-                String.format(ErrorMessages.RECURSIVE_OBSERVABLE, "recursiveLiveData.text")
-            )
-        )
-    }
+  @Test
+  fun recursiveObservableUsed() {
+    loadApp()
+    copyTestData("layout/recursive_layout.xml", "app/src/main/res/layout/recursive.xml")
+    copyTestData(
+      "androidx/databinding/compilationTests/badJava/RecursiveLiveData.java",
+      "app/src/main/java/androidx/databinding/compilationTest/badJava/RecursiveLiveData.java",
+    )
+    val result = assembleDebug()
+    assertThat(
+      result.error,
+      result.bindingExceptions.firstOrNull()?.createHumanReadableMessage(),
+      containsString(String.format(ErrorMessages.RECURSIVE_OBSERVABLE, "recursiveLiveData.text")),
+    )
+  }
 }

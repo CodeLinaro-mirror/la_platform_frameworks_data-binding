@@ -21,192 +21,155 @@ import android.databinding.tool.util.Preconditions
 import java.util.*
 
 /**
- * This is the base class for several implementations of something that
- * acts like a ClassLoader. Different implementations work with the Annotation
- * Processor, ClassLoader, and an Android Studio plugin.
+ * This is the base class for several implementations of something that acts like a ClassLoader. Different implementations work with the
+ * Annotation Processor, ClassLoader, and an Android Studio plugin.
  */
 abstract class ModelAnalyzer protected constructor(@JvmField val libTypes: LibTypes) {
 
-    val mapType by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(MAP_CLASS_NAME)!!
+  val mapType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(MAP_CLASS_NAME)!! }
+
+  val stringType by lazy(LazyThreadSafetyMode.NONE) { findClass(STRING_CLASS_NAME, null)!! }
+  val objectType by lazy(LazyThreadSafetyMode.NONE) { findClass(OBJECT_CLASS_NAME, null)!! }
+
+  val observableType by lazy(LazyThreadSafetyMode.NONE) { findClass(libTypes.observable, null)!! }
+  val observableListType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.observableList)!! }
+  val observableMapType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.observableMap)!! }
+  val liveDataType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.liveData) }
+  val mutableLiveDataType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.mutableLiveData) }
+  val stateFlowType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.stateFlow) }
+  val mutableStateFlowDataType by lazy(LazyThreadSafetyMode.NONE) { loadClassErasure(libTypes.mutableStateFlow) }
+  val viewDataBindingType by
+    lazy(LazyThreadSafetyMode.NONE) {
+      val klass = findClass(libTypes.viewDataBinding, null)
+      Preconditions.checkNotNull(
+        klass,
+        "Cannot find %s class." + "Something is wrong in the classpath,  please submit a bug" + " report",
+        libTypes.viewDataBinding,
+      )
+      klass
+    }
+  val viewBindingType by
+    lazy(LazyThreadSafetyMode.NONE) {
+      val klass = findClass(libTypes.viewBinding, null)
+      Preconditions.checkNotNull(
+        klass,
+        "Cannot find %s class." + "Something is wrong in the classpath,  please submit a bug" + " report",
+        libTypes.viewBinding,
+      )
+      klass
     }
 
-    val stringType by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(STRING_CLASS_NAME, null)!!
+  val viewStubType by lazy(LazyThreadSafetyMode.NONE) { findClass(VIEW_STUB_CLASS_NAME, null) }
+  val viewStubProxyType by lazy(LazyThreadSafetyMode.NONE) { findClass(libTypes.viewStubProxy, null) }
+
+  /** If present, rely on it for fetching resources when possible. */
+  val appCompatResourcesType by lazy(LazyThreadSafetyMode.NONE) { findClass(libTypes.appCompatResources, null) }
+
+  /** If it is present, we annotate generated classes with @Generated. */
+  val hasGeneratedAnnotation by lazy(LazyThreadSafetyMode.NONE) { findGeneratedAnnotation() }
+
+  private val mInjectedClasses = HashMap<String, InjectedClass>()
+
+  val listTypes by lazy(LazyThreadSafetyMode.NONE) { libTypes.listClassNames.mapNotNull(this::loadClassErasure) }
+
+  val observableFieldTypes by lazy(LazyThreadSafetyMode.NONE) { libTypes.observableFields.mapNotNull(this::loadClassErasure) }
+
+  @JvmOverloads
+  fun findCommonParentOf(modelClass1: ModelClass, modelClass2: ModelClass?, failOnError: Boolean = true): ModelClass? {
+    var curr: ModelClass? = modelClass1
+    while (curr != null && !curr.isAssignableFrom(modelClass2)) {
+      curr = curr.superclass
     }
-    val objectType  by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(OBJECT_CLASS_NAME, null)!!
+    if (curr == null) {
+      if (modelClass1.isObject && modelClass2!!.isInterface) {
+        return modelClass1
+      } else if (modelClass2!!.isObject && modelClass1.isInterface) {
+        return modelClass2
+      }
+
+      val primitive1 = modelClass1.unbox()
+      val primitive2 = modelClass2.unbox()
+      if (modelClass1 != primitive1 || modelClass2 != primitive2) {
+        return findCommonParentOf(primitive1, primitive2, failOnError)
+      }
     }
-
-    val observableType by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(libTypes.observable, null)!!
+    if (failOnError) {
+      Preconditions.checkNotNull(curr, "must be able to find a common parent for " + modelClass1 + " and " + modelClass2)
     }
-    val observableListType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.observableList)!!
+    return curr
+  }
+
+  abstract fun loadPrimitive(className: String): ModelClass
+
+  fun getDefaultValue(className: String) = DEFAULT_VALUES[className] ?: "null"
+
+  val classFinderCache = ClassFinderCache { className, imports ->
+    if (mInjectedClasses.containsKey(className)) {
+      mInjectedClasses[className]
+    } else {
+      findClassInternal(className, imports)
     }
-    val observableMapType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.observableMap)!!
-    }
-    val liveDataType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.liveData)
-    }
-    val mutableLiveDataType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.mutableLiveData)
-    }
-    val stateFlowType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.stateFlow)
-    }
-    val mutableStateFlowDataType  by lazy(LazyThreadSafetyMode.NONE) {
-        loadClassErasure(libTypes.mutableStateFlow)
-    }
-    val viewDataBindingType  by lazy(LazyThreadSafetyMode.NONE) {
-        val klass = findClass(libTypes.viewDataBinding, null)
-        Preconditions.checkNotNull(klass, "Cannot find %s class." +
-                "Something is wrong in the classpath,  please submit a bug" +
-                " report", libTypes.viewDataBinding)
-        klass
-    }
-    val viewBindingType by lazy(LazyThreadSafetyMode.NONE) {
-        val klass = findClass(libTypes.viewBinding, null)
-        Preconditions.checkNotNull(klass, "Cannot find %s class." +
-          "Something is wrong in the classpath,  please submit a bug" +
-          " report", libTypes.viewBinding)
-        klass
-    }
+  }
 
-    val viewStubType  by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(VIEW_STUB_CLASS_NAME, null)
-    }
-    val viewStubProxyType  by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(libTypes.viewStubProxy, null)
-    }
+  private val dataBindingKtxClass by lazy { findClass(libTypes.dataBindingKtx, null) }
 
-    /**
-     * If present, rely on it for fetching resources when possible.
-     */
-    val appCompatResourcesType by lazy(LazyThreadSafetyMode.NONE) {
-        findClass(libTypes.appCompatResources, null)
-    }
+  fun checkDataBindingKtx() {
+    Preconditions.checkNotNull(
+      dataBindingKtxClass,
+      """
+      |Data binding ktx is not enabled.
+      |
+      |Add dataBinding.addKtx = true to your build.gradle to enable it.
+      """
+        .trimMargin(),
+    )
+  }
 
-    /**
-     * If it is present, we annotate generated classes with @Generated.
-     */
-    val hasGeneratedAnnotation by lazy(LazyThreadSafetyMode.NONE) {
-        findGeneratedAnnotation()
-    }
+  fun findClass(className: String, imports: ImportBag?): ModelClass? {
+    return classFinderCache.find(className, imports)
+  }
 
-    private val mInjectedClasses = HashMap<String, InjectedClass>()
+  abstract fun findClassInternal(className: String, importBag: ImportBag?): ModelClass
 
-    val listTypes by lazy(LazyThreadSafetyMode.NONE) {
-        libTypes.listClassNames
-                .mapNotNull(this::loadClassErasure)
-    }
+  abstract fun findClass(classType: Class<*>): ModelClass
 
-    val observableFieldTypes by lazy(LazyThreadSafetyMode.NONE) {
-        libTypes.observableFields
-                .mapNotNull(this::loadClassErasure)
-    }
+  abstract fun createTypeUtil(): TypeUtil
 
-    @JvmOverloads
-    fun findCommonParentOf(modelClass1: ModelClass, modelClass2: ModelClass?,
-                           failOnError: Boolean = true): ModelClass? {
-        var curr: ModelClass? = modelClass1
-        while (curr != null && !curr.isAssignableFrom(modelClass2)) {
-            curr = curr.superclass
-        }
-        if (curr == null) {
-            if (modelClass1.isObject && modelClass2!!.isInterface) {
-                return modelClass1
-            } else if (modelClass2!!.isObject && modelClass1.isInterface) {
-                return modelClass2
-            }
+  fun injectClass(injectedClass: InjectedClass): ModelClass {
+    mInjectedClasses[injectedClass.canonicalName] = injectedClass
+    return injectedClass
+  }
 
-            val primitive1 = modelClass1.unbox()
-            val primitive2 = modelClass2.unbox()
-            if (modelClass1 != primitive1 || modelClass2 != primitive2) {
-                return findCommonParentOf(primitive1, primitive2, failOnError)
-            }
-        }
-        if (failOnError) {
-            Preconditions.checkNotNull(curr,
-                    "must be able to find a common parent for " + modelClass1 + " and "
-                            + modelClass2)
-        }
-        return curr
-    }
+  private fun loadClassErasure(className: String): ModelClass? {
+    val modelClass = findClass(className, null)
+    return modelClass?.erasure()
+  }
 
-    abstract fun loadPrimitive(className: String): ModelClass
+  protected abstract fun findGeneratedAnnotation(): Boolean
 
-    fun getDefaultValue(className: String) = DEFAULT_VALUES[className] ?: "null"
+  companion object {
+    @JvmField val GENERATED_ANNOTATION = "javax.annotation.Generated"
 
-    val classFinderCache = ClassFinderCache { className, imports ->
-        if (mInjectedClasses.containsKey(className)) {
-            mInjectedClasses[className]
-        } else {
-            findClassInternal(className, imports)
-        }
-    }
+    private val MAP_CLASS_NAME = "java.util.Map"
 
-    private val dataBindingKtxClass by lazy {
-        findClass(libTypes.dataBindingKtx, null)
-    }
+    private val STRING_CLASS_NAME = "java.lang.String"
 
-    fun checkDataBindingKtx() {
-        Preconditions.checkNotNull(
-                dataBindingKtxClass, """Data binding ktx is not enabled.
-                |
-                |Add dataBinding.addKtx = true to your build.gradle to enable it."""
-                .trimMargin()
-        )
-    }
+    private val OBJECT_CLASS_NAME = "java.lang.Object"
 
-    fun findClass(className: String, imports: ImportBag?): ModelClass? {
-        return classFinderCache.find(className, imports)
-    }
+    private val VIEW_STUB_CLASS_NAME = "android.view.ViewStub"
 
-    abstract fun findClassInternal(className: String, importBag: ImportBag?): ModelClass
+    @JvmStatic fun getInstance(): ModelAnalyzer = Context.modelAnalyzer!!
 
-    abstract fun findClass(classType: Class<*>): ModelClass
-
-    abstract fun createTypeUtil(): TypeUtil
-
-    fun injectClass(injectedClass: InjectedClass): ModelClass {
-        mInjectedClasses[injectedClass.canonicalName] = injectedClass
-        return injectedClass
-    }
-
-    private fun loadClassErasure(className: String): ModelClass? {
-        val modelClass = findClass(className, null)
-        return modelClass?.erasure()
-    }
-
-    protected abstract fun findGeneratedAnnotation(): Boolean
-
-    companion object {
-        @JvmField
-        val GENERATED_ANNOTATION = "javax.annotation.Generated"
-
-        private val MAP_CLASS_NAME = "java.util.Map"
-
-        private val STRING_CLASS_NAME = "java.lang.String"
-
-        private val OBJECT_CLASS_NAME = "java.lang.Object"
-
-        private val VIEW_STUB_CLASS_NAME = "android.view.ViewStub"
-
-        @JvmStatic
-        fun getInstance() : ModelAnalyzer = Context.modelAnalyzer!!
-
-        private val DEFAULT_VALUES = mapOf(
-                "int" to "0",
-                "short" to "0",
-                "long" to "0",
-                "float" to "0f",
-                "double" to "0.0",
-                "boolean" to "false",
-                "char" to "'\\u0000'",
-                "byte" to "0"
-        )
-    }
-
+    private val DEFAULT_VALUES =
+      mapOf(
+        "int" to "0",
+        "short" to "0",
+        "long" to "0",
+        "float" to "0f",
+        "double" to "0.0",
+        "boolean" to "false",
+        "char" to "'\\u0000'",
+        "byte" to "0",
+      )
+  }
 }

@@ -19,62 +19,63 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class MutableImportBagTest {
-    @Test
-    fun mutableWithImmutable() {
-        assertEquals(MutableImportBag(), ImportBag.EMPTY)
-    }
+  @Test
+  fun mutableWithImmutable() {
+    assertEquals(MutableImportBag(), ImportBag.EMPTY)
+  }
 
-    @Test
-    fun mutableWithImmutable_modified() {
-        assertNotEquals(MutableImportBag().also {
-            it.put("foo", "bar")
-        }, ImportBag.EMPTY)
-    }
+  @Test
+  fun mutableWithImmutable_modified() {
+    assertNotEquals(MutableImportBag().also { it.put("foo", "bar") }, ImportBag.EMPTY)
+  }
 
-    @Test
-    fun normal() {
-        val imports = MutableImportBag()
-        assertNull(imports.find("Foo"))
-        imports.put("Foo", "bar.Foo")
-        assertEquals("bar.Foo", imports.find("Foo"))
-        assertEquals("java.lang.String", imports.find("String"))
-    }
+  @Test
+  fun normal() {
+    val imports = MutableImportBag()
+    assertNull(imports.find("Foo"))
+    imports.put("Foo", "bar.Foo")
+    assertEquals("bar.Foo", imports.find("Foo"))
+    assertEquals("java.lang.String", imports.find("String"))
+  }
 
-    @Test
-    fun equals() {
-        val bag1 = MutableImportBag().apply {
-            put("foo", "Bar")
-            put("bar", "Foo")
-        }
-        val bag2 = MutableImportBag().apply {
-            put("foo", "Bar")
-            put("bar", "Foo")
-        }
-        assertEquals(bag1, bag2)
-    }
+  @Test
+  fun equals() {
+    val bag1 =
+      MutableImportBag().apply {
+        put("foo", "Bar")
+        put("bar", "Foo")
+      }
+    val bag2 =
+      MutableImportBag().apply {
+        put("foo", "Bar")
+        put("bar", "Foo")
+      }
+    assertEquals(bag1, bag2)
+  }
 
-    @Test
-    fun equals_mismatch() {
-        val bag1 = MutableImportBag().apply {
-            put("foo", "Bar2")
-            put("bar", "Foo")
-        }
-        val bag2 = MutableImportBag().apply {
-            put("bar", "Foo")
-            put("foo", "Bar")
-        }
-        assertNotEquals(bag1, bag2)
-    }
+  @Test
+  fun equals_mismatch() {
+    val bag1 =
+      MutableImportBag().apply {
+        put("foo", "Bar2")
+        put("bar", "Foo")
+      }
+    val bag2 =
+      MutableImportBag().apply {
+        put("bar", "Foo")
+        put("foo", "Bar")
+      }
+    assertNotEquals(bag1, bag2)
+  }
 
-    @Test
-    fun equals_missing() {
-        val bag1 = MutableImportBag().apply {
-            put("bar", "Foo")
-        }
-        val bag2 = MutableImportBag().apply {
-            put("foo", "Bar")
-            put("bar", "Foo")
-        }
-        assertNotEquals(bag1, bag2)
-    }
+  @Test
+  fun equals_missing() {
+    val bag1 = MutableImportBag().apply { put("bar", "Foo") }
+    val bag2 =
+      MutableImportBag().apply {
+        put("foo", "Bar")
+        put("bar", "Foo")
+      }
+    assertNotEquals(bag1, bag2)
+  }
 }

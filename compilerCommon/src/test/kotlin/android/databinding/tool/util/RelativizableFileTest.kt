@@ -16,11 +16,11 @@
 
 package android.databinding.tool.util
 
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.fail
 import org.junit.Test
-import java.io.File
 
 class RelativizableFileTest {
 
@@ -86,18 +86,14 @@ class RelativizableFileTest {
 
     run {
       // When absoluteFile is located outside of baseDir, baseDir is ignored.
-      val file = RelativizableFile.fromAbsoluteFile(
-          absoluteFile = File(path("/a/b/c")), baseDir = File(path("/x")))
+      val file = RelativizableFile.fromAbsoluteFile(absoluteFile = File(path("/a/b/c")), baseDir = File(path("/x")))
       assertEquals(path("/a/b/c"), file.absoluteFile.path)
       assertNull(file.baseDir)
       assertNull(file.relativeFile)
     }
   }
 
-  /**
-   * Converts a Unix path containing forward slashes '/' to a path that is suitable for the
-   * current filesystem.
-   */
+  /** Converts a Unix path containing forward slashes '/' to a path that is suitable for the current filesystem. */
   private fun path(unixPath: String): String {
     return if (File.separatorChar != '/') {
       if (unixPath.startsWith("/")) {
@@ -113,9 +109,7 @@ class RelativizableFileTest {
 
   companion object {
 
-    /**
-     * The path of the filesystem root (e.g., "X:\" on Windows).
-     */
+    /** The path of the filesystem root (e.g., "X:\" on Windows). */
     private val root: String
 
     init {

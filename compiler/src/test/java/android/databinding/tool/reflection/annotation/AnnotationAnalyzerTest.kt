@@ -27,32 +27,35 @@ import org.junit.runners.JUnit4
 
 @RunWith(JUnit4::class)
 class AnnotationAnalyzerTest {
-    @get:Rule
-    val tmpFolder = TemporaryFolder()
+  @get:Rule val tmpFolder = TemporaryFolder()
 
-    @Test
-    fun boxedVoidType() {
-        val code = JavaFileObjects.forSourceString("com.example.Closure",
-                """
-                    package com.example;
-                    public class Closure<T, R> {
-                        R run(T t) {
-                            return null;
-                        }
-                    }
-                """.trimIndent())
-        runProcessorTest(tmpFolder, code) { context, processingEnvironment ->
-            val klass = context.modelAnalyzer
-                    ?.findClass("com.example.Closure<Integer, Void>", ImportBag.EMPTY)
-                    ?: throw AssertionError("cannot find class")
-
-            assertThat(klass.typeName).isEqualTo(
-                    ParameterizedTypeName.get(
-                            ClassName.get("com.example", "Closure"),
-                            ClassName.get(java.lang.Integer::class.java),
-                            ClassName.get(java.lang.Void::class.java)
-                    )
-            )
+  @Test
+  fun boxedVoidType() {
+    val code =
+      JavaFileObjects.forSourceString(
+        "com.example.Closure",
+        """
+        package com.example;
+        public class Closure<T, R> {
+            R run(T t) {
+                return null;
+            }
         }
+        """
+          .trimIndent(),
+      )
+    runProcessorTest(tmpFolder, code) { context, processingEnvironment ->
+      val klass =
+        context.modelAnalyzer?.findClass("com.example.Closure<Integer, Void>", ImportBag.EMPTY) ?: throw AssertionError("cannot find class")
+
+      assertThat(klass.typeName)
+        .isEqualTo(
+          ParameterizedTypeName.get(
+            ClassName.get("com.example", "Closure"),
+            ClassName.get(java.lang.Integer::class.java),
+            ClassName.get(java.lang.Void::class.java),
+          )
+        )
     }
+  }
 }

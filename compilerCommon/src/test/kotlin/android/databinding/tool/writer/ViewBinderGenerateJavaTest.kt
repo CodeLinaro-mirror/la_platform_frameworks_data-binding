@@ -18,11 +18,9 @@ package android.databinding.tool.writer
 
 import android.databinding.tool.LayoutResourceRule
 import android.databinding.tool.assert
-import android.databinding.tool.processing.ErrorMessages
 import android.databinding.tool.processing.ErrorMessages.FOUND_LAYOUT_BUT_NOT_ENABLED
 import android.databinding.tool.processing.ScopedException
 import android.databinding.tool.processing.ViewBindingErrorMessages
-import android.databinding.tool.store.LayoutFileParser
 import com.google.common.truth.Truth.assertThat
 import com.squareup.javapoet.ClassName
 import org.junit.Assert.fail
@@ -30,908 +28,1155 @@ import org.junit.Rule
 import org.junit.Test
 
 class ViewBinderGenerateJavaTest {
-    @get:Rule val layouts = LayoutResourceRule(viewBindingEnabled = true)
-    @get:Rule val layoutsWithDataBinding = LayoutResourceRule(
-        dataBindingEnabled = true,
-        viewBindingEnabled = true
+  @get:Rule val layouts = LayoutResourceRule(viewBindingEnabled = true)
+  @get:Rule val layoutsWithDataBinding = LayoutResourceRule(dataBindingEnabled = true, viewBindingEnabled = true)
+
+  @Test
+  fun nullableFieldsJavadocTheirConfigurations() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+      </LinearLayout>
+      """
+        .trimIndent(),
     )
 
-    @Test fun nullableFieldsJavadocTheirConfigurations() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-            </LinearLayout>
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-sw600dp",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-sw600dp", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-            </LinearLayout>
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout />
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-land", """
-            <LinearLayout />
-            """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  /**
-                |   * This binding is not available in all configurations.
-                |   * <p>
-                |   * Present:
-                |   * <ul>
-                |   *   <li>layout/</li>
-                |   *   <li>layout-sw600dp/</li>
-                |   * </ul>
-                |   *
-                |   * Absent:
-                |   * <ul>
-                |   *   <li>layout-land/</li>
-                |   * </ul>
-                |   */
-                |  @Nullable
-                |  public final TextView name;
-                """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  /**
+        |   * This binding is not available in all configurations.
+        |   * <p>
+        |   * Present:
+        |   * <ul>
+        |   *   <li>layout/</li>
+        |   *   <li>layout-sw600dp/</li>
+        |   * </ul>
+        |   *
+        |   * Absent:
+        |   * <ul>
+        |   *   <li>layout-land/</li>
+        |   * </ul>
+        |   */
+        |  @Nullable
+        |  public final TextView name;
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun zeroBindingsDoesNotGenerateErrorHandling() {
-        layouts.write("example", "layout", "<View />")
+  @Test
+  fun zeroBindingsDoesNotGenerateErrorHandling() {
+    layouts.write("example", "layout", "<View />")
 
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            parsesAs("""
-                |package com.example.databinding;
-                |
-                |import android.view.LayoutInflater;
-                |import android.view.View;
-                |import android.view.ViewGroup;
-                |import androidx.annotation.NonNull;
-                |import androidx.annotation.Nullable;
-                |import androidx.viewbinding.ViewBinding;
-                |import com.example.R;
-                |import java.lang.NullPointerException;
-                |import java.lang.Override;
-                |
-                |public final class ExampleBinding implements ViewBinding {
-                |  @NonNull
-                |  private final View rootView;
-                |
-                |  private ExampleBinding(@NonNull View rootView) {
-                |    this.rootView = rootView;
-                |  }
-                |
-                |  @Override
-                |  @NonNull
-                |  public View getRoot() {
-                |    return rootView;
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
-                |    return inflate(inflater, null, false);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
-                |      @Nullable ViewGroup parent, boolean attachToParent) {
-                |    View root = inflater.inflate(R.layout.example, parent, false);
-                |    if (attachToParent) {
-                |      parent.addView(root);
-                |    }
-                |    return bind(root);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    if (rootView == null) {
-                |      throw new NullPointerException("rootView");
-                |    }
-                |    return new ExampleBinding(rootView);
-                |  }
-                |}
-            """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      parsesAs(
+        """
+        |package com.example.databinding;
+        |
+        |import android.view.LayoutInflater;
+        |import android.view.View;
+        |import android.view.ViewGroup;
+        |import androidx.annotation.NonNull;
+        |import androidx.annotation.Nullable;
+        |import androidx.viewbinding.ViewBinding;
+        |import com.example.R;
+        |import java.lang.NullPointerException;
+        |import java.lang.Override;
+        |
+        |public final class ExampleBinding implements ViewBinding {
+        |  @NonNull
+        |  private final View rootView;
+        |
+        |  private ExampleBinding(@NonNull View rootView) {
+        |    this.rootView = rootView;
+        |  }
+        |
+        |  @Override
+        |  @NonNull
+        |  public View getRoot() {
+        |    return rootView;
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
+        |    return inflate(inflater, null, false);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
+        |      @Nullable ViewGroup parent, boolean attachToParent) {
+        |    View root = inflater.inflate(R.layout.example, parent, false);
+        |    if (attachToParent) {
+        |      parent.addView(root);
+        |    }
+        |    return bind(root);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding bind(@NonNull View rootView) {
+        |    if (rootView == null) {
+        |      throw new NullPointerException("rootView");
+        |    }
+        |    return new ExampleBinding(rootView);
+        |  }
+        |}
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun allOptionalBindingsDoesNotGenerateErrorHandling() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-                <TextView android:id="@+id/email" />
-            </LinearLayout>
-            """.trimIndent())
+  @Test
+  fun allOptionalBindingsDoesNotGenerateErrorHandling() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+          <TextView android:id="@+id/email" />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-sw600dp", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-            </LinearLayout>
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-sw600dp",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-land", """
-            <LinearLayout />
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout />
+      """
+        .trimIndent(),
+    )
 
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            parsesAs("""
-                |package com.example.databinding;
-                |
-                |import android.view.LayoutInflater;
-                |import android.view.View;
-                |import android.view.ViewGroup;
-                |import android.widget.LinearLayout;
-                |import android.widget.TextView;
-                |import androidx.annotation.NonNull;
-                |import androidx.annotation.Nullable;
-                |import androidx.viewbinding.ViewBinding;
-                |import androidx.viewbinding.ViewBindings;
-                |import com.example.R;
-                |import java.lang.Override;
-                |
-                |public final class ExampleBinding implements ViewBinding {
-                |  @NonNull
-                |  private final LinearLayout rootView;
-                |
-                |  @Nullable
-                |  public final TextView email;
-                |
-                |  @Nullable
-                |  public final TextView name;
-                |
-                |  private ExampleBinding(@NonNull LinearLayout rootView, @Nullable TextView email,
-                |      @Nullable TextView name) {
-                |    this.rootView = rootView;
-                |    this.email = email;
-                |    this.name = name;
-                |  }
-                |
-                |  @Override
-                |  @NonNull
-                |  public LinearLayout getRoot() {
-                |    return rootView;
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
-                |    return inflate(inflater, null, false);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
-                |      @Nullable ViewGroup parent, boolean attachToParent) {
-                |    View root = inflater.inflate(R.layout.example, parent, false);
-                |    if (attachToParent) {
-                |      parent.addView(root);
-                |    }
-                |    return bind(root);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    TextView email = ViewBindings.findChildViewById(rootView, R.id.email);
-                |    TextView name = ViewBindings.findChildViewById(rootView, R.id.name);
-                |    return new ExampleBinding((LinearLayout) rootView, email, name);
-                |  }
-                |}
-            """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      parsesAs(
+        """
+        |package com.example.databinding;
+        |
+        |import android.view.LayoutInflater;
+        |import android.view.View;
+        |import android.view.ViewGroup;
+        |import android.widget.LinearLayout;
+        |import android.widget.TextView;
+        |import androidx.annotation.NonNull;
+        |import androidx.annotation.Nullable;
+        |import androidx.viewbinding.ViewBinding;
+        |import androidx.viewbinding.ViewBindings;
+        |import com.example.R;
+        |import java.lang.Override;
+        |
+        |public final class ExampleBinding implements ViewBinding {
+        |  @NonNull
+        |  private final LinearLayout rootView;
+        |
+        |  @Nullable
+        |  public final TextView email;
+        |
+        |  @Nullable
+        |  public final TextView name;
+        |
+        |  private ExampleBinding(@NonNull LinearLayout rootView, @Nullable TextView email,
+        |      @Nullable TextView name) {
+        |    this.rootView = rootView;
+        |    this.email = email;
+        |    this.name = name;
+        |  }
+        |
+        |  @Override
+        |  @NonNull
+        |  public LinearLayout getRoot() {
+        |    return rootView;
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
+        |    return inflate(inflater, null, false);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
+        |      @Nullable ViewGroup parent, boolean attachToParent) {
+        |    View root = inflater.inflate(R.layout.example, parent, false);
+        |    if (attachToParent) {
+        |      parent.addView(root);
+        |    }
+        |    return bind(root);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding bind(@NonNull View rootView) {
+        |    TextView email = ViewBindings.findChildViewById(rootView, R.id.email);
+        |    TextView name = ViewBindings.findChildViewById(rootView, R.id.name);
+        |    return new ExampleBinding((LinearLayout) rootView, email, name);
+        |  }
+        |}
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun bindingNameCollisions() {
-        layouts.write("other", "layout", "<FrameLayout/>")
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/root_view" />
-                <TextView android:id="@+id/missing_id" />
-                <View android:id="@+id/id" />
-            </LinearLayout>
-            """.trimIndent())
+  @Test
+  fun bindingNameCollisions() {
+    layouts.write("other", "layout", "<FrameLayout/>")
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/root_view" />
+          <TextView android:id="@+id/missing_id" />
+          <View android:id="@+id/id" />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            parsesAs("""
-                |package com.example.databinding;
-                |
-                |import android.view.LayoutInflater;
-                |import android.view.View;
-                |import android.view.ViewGroup;
-                |import android.widget.LinearLayout;
-                |import android.widget.TextView;
-                |import androidx.annotation.NonNull;
-                |import androidx.annotation.Nullable;
-                |import androidx.viewbinding.ViewBinding;
-                |import androidx.viewbinding.ViewBindings;
-                |import com.example.R;
-                |import java.lang.NullPointerException;
-                |import java.lang.Override;
-                |import java.lang.String;
-                |
-                |public final class ExampleBinding implements ViewBinding {
-                |  @NonNull
-                |  private final LinearLayout rootView_;
-                |
-                |  @NonNull
-                |  public final View id;
-                |
-                |  @NonNull
-                |  public final TextView missingId;
-                |
-                |  @NonNull
-                |  public final TextView rootView;
-                |
-                |  private ExampleBinding(@NonNull LinearLayout rootView_, @NonNull View id,
-                |      @NonNull TextView missingId, @NonNull TextView rootView) {
-                |    this.rootView_ = rootView_;
-                |    this.id = id;
-                |    this.missingId = missingId;
-                |    this.rootView = rootView;
-                |  }
-                |
-                |  @Override
-                |  @NonNull
-                |  public LinearLayout getRoot() {
-                |    return rootView_;
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
-                |    return inflate(inflater, null, false);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
-                |      @Nullable ViewGroup parent, boolean attachToParent) {
-                |    View root = inflater.inflate(R.layout.example, parent, false);
-                |    if (attachToParent) {
-                |      parent.addView(root);
-                |    }
-                |    return bind(root);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    int id;
-                |    missingId: {
-                |      id = R.id.id;
-                |      View id_ = ViewBindings.findChildViewById(rootView, id);
-                |      if (id_ == null) {
-                |        break missingId;
-                |      }
-                |
-                |      id = R.id.missing_id;
-                |      TextView missingId = ViewBindings.findChildViewById(rootView, id);
-                |      if (missingId == null) {
-                |        break missingId;
-                |      }
-                |
-                |      id = R.id.root_view;
-                |      TextView rootView_ = ViewBindings.findChildViewById(rootView, id);
-                |      if (rootView_ == null) {
-                |        break missingId;
-                |      }
-                |
-                |      return new ExampleBinding((LinearLayout) rootView, id_, missingId,
-                |          rootView_);
-                |    }
-                |
-                |    String missingId_ = rootView.getResources().getResourceName(id);
-                |    throw new NullPointerException(
-                |        "Missing required view with ID: ".concat(missingId_));
-                |  }
-                |}
-            """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      parsesAs(
+        """
+        |package com.example.databinding;
+        |
+        |import android.view.LayoutInflater;
+        |import android.view.View;
+        |import android.view.ViewGroup;
+        |import android.widget.LinearLayout;
+        |import android.widget.TextView;
+        |import androidx.annotation.NonNull;
+        |import androidx.annotation.Nullable;
+        |import androidx.viewbinding.ViewBinding;
+        |import androidx.viewbinding.ViewBindings;
+        |import com.example.R;
+        |import java.lang.NullPointerException;
+        |import java.lang.Override;
+        |import java.lang.String;
+        |
+        |public final class ExampleBinding implements ViewBinding {
+        |  @NonNull
+        |  private final LinearLayout rootView_;
+        |
+        |  @NonNull
+        |  public final View id;
+        |
+        |  @NonNull
+        |  public final TextView missingId;
+        |
+        |  @NonNull
+        |  public final TextView rootView;
+        |
+        |  private ExampleBinding(@NonNull LinearLayout rootView_, @NonNull View id,
+        |      @NonNull TextView missingId, @NonNull TextView rootView) {
+        |    this.rootView_ = rootView_;
+        |    this.id = id;
+        |    this.missingId = missingId;
+        |    this.rootView = rootView;
+        |  }
+        |
+        |  @Override
+        |  @NonNull
+        |  public LinearLayout getRoot() {
+        |    return rootView_;
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater) {
+        |    return inflate(inflater, null, false);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
+        |      @Nullable ViewGroup parent, boolean attachToParent) {
+        |    View root = inflater.inflate(R.layout.example, parent, false);
+        |    if (attachToParent) {
+        |      parent.addView(root);
+        |    }
+        |    return bind(root);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding bind(@NonNull View rootView) {
+        |    int id;
+        |    missingId: {
+        |      id = R.id.id;
+        |      View id_ = ViewBindings.findChildViewById(rootView, id);
+        |      if (id_ == null) {
+        |        break missingId;
+        |      }
+        |
+        |      id = R.id.missing_id;
+        |      TextView missingId = ViewBindings.findChildViewById(rootView, id);
+        |      if (missingId == null) {
+        |        break missingId;
+        |      }
+        |
+        |      id = R.id.root_view;
+        |      TextView rootView_ = ViewBindings.findChildViewById(rootView, id);
+        |      if (rootView_ == null) {
+        |        break missingId;
+        |      }
+        |
+        |      return new ExampleBinding((LinearLayout) rootView, id_, missingId,
+        |          rootView_);
+        |    }
+        |
+        |    String missingId_ = rootView.getResources().getResourceName(id);
+        |    throw new NullPointerException(
+        |        "Missing required view with ID: ".concat(missingId_));
+        |  }
+        |}
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun ignoreLayoutTruthyValues() {
-        layouts.write("example1", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="true"
-                    />
-            """.trimIndent())
-        layouts.write("example2", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="TRUE"
-                    />
-            """.trimIndent())
-        layouts.write("example3", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="tRuE"
-                    />
-            """.trimIndent())
+  @Test
+  fun ignoreLayoutTruthyValues() {
+    layouts.write(
+      "example1",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="true"
+              />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example2",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="TRUE"
+              />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example3",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="tRuE"
+              />
+      """
+        .trimIndent(),
+    )
 
-        assertThat(layouts.parse()).apply {
-            doesNotContainKey("example1")
-            doesNotContainKey("example2")
-            doesNotContainKey("example3")
-        }
+    assertThat(layouts.parse()).apply {
+      doesNotContainKey("example1")
+      doesNotContainKey("example2")
+      doesNotContainKey("example3")
     }
+  }
 
-    @Test fun ignoreLayoutFalseyValues() {
-        layouts.write("example1", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="false"
-                    />
-            """.trimIndent())
-        layouts.write("example2", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="yes"
-                    />
-            """.trimIndent())
-        layouts.write("example3", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="   true        "
-                    />
-            """.trimIndent())
-        layouts.write("example4", "layout", """
-            <LinearLayout
-                    xmlns:android="http://schemas.android.com/apk/res/android"
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore=""
-                    />
-            """.trimIndent())
+  @Test
+  fun ignoreLayoutFalseyValues() {
+    layouts.write(
+      "example1",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="false"
+              />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example2",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="yes"
+              />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example3",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="   true        "
+              />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example4",
+      "layout",
+      """
+      <LinearLayout
+              xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore=""
+              />
+      """
+        .trimIndent(),
+    )
 
-        assertThat(layouts.parse()).apply {
-            containsKey("example1")
-            containsKey("example2")
-            containsKey("example3")
-            containsKey("example4")
-        }
+    assertThat(layouts.parse()).apply {
+      containsKey("example1")
+      containsKey("example2")
+      containsKey("example3")
+      containsKey("example4")
     }
+  }
 
-    @Test fun ignoreLayoutSingleConfiguration() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-            </LinearLayout>
-            """.trimIndent())
+  @Test
+  fun ignoreLayoutSingleConfiguration() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-land", """
-            <LinearLayout
-                    xmlns:tools="http://schemas.android.com/tools"
-                    tools:viewBindingIgnore="true"
-                    />
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout
+              xmlns:tools="http://schemas.android.com/tools"
+              tools:viewBindingIgnore="true"
+              />
+      """
+        .trimIndent(),
+    )
 
-        val model = layouts.parse().getValue("example")
+    val model = layouts.parse().getValue("example")
 
-        // This would create a @Nullable field if the second layout was parsed.
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  @NonNull
-                |  public final TextView name;
-                """.trimMargin())
-        }
+    // This would create a @Nullable field if the second layout was parsed.
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  @NonNull
+        |  public final TextView name;
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun mergeRemovesSingleArgumentInflateAndAttachParam() {
-        layouts.write("example", "layout", "<merge/>")
+  @Test
+  fun mergeRemovesSingleArgumentInflateAndAttachParam() {
+    layouts.write("example", "layout", "<merge/>")
 
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            parsesAs("""
-                |package com.example.databinding;
-                |
-                |import android.view.LayoutInflater;
-                |import android.view.View;
-                |import android.view.ViewGroup;
-                |import androidx.annotation.NonNull;
-                |import androidx.viewbinding.ViewBinding;
-                |import com.example.R;
-                |import java.lang.NullPointerException;
-                |import java.lang.Override;
-                |
-                |public final class ExampleBinding implements ViewBinding {
-                |  @NonNull
-                |  private final View rootView;
-                |
-                |  private ExampleBinding(@NonNull View rootView) {
-                |    this.rootView = rootView;
-                |  }
-                |
-                |  @Override
-                |  @NonNull
-                |  public View getRoot() {
-                |    return rootView;
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
-                |      @NonNull ViewGroup parent) {
-                |    if (parent == null) {
-                |      throw new NullPointerException("parent");
-                |    }
-                |    inflater.inflate(R.layout.example, parent);
-                |    return bind(parent);
-                |  }
-                |
-                |  @NonNull
-                |  public static ExampleBinding bind(@NonNull View rootView) {
-                |    if (rootView == null) {
-                |      throw new NullPointerException("rootView");
-                |    }
-                |    return new ExampleBinding(rootView);
-                |  }
-                |}
-            """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      parsesAs(
+        """
+        |package com.example.databinding;
+        |
+        |import android.view.LayoutInflater;
+        |import android.view.View;
+        |import android.view.ViewGroup;
+        |import androidx.annotation.NonNull;
+        |import androidx.viewbinding.ViewBinding;
+        |import com.example.R;
+        |import java.lang.NullPointerException;
+        |import java.lang.Override;
+        |
+        |public final class ExampleBinding implements ViewBinding {
+        |  @NonNull
+        |  private final View rootView;
+        |
+        |  private ExampleBinding(@NonNull View rootView) {
+        |    this.rootView = rootView;
+        |  }
+        |
+        |  @Override
+        |  @NonNull
+        |  public View getRoot() {
+        |    return rootView;
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding inflate(@NonNull LayoutInflater inflater,
+        |      @NonNull ViewGroup parent) {
+        |    if (parent == null) {
+        |      throw new NullPointerException("parent");
+        |    }
+        |    inflater.inflate(R.layout.example, parent);
+        |    return bind(parent);
+        |  }
+        |
+        |  @NonNull
+        |  public static ExampleBinding bind(@NonNull View rootView) {
+        |    if (rootView == null) {
+        |      throw new NullPointerException("rootView");
+        |    }
+        |    return new ExampleBinding(rootView);
+        |  }
+        |}
+        """
+          .trimMargin()
+      )
     }
+  }
 
-    @Test fun configurationsMustAgreeOnRootMergeTag() {
-        layouts.write("example", "layout", "<merge/>")
-        layouts.write("example", "layout-land", "<FrameLayout/>")
-        layouts.write("example", "layout-sw600dp", "<FrameLayout/>")
+  @Test
+  fun configurationsMustAgreeOnRootMergeTag() {
+    layouts.write("example", "layout", "<merge/>")
+    layouts.write("example", "layout-land", "<FrameLayout/>")
+    layouts.write("example", "layout-sw600dp", "<FrameLayout/>")
 
-        val model = layouts.parse().getValue("example")
-        try {
-            model.toViewBinder()
-            fail()
-        } catch (e: IllegalStateException) {
-            assertThat(e).hasMessageThat().isEqualTo("""
-                Configurations for example.xml must agree on the use of a root <merge> tag.
+    val model = layouts.parse().getValue("example")
+    try {
+      model.toViewBinder()
+      fail()
+    } catch (e: IllegalStateException) {
+      assertThat(e)
+        .hasMessageThat()
+        .isEqualTo(
+          """
+          Configurations for example.xml must agree on the use of a root <merge> tag.
 
-                Present:
-                 - layout
+          Present:
+           - layout
 
-                Absent:
-                 - layout-sw600dp
-                 - layout-land
-                """.trimIndent()
-            )
-        }
-    }
-
-    @Test fun matchingRootViewsGetCovariantRootReturnType() {
-        layouts.write("example", "layout", "<LinearLayout/>")
-        layouts.write("example", "layout-land", "<LinearLayout/>")
-
-        val model = layouts.parse().getValue("example")
-
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  public LinearLayout getRoot() {
-                """.trimMargin())
-        }
-    }
-
-    @Test fun matchingRootViewsWithDifferentDeclarationsGetCovariantRootReturnType() {
-        layouts.write("example", "layout", "<LinearLayout/>")
-        layouts.write("example", "layout-land", "<android.widget.LinearLayout/>")
-        layouts.write("example", "layout-sw600dp", """<view class="android.widget.LinearLayout"/>""")
-
-        val model = layouts.parse().getValue("example")
-
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  public LinearLayout getRoot() {
-                """.trimMargin())
-        }
-    }
-
-    @Test fun conflictingRootViewsDoNotGetCovariantRootReturnType() {
-        layouts.write("example", "layout", "<LinearLayout/>")
-        layouts.write("example", "layout-land", "<FrameLayout/>")
-
-        val model = layouts.parse().getValue("example")
-
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  public View getRoot() {
-                """.trimMargin())
-        }
-    }
-
-    @Test fun mergeRootViewsDoNotGetCovariantRootReturnType() {
-        layouts.write("example", "layout", """
-            <merge xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/name" />
-            </merge>
-            """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |  public View getRoot() {
-                """.trimMargin())
-        }
-    }
-
-    @Test fun optionalIncludeConditionallyCallsBind() {
-        layouts.write("other", "layout", "<FrameLayout/>")
-        layouts.write("example", "layout", """
-            <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <include
-                    android:id="@+id/other"
-                    layout="@layout/other"
-                    />
-            </FrameLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", "<FrameLayout/>")
-
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            contains("""
-                |    View other = ViewBindings.findChildViewById(rootView, R.id.other);
-                |    OtherBinding binding_other = other != null
-                |        ? OtherBinding.bind(other)
-                |        : null;
-            """.trimMargin())
-        }
-    }
-
-    @Test fun rootNodeAgreeingOnIdDoesNotCallFindViewById() {
-        layouts.write("example", "layout", """
-            <View
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/root"
-                />
-        """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            contains("View root = rootView;")
-        }
-    }
-
-    @Test fun rootNodeAgreeingOnIdDoesNotCallFindViewByIdAndCastsWhenNeeded() {
-        layouts.write("example", "layout", """
-            <FrameLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/root"
-                />
-        """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-        model.toViewBinder().toJavaFile().assert {
-            contains("FrameLayout root = (FrameLayout) rootView;")
-        }
-    }
-
-    @Test fun rootNodeDisagreeingOnIdFails() {
-        layouts.write("example", "layout", """
-            <FrameLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/one"
-                />
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <FrameLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/two"
-                />
-        """.trimIndent())
-
-        val model = layouts.parse().getValue("example")
-        try {
-            model.toViewBinder()
-        } catch (e: IllegalStateException) {
-            assertThat(e).hasMessageThat().isEqualTo("""
-                Configurations for example.xml must agree on the root element's ID.
-
-                @+id/one:
-                 - layout
-
-                @+id/two:
-                 - layout-land
-                """.trimIndent()
-            )
-        }
-    }
-
-    @Test fun rootNodePartialIdFails() {
-        layouts.write("example", "layout", """
-            <FrameLayout
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/partial"
-                />
-        """.trimIndent())
-        layouts.write("example", "layout-land", "<FrameLayout/>")
-
-        val model = layouts.parse().getValue("example")
-        try {
-            model.toViewBinder()
-            fail()
-        } catch (e: IllegalStateException) {
-            assertThat(e).hasMessageThat().isEqualTo("""
-                Configurations for example.xml must agree on the root element's ID.
-
-                Missing ID:
-                 - layout-land
-
-                @+id/partial:
-                 - layout
-                """.trimIndent()
-            )
-        }
-    }
-
-    @Test fun fragmentNodesAreNotExposed() {
-        layouts.write("as_root", "layout", """
-            <fragment
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/fragment"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                />
-        """.trimIndent())
-        layouts.write("as_child", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <View
-                    android:id="@+id/one"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-                <fragment
-                    class="android.app.Fragment"
-                    android:id="@+id/two"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    />
-            </LinearLayout>
-        """.trimIndent())
-
-        val fragmentAsRootModel = layouts.parse().getValue("as_root")
-        fragmentAsRootModel.toViewBinder().toJavaFile().assert {
-            contains("View getRoot()")
-            doesNotContain("fragment")
-        }
-
-        val fragmentAsChildModel = layouts.parse().getValue("as_child")
-        fragmentAsChildModel.toViewBinder().toJavaFile().assert {
-            contains("one")
-            doesNotContain("two")
-        }
-    }
-
-    @Test fun mergeWithIdAndInclude() {
-        // https://issuetracker.google.com/154747638
-        // Note: This bug only manifests when there's a nested <include> the <merge>.
-
-        layouts.write("simple", "layout", "<View/>")
-        layouts.write("merge_with_id", "layout", """
-            <merge
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/main_content"
-                >
-                <include layout="@layout/simple"/>
-            </merge>
-        """.trimIndent())
-
-        val mergeWithId = layouts.parse().getValue("merge_with_id")
-        mergeWithId.toViewBinder().toJavaFile().assert {
-            doesNotContain("mainContent")
-        }
-    }
-
-    @Test fun layoutXmlWhenViewBindingFails() {
-        layouts.write("example", "layout", """
-            <layout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView/>
-            </layout>
-        """.trimIndent())
-
-        try {
-            layouts.parse()
-            fail()
-        } catch (e: ScopedException) {
-            assertThat(e).hasMessageThat().contains(FOUND_LAYOUT_BUT_NOT_ENABLED)
-        }
-    }
-
-    @Test fun mismatchedViewTypesDefaultToView() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <Button android:id="@+id/view1"/>
-            </LinearLayout>
-        """.trimIndent())
-        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
-        assertThat(
-            viewBinder.viewTypeOf("view1")
-        ).isEqualTo(
-            ClassName.get("android.view", "View")
+          Absent:
+           - layout-sw600dp
+           - layout-land
+          """
+            .trimIndent()
         )
     }
+  }
 
-    @Test fun viewBindingType_singleLayout() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1"/>
-                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-                <TextView android:id="@+id/view3" tools:viewBindingType="ImageView"/>
-            </LinearLayout>
-        """.trimIndent())
-        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
-        assertThat(
-            viewBinder.viewTypeOf("view1")
-        ).isEqualTo(
-            ClassName.get("android.widget", "TextView")
+  @Test
+  fun matchingRootViewsGetCovariantRootReturnType() {
+    layouts.write("example", "layout", "<LinearLayout/>")
+    layouts.write("example", "layout-land", "<LinearLayout/>")
+
+    val model = layouts.parse().getValue("example")
+
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  public LinearLayout getRoot() {
+        """
+          .trimMargin()
+      )
+    }
+  }
+
+  @Test
+  fun matchingRootViewsWithDifferentDeclarationsGetCovariantRootReturnType() {
+    layouts.write("example", "layout", "<LinearLayout/>")
+    layouts.write("example", "layout-land", "<android.widget.LinearLayout/>")
+    layouts.write("example", "layout-sw600dp", """<view class="android.widget.LinearLayout"/>""")
+
+    val model = layouts.parse().getValue("example")
+
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  public LinearLayout getRoot() {
+        """
+          .trimMargin()
+      )
+    }
+  }
+
+  @Test
+  fun conflictingRootViewsDoNotGetCovariantRootReturnType() {
+    layouts.write("example", "layout", "<LinearLayout/>")
+    layouts.write("example", "layout-land", "<FrameLayout/>")
+
+    val model = layouts.parse().getValue("example")
+
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  public View getRoot() {
+        """
+          .trimMargin()
+      )
+    }
+  }
+
+  @Test
+  fun mergeRootViewsDoNotGetCovariantRootReturnType() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <merge xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/name" />
+      </merge>
+      """
+        .trimIndent(),
+    )
+
+    val model = layouts.parse().getValue("example")
+
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |  public View getRoot() {
+        """
+          .trimMargin()
+      )
+    }
+  }
+
+  @Test
+  fun optionalIncludeConditionallyCallsBind() {
+    layouts.write("other", "layout", "<FrameLayout/>")
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <include
+              android:id="@+id/other"
+              layout="@layout/other"
+              />
+      </FrameLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write("example", "layout-land", "<FrameLayout/>")
+
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert {
+      contains(
+        """
+        |    View other = ViewBindings.findChildViewById(rootView, R.id.other);
+        |    OtherBinding binding_other = other != null
+        |        ? OtherBinding.bind(other)
+        |        : null;
+        """
+          .trimMargin()
+      )
+    }
+  }
+
+  @Test
+  fun rootNodeAgreeingOnIdDoesNotCallFindViewById() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <View
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/root"
+          />
+      """
+        .trimIndent(),
+    )
+
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert { contains("View root = rootView;") }
+  }
+
+  @Test
+  fun rootNodeAgreeingOnIdDoesNotCallFindViewByIdAndCastsWhenNeeded() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/root"
+          />
+      """
+        .trimIndent(),
+    )
+
+    val model = layouts.parse().getValue("example")
+    model.toViewBinder().toJavaFile().assert { contains("FrameLayout root = (FrameLayout) rootView;") }
+  }
+
+  @Test
+  fun rootNodeDisagreeingOnIdFails() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/one"
+          />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/two"
+          />
+      """
+        .trimIndent(),
+    )
+
+    val model = layouts.parse().getValue("example")
+    try {
+      model.toViewBinder()
+    } catch (e: IllegalStateException) {
+      assertThat(e)
+        .hasMessageThat()
+        .isEqualTo(
+          """
+          Configurations for example.xml must agree on the root element's ID.
+
+          @+id/one:
+           - layout
+
+          @+id/two:
+           - layout-land
+          """
+            .trimIndent()
         )
-        assertThat(
-            viewBinder.viewTypeOf("view2")
-        ).isEqualTo(
-            ClassName.get("foo.bar", "MyQualifiedType")
-        )
-        assertThat(
-            viewBinder.viewTypeOf("view3")
-        ).isEqualTo(
-            ClassName.get("android.widget", "ImageView")
-        )
     }
+  }
 
-    @Test fun viewBindingType_multipleConfigurations_matches() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
-        assertThat(
-            viewBinder.viewTypeOf("view1")
-        ).isEqualTo(
-            ClassName.get("foo.bar", "MyQualifiedType")
-        )
-    }
+  @Test
+  fun rootNodePartialIdFails() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <FrameLayout
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/partial"
+          />
+      """
+        .trimIndent(),
+    )
+    layouts.write("example", "layout-land", "<FrameLayout/>")
 
-    @Test fun viewBindingType_multipleConfigurations_declarationMatchesOtherLayout() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <foo.bar.MyQualifiedType android:id="@+id/view1"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
-        assertThat(
-            viewBinder.viewTypeOf("view1")
-        ).isEqualTo(
-            ClassName.get("foo.bar", "MyQualifiedType")
+    val model = layouts.parse().getValue("example")
+    try {
+      model.toViewBinder()
+      fail()
+    } catch (e: IllegalStateException) {
+      assertThat(e)
+        .hasMessageThat()
+        .isEqualTo(
+          """
+          Configurations for example.xml must agree on the root element's ID.
+
+          Missing ID:
+           - layout-land
+
+          @+id/partial:
+           - layout
+          """
+            .trimIndent()
         )
     }
+  }
 
-    @Test fun viewBindingType_inIncludeTag() {
-        layouts.write("other", "layout", "<FrameLayout/>")
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <include android:id="@+id/other" layout="@layout/other"
-                    tools:viewBindingType="foo.bar.MyQualifiedType"
-                />
+  @Test
+  fun fragmentNodesAreNotExposed() {
+    layouts.write(
+      "as_root",
+      "layout",
+      """
+      <fragment
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/fragment"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          />
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "as_child",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <View
+              android:id="@+id/one"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              />
+          <fragment
+              class="android.app.Fragment"
+              android:id="@+id/two"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              />
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
 
-            </LinearLayout>
-        """.trimIndent())
-        try {
-            layouts.parse()["example"]?.toViewBinder()
-            fail()
-        } catch (ex: IllegalStateException) {
-            assertThat(ex).hasMessageThat().contains(
-                ViewBindingErrorMessages.viewBindingTypeInIncludeTag(
-                    layoutFileName = "example",
-                    includeTagId = "@+id/other"
-                )
-            )
-        }
+    val fragmentAsRootModel = layouts.parse().getValue("as_root")
+    fragmentAsRootModel.toViewBinder().toJavaFile().assert {
+      contains("View getRoot()")
+      doesNotContain("fragment")
     }
 
-    @Test fun viewBindingType_multipleConfigurations_missingInOne() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        try {
-            layouts.parse()["example"]?.toViewBinder()
-            fail()
-        } catch (e: java.lang.IllegalStateException) {
-            assertThat(e).hasMessageThat().contains(
-                ViewBindingErrorMessages.inconsistentViewBindingType(
-                    layoutFileName = "example",
-                    bindingTargetId = "@+id/view1",
-                    bindingTypes = listOf("TextView", "foo.bar.MyQualifiedType")
-                )
-            )
-        }
+    val fragmentAsChildModel = layouts.parse().getValue("as_child")
+    fragmentAsChildModel.toViewBinder().toJavaFile().assert {
+      contains("one")
+      doesNotContain("two")
     }
+  }
 
-    @Test fun viewBindingType_multipleConfigurations_missingIn1ConfigDoesNotCauseIssues() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1"  tools:viewBindingType="foo.bar.AnotherType"/>
-                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        val viewBinding = layouts.parse()["example"]?.toViewBinder() ?: error("where is my layout?")
-        assertThat(
-            viewBinding.viewTypeOf("view1")
-        ).isEqualTo(
-            ClassName.get("foo.bar", "AnotherType")
+  @Test
+  fun mergeWithIdAndInclude() {
+    // https://issuetracker.google.com/154747638
+    // Note: This bug only manifests when there's a nested <include> the <merge>.
+
+    layouts.write("simple", "layout", "<View/>")
+    layouts.write(
+      "merge_with_id",
+      "layout",
+      """
+      <merge
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          android:id="@+id/main_content"
+          >
+          <include layout="@layout/simple"/>
+      </merge>
+      """
+        .trimIndent(),
+    )
+
+    val mergeWithId = layouts.parse().getValue("merge_with_id")
+    mergeWithId.toViewBinder().toJavaFile().assert { doesNotContain("mainContent") }
+  }
+
+  @Test
+  fun layoutXmlWhenViewBindingFails() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView/>
+      </layout>
+      """
+        .trimIndent(),
+    )
+
+    try {
+      layouts.parse()
+      fail()
+    } catch (e: ScopedException) {
+      assertThat(e).hasMessageThat().contains(FOUND_LAYOUT_BUT_NOT_ENABLED)
+    }
+  }
+
+  @Test
+  fun mismatchedViewTypesDefaultToView() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <Button android:id="@+id/view1"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+    assertThat(viewBinder.viewTypeOf("view1")).isEqualTo(ClassName.get("android.view", "View"))
+  }
+
+  @Test
+  fun viewBindingType_singleLayout() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1"/>
+          <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+          <TextView android:id="@+id/view3" tools:viewBindingType="ImageView"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+    assertThat(viewBinder.viewTypeOf("view1")).isEqualTo(ClassName.get("android.widget", "TextView"))
+    assertThat(viewBinder.viewTypeOf("view2")).isEqualTo(ClassName.get("foo.bar", "MyQualifiedType"))
+    assertThat(viewBinder.viewTypeOf("view3")).isEqualTo(ClassName.get("android.widget", "ImageView"))
+  }
+
+  @Test
+  fun viewBindingType_multipleConfigurations_matches() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+    assertThat(viewBinder.viewTypeOf("view1")).isEqualTo(ClassName.get("foo.bar", "MyQualifiedType"))
+  }
+
+  @Test
+  fun viewBindingType_multipleConfigurations_declarationMatchesOtherLayout() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <foo.bar.MyQualifiedType android:id="@+id/view1"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    val viewBinder = layouts.parse()["example"]?.toViewBinder() ?: error("where is the model?")
+    assertThat(viewBinder.viewTypeOf("view1")).isEqualTo(ClassName.get("foo.bar", "MyQualifiedType"))
+  }
+
+  @Test
+  fun viewBindingType_inIncludeTag() {
+    layouts.write("other", "layout", "<FrameLayout/>")
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <include android:id="@+id/other" layout="@layout/other"
+              tools:viewBindingType="foo.bar.MyQualifiedType"
+          />
+
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    try {
+      layouts.parse()["example"]?.toViewBinder()
+      fail()
+    } catch (ex: IllegalStateException) {
+      assertThat(ex)
+        .hasMessageThat()
+        .contains(ViewBindingErrorMessages.viewBindingTypeInIncludeTag(layoutFileName = "example", includeTagId = "@+id/other"))
+    }
+  }
+
+  @Test
+  fun viewBindingType_multipleConfigurations_missingInOne() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    try {
+      layouts.parse()["example"]?.toViewBinder()
+      fail()
+    } catch (e: java.lang.IllegalStateException) {
+      assertThat(e)
+        .hasMessageThat()
+        .contains(
+          ViewBindingErrorMessages.inconsistentViewBindingType(
+            layoutFileName = "example",
+            bindingTargetId = "@+id/view1",
+            bindingTypes = listOf("TextView", "foo.bar.MyQualifiedType"),
+          )
         )
-        assertThat(
-            viewBinding.viewTypeOf("view2")
-        ).isEqualTo(
-            ClassName.get("foo.bar", "MyQualifiedType")
+    }
+  }
+
+  @Test
+  fun viewBindingType_multipleConfigurations_missingIn1ConfigDoesNotCauseIssues() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1"  tools:viewBindingType="foo.bar.AnotherType"/>
+          <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view2" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    val viewBinding = layouts.parse()["example"]?.toViewBinder() ?: error("where is my layout?")
+    assertThat(viewBinding.viewTypeOf("view1")).isEqualTo(ClassName.get("foo.bar", "AnotherType"))
+    assertThat(viewBinding.viewTypeOf("view2")).isEqualTo(ClassName.get("foo.bar", "MyQualifiedType"))
+  }
+
+  @Test
+  fun viewBindingType_multipleConfigurations_mismatch() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.AnotherType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </LinearLayout>
+      """
+        .trimIndent(),
+    )
+    try {
+      layouts.parse()["example"]?.toViewBinder()
+      fail()
+    } catch (e: java.lang.IllegalStateException) {
+      assertThat(e)
+        .hasMessageThat()
+        .contains(
+          ViewBindingErrorMessages.inconsistentViewBindingType(
+            layoutFileName = "example",
+            bindingTargetId = "@+id/view1",
+            bindingTypes = listOf("foo.bar.AnotherType", "foo.bar.MyQualifiedType"),
+          )
         )
     }
-    @Test fun viewBindingType_multipleConfigurations_mismatch() {
-        layouts.write("example", "layout", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.AnotherType"/>
-            </LinearLayout>
-        """.trimIndent())
-        layouts.write("example", "layout-land", """
-            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </LinearLayout>
-        """.trimIndent())
-        try {
-            layouts.parse()["example"]?.toViewBinder()
-            fail()
-        } catch (e: java.lang.IllegalStateException) {
-            assertThat(e).hasMessageThat().contains(
-                ViewBindingErrorMessages.inconsistentViewBindingType(
-                    layoutFileName = "example",
-                    bindingTargetId = "@+id/view1",
-                    bindingTypes = listOf("foo.bar.AnotherType", "foo.bar.MyQualifiedType")
-                )
-            )
-        }
-    }
+  }
 
-    @Test fun viewBindingTypeInDataBinding() {
-        layoutsWithDataBinding.write("example", "layout", """
-            <layout xmlns:android="http://schemas.android.com/apk/res/android">
-                <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
-            </layout>
-        """.trimIndent())
-        try {
-            layouts.parse()
-        } catch (ex: ScopedException) {
-            assertThat(ex).hasMessageThat().contains(
-                "tools:viewBindingType cannot be used in DataBinding"
-            )
-            assertThat(ex.scopedErrorReport.filePath).contains("example.xml")
-        }
+  @Test
+  fun viewBindingTypeInDataBinding() {
+    layoutsWithDataBinding.write(
+      "example",
+      "layout",
+      """
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">
+          <TextView android:id="@+id/view1" tools:viewBindingType="foo.bar.MyQualifiedType"/>
+      </layout>
+      """
+        .trimIndent(),
+    )
+    try {
+      layouts.parse()
+    } catch (ex: ScopedException) {
+      assertThat(ex).hasMessageThat().contains("tools:viewBindingType cannot be used in DataBinding")
+      assertThat(ex.scopedErrorReport.filePath).contains("example.xml")
     }
+  }
 
-    private fun ViewBinder.viewTypeOf(name:String) = this.bindings.firstOrNull() {
-        it.name == name
-    }?.type ?: error("""
+  private fun ViewBinder.viewTypeOf(name: String) =
+    this.bindings.firstOrNull() { it.name == name }?.type
+      ?: error(
+        """
         Cannot find binding with field name ${name}. Available names: ${this.bindings.map { it.name }}
-    """.trimIndent())
+    """
+          .trimIndent()
+      )
 }

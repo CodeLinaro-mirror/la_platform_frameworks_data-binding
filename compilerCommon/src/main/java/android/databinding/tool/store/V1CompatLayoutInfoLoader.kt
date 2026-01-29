@@ -19,86 +19,81 @@ package android.databinding.tool.store
 import android.databinding.tool.DataBindingBuilder
 import android.databinding.tool.store.GenClassInfoLog.GenClass
 import android.databinding.tool.util.FileUtil
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.IOCase
-import org.apache.commons.io.filefilter.SuffixFileFilter
 import java.io.File
 import java.io.InputStream
 import java.io.ObjectInputStream
 import java.io.ObjectStreamClass
 import java.io.Serializable
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.IOCase
+import org.apache.commons.io.filefilter.SuffixFileFilter
 
 /**
  * This class is necessary to handle v1 dependencies.
+ *
  * <p>
- * It basically loads the layout intermediates in the old format and converts them into
- * GenClassInfoLog (the new format). This us to generate correct base class code inside gradl
- * task.
+ * It basically loads the layout intermediates in the old format and converts them into GenClassInfoLog (the new format). This us to
+ * generate correct base class code inside gradl task.
+ *
  * <p>
- * Unfortunately, the v1 class is ProcessExpressions#Intermediate, which is NOT a dependency on
- * the gradle tool. Luckily, the actual content of the serialized object is just a hashmap where
- * values are xml that can be parsed from compilerCommon. This is why we have the frankenstein
- * deserialization to map it into another class.
+ * Unfortunately, the v1 class is ProcessExpressions#Intermediate, which is NOT a dependency on the gradle tool. Luckily, the actual content
+ * of the serialized object is just a hashmap where values are xml that can be parsed from compilerCommon. This is why we have the
+ * frankenstein deserialization to map it into another class.
  */
 class V1CompatLayoutInfoLoader {
-    fun load(folder: File): GenClassInfoLog {
-        val fileFilter = SuffixFileFilter(
-                DataBindingBuilder.LAYOUT_INFO_FILE_EXT,
-                IOCase.INSENSITIVE)
-        // Sort files to ensure deterministic order
-        val files = FileUtil.listAndSortFiles(folder, fileFilter)
-        val mapping: Map<String, GenClassInfoLog.GenClass> = files.flatMap {
-            // read bundle
-            FileUtils.openInputStream(it).use { inputStream ->
-                val intermediateCompat =
-                        CompatObjectInputStream(inputStream).readObject() as IntermediateV2Compat
-                intermediateCompat.mLayoutInfoMap.values.map {
-                    ResourceBundle.LayoutFileBundle
-                            .fromXML(it.byteInputStream(Charsets.UTF_8))
-                }
-            }
-        }.map { bundle ->
-            // convert it into gen class
-            Pair(bundle.fileName,
-                    GenClass(
-                            qName = bundle.fullBindingClass,
-                            modulePackage = bundle.modulePackage,
-                            variables = bundle.variables.associateBy(
-                                    keySelector = { it.name },
-                                    valueTransform = { it.type }
-                            ),
-                            // just ignored because we won't use it.
-                            implementations = emptySet()
-                    ))
-        }.toMap()
-        return GenClassInfoLog(mappings = LinkedHashMap(mapping))
-    }
-
-    private class CompatObjectInputStream(`in`: InputStream) : ObjectInputStream(`in`) {
-        override fun readClassDescriptor(): ObjectStreamClass {
-            val original = super.readClassDescriptor()
-            // hack for https://issuetracker.google.com/issues/71057619
-            INTERMEDIATE_CLASSES[original.name]?.let {
-                return ObjectStreamClass.lookup(it)
-            }
-            return original
+  fun load(folder: File): GenClassInfoLog {
+    val fileFilter = SuffixFileFilter(DataBindingBuilder.LAYOUT_INFO_FILE_EXT, IOCase.INSENSITIVE)
+    // Sort files to ensure deterministic order
+    val files = FileUtil.listAndSortFiles(folder, fileFilter)
+    val mapping: Map<String, GenClassInfoLog.GenClass> =
+      files
+        .flatMap {
+          // read bundle
+          FileUtils.openInputStream(it).use { inputStream ->
+            val intermediateCompat = CompatObjectInputStream(inputStream).readObject() as IntermediateV2Compat
+            intermediateCompat.mLayoutInfoMap.values.map { ResourceBundle.LayoutFileBundle.fromXML(it.byteInputStream(Charsets.UTF_8)) }
+          }
         }
-    }
+        .map { bundle ->
+          // convert it into gen class
+          Pair(
+            bundle.fileName,
+            GenClass(
+              qName = bundle.fullBindingClass,
+              modulePackage = bundle.modulePackage,
+              variables = bundle.variables.associateBy(keySelector = { it.name }, valueTransform = { it.type }),
+              // just ignored because we won't use it.
+              implementations = emptySet(),
+            ),
+          )
+        }
+        .toMap()
+    return GenClassInfoLog(mappings = LinkedHashMap(mapping))
+  }
 
-    class IntermediateV2Compat : IntermediateV1Compat(), Serializable {
+  private class CompatObjectInputStream(`in`: InputStream) : ObjectInputStream(`in`) {
+    override fun readClassDescriptor(): ObjectStreamClass {
+      val original = super.readClassDescriptor()
+      // hack for https://issuetracker.google.com/issues/71057619
+      INTERMEDIATE_CLASSES[original.name]?.let {
+        return ObjectStreamClass.lookup(it)
+      }
+      return original
     }
+  }
 
-    open class IntermediateV1Compat : Serializable {
-        // name to xml content map
-        @JvmField
-        internal var mLayoutInfoMap: MutableMap<String, String> = HashMap()
-    }
+  class IntermediateV2Compat : IntermediateV1Compat(), Serializable {}
 
-    companion object {
-        private val INTERMEDIATE_CLASSES = mapOf(
-                "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV1" to
-                        IntermediateV1Compat::class.java,
-                "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV2" to
-                        IntermediateV2Compat::class.java)
-    }
+  open class IntermediateV1Compat : Serializable {
+    // name to xml content map
+    @JvmField internal var mLayoutInfoMap: MutableMap<String, String> = HashMap()
+  }
+
+  companion object {
+    private val INTERMEDIATE_CLASSES =
+      mapOf(
+        "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV1" to IntermediateV1Compat::class.java,
+        "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV2" to IntermediateV2Compat::class.java,
+      )
+  }
 }

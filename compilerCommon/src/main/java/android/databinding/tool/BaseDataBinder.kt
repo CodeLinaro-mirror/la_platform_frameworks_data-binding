@@ -30,74 +30,67 @@ import android.databinding.tool.writer.toJavaFile
 import android.databinding.tool.writer.toViewBinder
 import com.squareup.javapoet.JavaFile
 
-@Suppress("unused")// used by tools
-class BaseDataBinder(val input : LayoutInfoInput, val getRPackage: ((String, String) -> (String))?) {
-    private val resourceBundle : ResourceBundle = ResourceBundle(
-            input.packageName, input.args.useAndroidX)
-    init {
-        input.filesToConsider
-                .forEach {
-                    it.inputStream().use {
-                        val bundle = LayoutFileBundle.fromXML(it)
-                        resourceBundle.addLayoutBundle(bundle, true)
-                    }
-                }
-        resourceBundle.addDependencyLayouts(input.existingBindingClasses)
-        resourceBundle.validateAndRegisterErrors()
+@Suppress("unused") // used by tools
+class BaseDataBinder(val input: LayoutInfoInput, val getRPackage: ((String, String) -> (String))?) {
+  private val resourceBundle: ResourceBundle = ResourceBundle(input.packageName, input.args.useAndroidX)
+
+  init {
+    input.filesToConsider.forEach {
+      it.inputStream().use {
+        val bundle = LayoutFileBundle.fromXML(it)
+        resourceBundle.addLayoutBundle(bundle, true)
+      }
     }
-    @Suppress("unused")// used by android gradle plugin
-    fun generateAll(writer : JavaFileWriter) {
-        input.invalidatedClasses.forEach {
-            writer.deleteFile(it)
+    resourceBundle.addDependencyLayouts(input.existingBindingClasses)
+    resourceBundle.validateAndRegisterErrors()
+  }
+
+  @Suppress("unused") // used by android gradle plugin
+  fun generateAll(writer: JavaFileWriter) {
+    input.invalidatedClasses.forEach { writer.deleteFile(it) }
+
+    val myLog = LayoutInfoLog()
+    myLog.addAll(input.unchangedLog)
+
+    val useAndroidX = input.args.useAndroidX
+    val libTypes = LibTypes(useAndroidX = useAndroidX)
+
+    // Sort the layout bindings to ensure deterministic order
+    val layoutBindings = resourceBundle.allLayoutFileBundlesInSource.groupBy(LayoutFileBundle::getFileName).toSortedMap()
+
+    layoutBindings.forEach { layoutName, variations ->
+      val layoutModel = BaseLayoutModel(variations, getRPackage)
+
+      val javaFile: JavaFile
+      val classInfo: GenClassInfoLog.GenClass
+      if (variations.first().isBindingData) {
+        check(input.args.enableDataBinding) { "Data binding is not enabled but found data binding layouts: $variations" }
+
+        val binderWriter = BaseLayoutBinderWriter(layoutModel, libTypes)
+        javaFile = binderWriter.write()
+        classInfo = binderWriter.generateClassInfo()
+      } else {
+        check(input.args.enableViewBinding) { "View binding is not enabled but found non-data binding layouts: $variations" }
+
+        val viewBinder = layoutModel.toViewBinder()
+        javaFile = viewBinder.toJavaFile(useLegacyAnnotations = !useAndroidX)
+        classInfo = viewBinder.generatedClassInfo()
+      }
+
+      writer.writeToFile(javaFile)
+      myLog.classInfoLog.addMapping(layoutName, classInfo)
+
+      variations.forEach {
+        it.bindingTargetBundles.forEach { bundle ->
+          if (bundle.isBinder) {
+            myLog.addDependency(layoutName, bundle.includedLayout)
+          }
         }
-
-        val myLog = LayoutInfoLog()
-        myLog.addAll(input.unchangedLog)
-
-        val useAndroidX = input.args.useAndroidX
-        val libTypes = LibTypes(useAndroidX = useAndroidX)
-
-        // Sort the layout bindings to ensure deterministic order
-        val layoutBindings = resourceBundle.allLayoutFileBundlesInSource
-            .groupBy(LayoutFileBundle::getFileName).toSortedMap()
-
-        layoutBindings.forEach { layoutName, variations ->
-            val layoutModel = BaseLayoutModel(variations, getRPackage)
-
-            val javaFile: JavaFile
-            val classInfo: GenClassInfoLog.GenClass
-            if (variations.first().isBindingData) {
-                check(input.args.enableDataBinding) {
-                    "Data binding is not enabled but found data binding layouts: $variations"
-                }
-
-                val binderWriter = BaseLayoutBinderWriter(layoutModel, libTypes)
-                javaFile = binderWriter.write()
-                classInfo = binderWriter.generateClassInfo()
-            } else {
-                check(input.args.enableViewBinding) {
-                    "View binding is not enabled but found non-data binding layouts: $variations"
-                }
-
-                val viewBinder = layoutModel.toViewBinder()
-                javaFile = viewBinder.toJavaFile(useLegacyAnnotations = !useAndroidX)
-                classInfo = viewBinder.generatedClassInfo()
-            }
-
-            writer.writeToFile(javaFile)
-            myLog.classInfoLog.addMapping(layoutName, classInfo)
-
-            variations.forEach {
-                it.bindingTargetBundles.forEach { bundle ->
-                    if (bundle.isBinder) {
-                        myLog.addDependency(layoutName, bundle.includedLayout)
-                    }
-                }
-            }
-        }
-        input.saveLog(myLog)
-        // data binding will eat some errors to be able to report them later on. This is a good
-        // time to report them after the processing is done.
-        Scope.assertNoError()
+      }
     }
+    input.saveLog(myLog)
+    // data binding will eat some errors to be able to report them later on. This is a good
+    // time to report them after the processing is done.
+    Scope.assertNoError()
+  }
 }

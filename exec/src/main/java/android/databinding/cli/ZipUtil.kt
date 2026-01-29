@@ -17,8 +17,6 @@
 package android.databinding.cli
 
 import android.databinding.tool.util.L
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter.TrueFileFilter
 import java.io.File
 import java.io.FileOutputStream
 import java.util.zip.ZipEntry
@@ -26,48 +24,39 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 object ZipUtil {
-    fun unzip(file: File, outFolder: File) {
-        if (!outFolder.exists() && !outFolder.mkdirs()) {
-            throw RuntimeException("unable to create out folder ${outFolder.absolutePath}")
-        }
-        val zipFile = ZipFile(file)
-        zipFile.use {
-            zipFile.entries().iterator().forEach { entry ->
-                if (entry.isDirectory) {
-                    File(outFolder, entry.name).mkdirs()
-                } else {
-                    zipFile.getInputStream(entry).use {
-                        File(outFolder, entry.name)
-                            .writeBytes(
-                                zipFile.getInputStream(entry).readBytes(1000)
-                            )
-                    }
-                }
-            }
-        }
+  fun unzip(file: File, outFolder: File) {
+    if (!outFolder.exists() && !outFolder.mkdirs()) {
+      throw RuntimeException("unable to create out folder ${outFolder.absolutePath}")
     }
-
-    fun zip(folder: File, outFile: File) {
-        val inputAbsPath = folder.absolutePath.length
-        val fos = FileOutputStream(outFile)
-        fos.use {
-            val zos = ZipOutputStream(fos)
-            zos.use {
-                FileUtil.listAndSortFiles(folder)
-                    .forEach { file ->
-                        val entry = ZipEntry(
-                            file.absolutePath.substring(inputAbsPath + 1)
-                        )
-                        try {
-                            zos.putNextEntry(entry)
-                            zos.write(file.readBytes())
-                            zos.closeEntry()
-                        } catch (t: Throwable) {
-                            L.e(t, "cannot write zip file. Filed on %s", file)
-                        }
-                    }
-            }
+    val zipFile = ZipFile(file)
+    zipFile.use {
+      zipFile.entries().iterator().forEach { entry ->
+        if (entry.isDirectory) {
+          File(outFolder, entry.name).mkdirs()
+        } else {
+          zipFile.getInputStream(entry).use { File(outFolder, entry.name).writeBytes(zipFile.getInputStream(entry).readBytes(1000)) }
         }
-
+      }
     }
+  }
+
+  fun zip(folder: File, outFile: File) {
+    val inputAbsPath = folder.absolutePath.length
+    val fos = FileOutputStream(outFile)
+    fos.use {
+      val zos = ZipOutputStream(fos)
+      zos.use {
+        FileUtil.listAndSortFiles(folder).forEach { file ->
+          val entry = ZipEntry(file.absolutePath.substring(inputAbsPath + 1))
+          try {
+            zos.putNextEntry(entry)
+            zos.write(file.readBytes())
+            zos.closeEntry()
+          } catch (t: Throwable) {
+            L.e(t, "cannot write zip file. Filed on %s", file)
+          }
+        }
+      }
+    }
+  }
 }

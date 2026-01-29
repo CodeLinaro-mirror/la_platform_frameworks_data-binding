@@ -18,28 +18,20 @@ package android.databinding.tool
 
 import javax.lang.model.element.Element
 
-/**
- * Wrapper for BindingAdapter annotation
- */
-class BindingAdapterCompat(val attributes : Array<String>, val requireAll : Boolean) {
-    companion object {
-        @JvmStatic
-        fun create(element : Element) : BindingAdapterCompat {
-            val support = element.getAnnotation(android.databinding.BindingAdapter::class.java)
-            if (support != null) {
-                return BindingAdapterCompat(
-                        attributes = support.value,
-                        requireAll = support.requireAll
-                )
-            }
-            val androidX = element.getAnnotation(androidx.databinding.BindingAdapter::class.java)
-            if (androidX != null) {
-                return BindingAdapterCompat(
-                        attributes = androidX.value,
-                        requireAll = androidX.requireAll
-                )
-            }
-            throw IllegalArgumentException("$element does not have BindingAdapter annotation")
-        }
+/** Wrapper for BindingAdapter annotation */
+class BindingAdapterCompat(val attributes: Array<String>, val requireAll: Boolean) {
+  companion object {
+    @JvmStatic
+    fun create(element: Element): BindingAdapterCompat {
+      val support = element.getAnnotation(android.databinding.BindingAdapter::class.java)
+      if (support != null) {
+        return BindingAdapterCompat(attributes = support.value, requireAll = support.requireAll)
+      }
+      val androidX = element.getAnnotation(androidx.databinding.BindingAdapter::class.java)
+      if (androidX != null) {
+        return BindingAdapterCompat(attributes = androidX.value, requireAll = androidX.requireAll)
+      }
+      throw IllegalArgumentException("$element does not have BindingAdapter annotation")
     }
+  }
 }

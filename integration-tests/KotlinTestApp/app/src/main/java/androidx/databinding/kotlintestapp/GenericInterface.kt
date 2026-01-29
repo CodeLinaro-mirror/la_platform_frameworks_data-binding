@@ -59,3 +59,4 @@ fun TextView.genericList2(items: List<Generic<*>>?) {
         it.getValue().toString()
     }
 }
+

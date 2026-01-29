@@ -23,52 +23,71 @@ import org.junit.Rule
 import org.junit.Test
 
 class BaseLayoutBinderWriterTest {
-    @get:Rule val layouts = LayoutResourceRule(dataBindingEnabled = true)
+  @get:Rule val layouts = LayoutResourceRule(dataBindingEnabled = true)
 
-    @Test fun nullableFieldsJavadocTheirConfigurations() {
-        layouts.write("example", "layout", """
-            <layout xmlns:android="http://schemas.android.com/apk/res/android">
-                <LinearLayout>
-                    <TextView android:id="@+id/name" />
-                </LinearLayout>
-            </layout>
-            """.trimIndent())
+  @Test
+  fun nullableFieldsJavadocTheirConfigurations() {
+    layouts.write(
+      "example",
+      "layout",
+      """
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">
+          <LinearLayout>
+              <TextView android:id="@+id/name" />
+          </LinearLayout>
+      </layout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-sw600dp", """
-            <layout xmlns:android="http://schemas.android.com/apk/res/android">
-                <LinearLayout>
-                    <TextView android:id="@+id/name" />
-                </LinearLayout>
-            </layout>
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-sw600dp",
+      """
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">
+          <LinearLayout>
+              <TextView android:id="@+id/name" />
+          </LinearLayout>
+      </layout>
+      """
+        .trimIndent(),
+    )
 
-        layouts.write("example", "layout-land", """
-            <layout xmlns:android="http://schemas.android.com/apk/res/android">
-                <LinearLayout/>
-            </layout>
-            """.trimIndent())
+    layouts.write(
+      "example",
+      "layout-land",
+      """
+      <layout xmlns:android="http://schemas.android.com/apk/res/android">
+          <LinearLayout/>
+      </layout>
+      """
+        .trimIndent(),
+    )
 
-        val model = layouts.parse().getValue("example")
-        val writer = BaseLayoutBinderWriter(model, LibTypes(true))
-        writer.write().assert {
-            contains("""
-                |  /**
-                |   * This binding is not available in all configurations.
-                |   * <p>
-                |   * Present:
-                |   * <ul>
-                |   *   <li>layout/</li>
-                |   *   <li>layout-sw600dp/</li>
-                |   * </ul>
-                |   *
-                |   * Absent:
-                |   * <ul>
-                |   *   <li>layout-land/</li>
-                |   * </ul>
-                |   */
-                |  @Nullable
-                |  public final TextView name;
-                """.trimMargin())
-        }
+    val model = layouts.parse().getValue("example")
+    val writer = BaseLayoutBinderWriter(model, LibTypes(true))
+    writer.write().assert {
+      contains(
+        """
+        |  /**
+        |   * This binding is not available in all configurations.
+        |   * <p>
+        |   * Present:
+        |   * <ul>
+        |   *   <li>layout/</li>
+        |   *   <li>layout-sw600dp/</li>
+        |   * </ul>
+        |   *
+        |   * Absent:
+        |   * <ul>
+        |   *   <li>layout-land/</li>
+        |   * </ul>
+        |   */
+        |  @Nullable
+        |  public final TextView name;
+        """
+          .trimMargin()
+      )
     }
+  }
 }

@@ -28,3 +28,4 @@ class StateFlowViewModel : ViewModel() {
         emit("Hi there")
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), "")
 }
+
