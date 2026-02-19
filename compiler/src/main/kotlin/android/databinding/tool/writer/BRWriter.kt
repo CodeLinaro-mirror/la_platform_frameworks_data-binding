@@ -21,36 +21,40 @@ import android.databinding.tool.ext.L
 import android.databinding.tool.ext.S
 import android.databinding.tool.reflection.ModelAnalyzer
 import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import javax.lang.model.element.Modifier
 
-class BRWriter(private val useFinal : Boolean) {
-    fun write(values : BindableBag.ModuleBR): String {
-        val spec = TypeSpec.classBuilder("BR").apply {
-            addModifiers(Modifier.PUBLIC)
-            if (ModelAnalyzer.getInstance().hasGeneratedAnnotation) {
-                addAnnotation(AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated"))
-                        .addMember("value", S,"Android Data Binding").build())
-            }
-            values.br.props.forEach {
-                addField(
-                        FieldSpec.builder(TypeName.INT, it.first, Modifier.PUBLIC,
-                                Modifier.STATIC).apply {
-                            if (useFinal) {
-                                addModifiers(Modifier.FINAL)
-                            }
-                            initializer(L, it.second)
-                        }.build()
-                )
-            }
-        }.build()
-        val sb = StringBuilder()
-        JavaFile.builder(values.pkg, spec).build()
-                .writeTo(sb)
-        return  sb.toString()
-    }
+class BRWriter(private val useFinal: Boolean) {
+  fun write(values: BindableBag.ModuleBR): String {
+    val spec =
+      TypeSpec.classBuilder("BR")
+        .apply {
+          addModifiers(Modifier.PUBLIC)
+          if (ModelAnalyzer.getInstance().hasGeneratedAnnotation) {
+            addAnnotation(
+              AnnotationSpec.builder(ClassName.get("javax.annotation", "Generated")).addMember("value", S, "Android Data Binding").build()
+            )
+          }
+          values.br.props.forEach {
+            addField(
+              FieldSpec.builder(TypeName.INT, it.first, Modifier.PUBLIC, Modifier.STATIC)
+                .apply {
+                  if (useFinal) {
+                    addModifiers(Modifier.FINAL)
+                  }
+                  initializer(L, it.second)
+                }
+                .build()
+            )
+          }
+        }
+        .build()
+    val sb = StringBuilder()
+    JavaFile.builder(values.pkg, spec).build().writeTo(sb)
+    return sb.toString()
+  }
 }

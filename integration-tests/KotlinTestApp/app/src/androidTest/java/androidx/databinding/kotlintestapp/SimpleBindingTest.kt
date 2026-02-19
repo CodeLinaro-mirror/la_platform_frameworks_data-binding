@@ -43,3 +43,4 @@ class SimpleBindingTest {
         onView(withId(R.id.text1)).check(matches(withText("blah")))
     }
 }
+

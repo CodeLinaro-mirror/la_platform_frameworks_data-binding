@@ -16,6 +16,8 @@
 package android.databinding.cli
 
 import android.databinding.AndroidDataBinding
+import java.io.File
+import java.util.zip.ZipFile
 import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Rule
@@ -23,46 +25,40 @@ import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.io.File
-import java.util.zip.ZipFile
 
 @RunWith(JUnit4::class)
 class ProcessXmlTest {
-    @Suppress("MemberVisibilityCanPrivate")
-    @get:Rule
-    val tempFolder = TemporaryFolder()
+  @Suppress("MemberVisibilityCanPrivate") @get:Rule val tempFolder = TemporaryFolder()
 
-    @Test
-    fun processXml() {
-        processXmlTest(false)
-    }
+  @Test
+  fun processXml() {
+    processXmlTest(false)
+  }
 
-    @Test
-    fun processXml_zipOutput() {
-        processXmlTest(true)
-    }
+  @Test
+  fun processXml_zipOutput() {
+    processXmlTest(true)
+  }
 
-    private fun processXmlTest(useZip: Boolean) {
-        val out = tempFolder.root
-        val resOut = File(out, "resOut")
-        val infoOut = File(out, "infoOut")
-        val options = ProcessXmlOptions().apply {
-            appId = "foo.baz"
-            resInput = File("src/test-data/base")
-            resOutput = resOut
-            layoutInfoOutput = infoOut
-            setZipLayoutInfo(useZip)
-        }
-        AndroidDataBinding.doRun(options)
-        assertThat(File(resOut, "layout/activity.xml").exists(), `is`(true))
-        assertThat(File(infoOut, "activity-layout.xml").exists(), `is`(!useZip))
-        val layoutInfoZip = File(infoOut, "layout-info.zip")
-        assertThat(layoutInfoZip.exists(), `is`(useZip))
-        if (useZip) {
-            assertThat(
-                    ZipFile(layoutInfoZip).hasFile("activity-layout.xml"),
-                    `is`(true)
-            )
-        }
+  private fun processXmlTest(useZip: Boolean) {
+    val out = tempFolder.root
+    val resOut = File(out, "resOut")
+    val infoOut = File(out, "infoOut")
+    val options =
+      ProcessXmlOptions().apply {
+        appId = "foo.baz"
+        resInput = File("src/test-data/base")
+        resOutput = resOut
+        layoutInfoOutput = infoOut
+        setZipLayoutInfo(useZip)
+      }
+    AndroidDataBinding.doRun(options)
+    assertThat(File(resOut, "layout/activity.xml").exists(), `is`(true))
+    assertThat(File(infoOut, "activity-layout.xml").exists(), `is`(!useZip))
+    val layoutInfoZip = File(infoOut, "layout-info.zip")
+    assertThat(layoutInfoZip.exists(), `is`(useZip))
+    if (useZip) {
+      assertThat(ZipFile(layoutInfoZip).hasFile("activity-layout.xml"), `is`(true))
     }
+  }
 }

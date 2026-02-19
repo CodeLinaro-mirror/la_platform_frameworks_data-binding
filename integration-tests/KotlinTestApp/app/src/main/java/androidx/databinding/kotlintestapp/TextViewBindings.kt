@@ -34,3 +34,4 @@ object TextViewBindings {
         textView.text = "x_${input}_x"
     }
 }
+

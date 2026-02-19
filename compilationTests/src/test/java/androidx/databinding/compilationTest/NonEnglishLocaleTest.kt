@@ -16,56 +16,48 @@
 
 package androidx.databinding.compilationTest
 
-import org.hamcrest.CoreMatchers.`is`
+import java.util.Locale
 import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.CoreMatchers.not
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import java.util.Locale
 
 @RunWith(JUnit4::class)
 class NonEnglishLocaleTest : DataBindingCompilationTestCase() {
-    @Test
-    fun turkishICapitalization() {
-        loadApp()
-        copyTestData(
-            "layout/turkish_i_capitalization.xml",
-            "app/src/main/res/layout/i_turkish_capitalization.xml"
-        )
-        val result =
-            invokeTasks(listOf("assembleDebug"), listOf("-Duser.language=tr", "-Duser.region=TR"))
-        assertThat(result.error, result.resultCode, `is`(0))
-        assertDoesNotContainTurkishChars("ITurkishCapitalizationBinding.java")
-        assertDoesNotContainTurkishChars("ITurkishCapitalizationBindingImpl.java")
-    }
+  @Test
+  fun turkishICapitalization() {
+    loadApp()
+    copyTestData("layout/turkish_i_capitalization.xml", "app/src/main/res/layout/i_turkish_capitalization.xml")
+    val result = invokeTasks(listOf("assembleDebug"), listOf("-Duser.language=tr", "-Duser.region=TR"))
+    assertThat(result.error, result.resultCode, `is`(0))
+    assertDoesNotContainTurkishChars("ITurkishCapitalizationBinding.java")
+    assertDoesNotContainTurkishChars("ITurkishCapitalizationBindingImpl.java")
+  }
 
-    @Test
-    fun turkishICapitalization_twoWayBinding() {
-        loadApp()
-        copyTestData("layout/turkish_i_capitalization_two_way_binding.xml",
-                     "app/src/main/res/layout/i_turkish_capitalization.xml")
-        val result =
-            invokeTasks(listOf("assembleDebug"), listOf("-Duser.language=tr", "-Duser.region=TR"))
-        assertThat(result.error, result.resultCode, `is`(0))
-        assertDoesNotContainTurkishChars("ITurkishCapitalizationBinding.java")
-        assertDoesNotContainTurkishChars("ITurkishCapitalizationBindingImpl.java")
-    }
+  @Test
+  fun turkishICapitalization_twoWayBinding() {
+    loadApp()
+    copyTestData("layout/turkish_i_capitalization_two_way_binding.xml", "app/src/main/res/layout/i_turkish_capitalization.xml")
+    val result = invokeTasks(listOf("assembleDebug"), listOf("-Duser.language=tr", "-Duser.region=TR"))
+    assertThat(result.error, result.resultCode, `is`(0))
+    assertDoesNotContainTurkishChars("ITurkishCapitalizationBinding.java")
+    assertDoesNotContainTurkishChars("ITurkishCapitalizationBindingImpl.java")
+  }
 
-    private fun assertDoesNotContainTurkishChars(fileName:String) {
-        val bindingJava = projectRoot.walkBottomUp().firstOrNull {
-            it.name == fileName
-        } ?: throw AssertionError("cannot find $fileName")
-        // assert that it does not use turkish i
-        assertThat(bindingJava.readText(Charsets.UTF_8), not(containsString(CAPITAL_I)))
-        assertThat(bindingJava.readText(Charsets.UTF_8), not(containsString(LOWERCASE_I)))
-    }
+  private fun assertDoesNotContainTurkishChars(fileName: String) {
+    val bindingJava = projectRoot.walkBottomUp().firstOrNull { it.name == fileName } ?: throw AssertionError("cannot find $fileName")
+    // assert that it does not use turkish i
+    assertThat(bindingJava.readText(Charsets.UTF_8), not(containsString(CAPITAL_I)))
+    assertThat(bindingJava.readText(Charsets.UTF_8), not(containsString(LOWERCASE_I)))
+  }
 
-    companion object {
-        // İ
-        private val CAPITAL_I = "i".toUpperCase(Locale.forLanguageTag("tr-TR"))
-        // ı
-        private val LOWERCASE_I = "I".toLowerCase(Locale.forLanguageTag("tr-TR"))
-    }
+  companion object {
+    // İ
+    private val CAPITAL_I = "i".toUpperCase(Locale.forLanguageTag("tr-TR"))
+    // ı
+    private val LOWERCASE_I = "I".toLowerCase(Locale.forLanguageTag("tr-TR"))
+  }
 }

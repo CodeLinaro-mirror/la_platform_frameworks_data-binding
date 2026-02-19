@@ -18,52 +18,45 @@ package android.databinding.tool.reflection
 
 import android.databinding.tool.util.L
 
-/**
- * A cache object that can index classes based on when it is found and its imports.
- */
-class ClassFinderCache(
-        private val doFind : ((className : String, imports : ImportBag?) -> ModelClass?)
-) {
-    private val cache = mutableMapOf<CacheKey, ModelClass>()
-    private val importCache = mutableMapOf<ImportBag, ImmutableImportBag>()
-    private var hit = 0
-    private var miss = 0
-    private var missForNull = 0
-    fun find(className : String, imports: ImportBag?) : ModelClass? {
-        val immutableImports = if(imports == null) {
-            null
-        } else {
-            importCache.getOrPut(imports) {
-                imports.toImmutable()
-            }
-        }
-        val key = CacheKey(className = className, imports = immutableImports)
-        val existing = cache[key]
-        if (existing == null) {
-            miss ++
-            val found = doFind(className, imports)
-            if (found == null) {
-                missForNull ++
-            } else {
-                cache[key] = found
-                return found
-            }
-            return found
-        } else {
-            hit++
-            return existing
-        }
-    }
+/** A cache object that can index classes based on when it is found and its imports. */
+class ClassFinderCache(private val doFind: ((className: String, imports: ImportBag?) -> ModelClass?)) {
+  private val cache = mutableMapOf<CacheKey, ModelClass>()
+  private val importCache = mutableMapOf<ImportBag, ImmutableImportBag>()
+  private var hit = 0
+  private var miss = 0
+  private var missForNull = 0
 
-    fun logStats() {
-        val ratio = (miss * 1f) / (miss + hit)
-        val nonNullMiss = miss - missForNull
-        val nonNullRatio = (nonNullMiss * 1f) / (nonNullMiss + hit)
-        L.w("class finder cache: miss: $miss, hit: $hit, ratio : $ratio, ratio w/o nulls: $nonNullRatio")
+  fun find(className: String, imports: ImportBag?): ModelClass? {
+    val immutableImports =
+      if (imports == null) {
+        null
+      } else {
+        importCache.getOrPut(imports) { imports.toImmutable() }
+      }
+    val key = CacheKey(className = className, imports = immutableImports)
+    val existing = cache[key]
+    if (existing == null) {
+      miss++
+      val found = doFind(className, imports)
+      if (found == null) {
+        missForNull++
+      } else {
+        cache[key] = found
+        return found
+      }
+      return found
+    } else {
+      hit++
+      return existing
     }
+  }
 
-    private data class CacheKey(
-            val className: String,
-            val imports: ImmutableImportBag?
-    )
+  fun logStats() {
+    val ratio = (miss * 1f) / (miss + hit)
+    val nonNullMiss = miss - missForNull
+    val nonNullRatio = (nonNullMiss * 1f) / (nonNullMiss + hit)
+    L.w("class finder cache: miss: $miss, hit: $hit, ratio : $ratio, ratio w/o nulls: $nonNullRatio")
+  }
+
+  private data class CacheKey(val className: String, val imports: ImmutableImportBag?)
 }

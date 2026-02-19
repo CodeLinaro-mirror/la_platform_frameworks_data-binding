@@ -18,22 +18,20 @@ package android.databinding.tool
 
 import javax.lang.model.element.Element
 
-/**
- * Compat shim for InverseMethod annotation
- */
-data class InverseMethodCompat(val value : String) {
-    companion object {
-        @JvmStatic
-        fun create(element : Element) : InverseMethodCompat {
-            val support = element.getAnnotation(android.databinding.InverseMethod::class.java)
-            if (support != null) {
-                return InverseMethodCompat(support.value)
-            }
-            val androidX = element.getAnnotation(androidx.databinding.InverseMethod::class.java)
-            if (androidX != null) {
-                return InverseMethodCompat(androidX.value)
-            }
-            throw IllegalArgumentException("$element does not have InverseMethod annotation")
-        }
+/** Compat shim for InverseMethod annotation */
+data class InverseMethodCompat(val value: String) {
+  companion object {
+    @JvmStatic
+    fun create(element: Element): InverseMethodCompat {
+      val support = element.getAnnotation(android.databinding.InverseMethod::class.java)
+      if (support != null) {
+        return InverseMethodCompat(support.value)
+      }
+      val androidX = element.getAnnotation(androidx.databinding.InverseMethod::class.java)
+      if (androidX != null) {
+        return InverseMethodCompat(androidX.value)
+      }
+      throw IllegalArgumentException("$element does not have InverseMethod annotation")
     }
+  }
 }

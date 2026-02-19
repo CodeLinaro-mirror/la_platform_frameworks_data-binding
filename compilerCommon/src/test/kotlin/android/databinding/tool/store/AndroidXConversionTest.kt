@@ -22,36 +22,25 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Test
 
 class AndroidXConversionTest {
-    val libTypes = LibTypes(true)
-    @Test
-    fun unrelatedClass() {
-        assertThat(
-                libTypes.convert("foo.bar.Baz"),
-                `is`("foo.bar.Baz")
-        )
-    }
+  val libTypes = LibTypes(true)
 
-    @Test
-    fun lifecycle() {
-        assertThat(
-                libTypes.convert("android.arch.lifecycle.LiveData"),
-                `is`("androidx.lifecycle.LiveData")
-        )
-    }
+  @Test
+  fun unrelatedClass() {
+    assertThat(libTypes.convert("foo.bar.Baz"), `is`("foo.bar.Baz"))
+  }
 
-    @Test
-    fun dataBinding() {
-        assertThat(
-                libTypes.convert("android.databinding.Bindable"),
-                `is`("androidx.databinding.Bindable")
-        )
-    }
+  @Test
+  fun lifecycle() {
+    assertThat(libTypes.convert("android.arch.lifecycle.LiveData"), `is`("androidx.lifecycle.LiveData"))
+  }
 
-    @Test
-    fun testSupport() {
-        assertThat(
-                libTypes.convert("android.support.v7.widget.RecyclerView"),
-                `is`("androidx.recyclerview.widget.RecyclerView")
-        )
-    }
+  @Test
+  fun dataBinding() {
+    assertThat(libTypes.convert("android.databinding.Bindable"), `is`("androidx.databinding.Bindable"))
+  }
+
+  @Test
+  fun testSupport() {
+    assertThat(libTypes.convert("android.support.v7.widget.RecyclerView"), `is`("androidx.recyclerview.widget.RecyclerView"))
+  }
 }

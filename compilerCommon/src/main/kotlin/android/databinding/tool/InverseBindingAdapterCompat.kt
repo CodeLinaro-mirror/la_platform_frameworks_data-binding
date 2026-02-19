@@ -18,31 +18,20 @@ package android.databinding.tool
 
 import javax.lang.model.element.Element
 
-/**
- * Compat shim for InverseBindingAdapter
- */
-data class InverseBindingAdapterCompat(val attribute : String, val event : String) {
-    companion object {
-        @JvmStatic
-        fun create(element : Element) : InverseBindingAdapterCompat {
-            val support = element.getAnnotation(
-                    android.databinding.InverseBindingAdapter::class.java)
-            if (support != null) {
-                return InverseBindingAdapterCompat(
-                        attribute = support.attribute,
-                        event = support.event
-                )
-            }
-            val androidX = element.getAnnotation(
-                    androidx.databinding.InverseBindingAdapter::class.java)
-            if (androidX != null) {
-                return InverseBindingAdapterCompat(
-                        attribute = androidX.attribute,
-                        event = androidX.event
-                )
-            }
-            throw IllegalArgumentException(
-                    "$element does ont have InverseBindingAdapter annotation")
-        }
+/** Compat shim for InverseBindingAdapter */
+data class InverseBindingAdapterCompat(val attribute: String, val event: String) {
+  companion object {
+    @JvmStatic
+    fun create(element: Element): InverseBindingAdapterCompat {
+      val support = element.getAnnotation(android.databinding.InverseBindingAdapter::class.java)
+      if (support != null) {
+        return InverseBindingAdapterCompat(attribute = support.attribute, event = support.event)
+      }
+      val androidX = element.getAnnotation(androidx.databinding.InverseBindingAdapter::class.java)
+      if (androidX != null) {
+        return InverseBindingAdapterCompat(attribute = androidX.attribute, event = androidX.event)
+      }
+      throw IllegalArgumentException("$element does ont have InverseBindingAdapter annotation")
     }
+  }
 }

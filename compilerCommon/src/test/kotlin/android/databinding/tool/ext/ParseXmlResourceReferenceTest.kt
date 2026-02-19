@@ -21,97 +21,82 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 class ParseXmlResourceReferenceTest {
-    @Test fun xmlResourceReferenceParsing() {
-        assertEquals(
-            XmlResourceReference(null, "id", "foo", false),
-            "@id/foo".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference(null, "id", "foo_bar", false),
-            "@id/foo.bar".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference(null, "id", "foo", true),
-            "@+id/foo".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference("android", "id", "foo", false),
-            "@android:id/foo".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference("android", "id", "foo", true),
-            "@+android:id/foo".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference("android", "id", "foo", false),
-            "@id/android:foo".parseXmlResourceReference()
-        )
-        assertEquals(
-            XmlResourceReference("android", "id", "foo", true),
-            "@+id/android:foo".parseXmlResourceReference()
-        )
-    }
+  @Test
+  fun xmlResourceReferenceParsing() {
+    assertEquals(XmlResourceReference(null, "id", "foo", false), "@id/foo".parseXmlResourceReference())
+    assertEquals(XmlResourceReference(null, "id", "foo_bar", false), "@id/foo.bar".parseXmlResourceReference())
+    assertEquals(XmlResourceReference(null, "id", "foo", true), "@+id/foo".parseXmlResourceReference())
+    assertEquals(XmlResourceReference("android", "id", "foo", false), "@android:id/foo".parseXmlResourceReference())
+    assertEquals(XmlResourceReference("android", "id", "foo", true), "@+android:id/foo".parseXmlResourceReference())
+    assertEquals(XmlResourceReference("android", "id", "foo", false), "@id/android:foo".parseXmlResourceReference())
+    assertEquals(XmlResourceReference("android", "id", "foo", true), "@+id/android:foo".parseXmlResourceReference())
+  }
 
-    @Test fun xmlResourceReferenceParsingMustStartWithAt() {
-        try {
-            "id/foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Reference must start with '@': id/foo", e.message)
-        }
+  @Test
+  fun xmlResourceReferenceParsingMustStartWithAt() {
+    try {
+      "id/foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Reference must start with '@': id/foo", e.message)
     }
+  }
 
-    @Test fun xmlResourceReferenceParsingMustContainType() {
-        try {
-            "@android:foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Invalid resource format: @android:foo", e.message)
-        }
-        try {
-            "@foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Invalid resource format: @foo", e.message)
-        }
+  @Test
+  fun xmlResourceReferenceParsingMustContainType() {
+    try {
+      "@android:foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Invalid resource format: @android:foo", e.message)
     }
+    try {
+      "@foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Invalid resource format: @foo", e.message)
+    }
+  }
 
-    @Test fun xmlResourceReferenceParsingNamespaceMustNotBeEmpty() {
-        try {
-            "@:id/foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Namespace cannot be empty: @:id/foo", e.message)
-        }
+  @Test
+  fun xmlResourceReferenceParsingNamespaceMustNotBeEmpty() {
+    try {
+      "@:id/foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Namespace cannot be empty: @:id/foo", e.message)
     }
+  }
 
-    @Test fun xmlResourceReferenceParsingNameMustNotBeEmpty() {
-        try {
-            "@android:id/".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Name cannot be empty: @android:id/", e.message)
-        }
-        try {
-            "@id/android:".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Name cannot be empty: @id/android:", e.message)
-        }
+  @Test
+  fun xmlResourceReferenceParsingNameMustNotBeEmpty() {
+    try {
+      "@android:id/".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Name cannot be empty: @android:id/", e.message)
     }
+    try {
+      "@id/android:".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Name cannot be empty: @id/android:", e.message)
+    }
+  }
 
-    @Test fun xmlResourceReferenceParsingTypeMustNotBeEmpty() {
-        try {
-            "@/foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Type cannot be empty: @/foo", e.message)
-        }
-        try {
-            "@android:/foo".parseXmlResourceReference()
-            fail()
-        } catch (e: IllegalArgumentException) {
-            assertEquals("Type cannot be empty: @android:/foo", e.message)
-        }
+  @Test
+  fun xmlResourceReferenceParsingTypeMustNotBeEmpty() {
+    try {
+      "@/foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Type cannot be empty: @/foo", e.message)
     }
+    try {
+      "@android:/foo".parseXmlResourceReference()
+      fail()
+    } catch (e: IllegalArgumentException) {
+      assertEquals("Type cannot be empty: @android:/foo", e.message)
+    }
+  }
 }

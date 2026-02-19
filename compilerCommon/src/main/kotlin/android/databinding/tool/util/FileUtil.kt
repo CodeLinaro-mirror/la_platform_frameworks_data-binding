@@ -16,39 +16,35 @@
 
 package android.databinding.tool.util
 
+import java.io.File
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.IOFileFilter
 import org.apache.commons.io.filefilter.TrueFileFilter
-import java.io.File
 
 object FileUtil {
 
-    /**
-     * Returns files in a directory, sorted by [File.invariantSeparatorsPath], so that the returned
-     * result is stable across OS-es.
-     *
-     * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, org.apache.commons.io.filefilter.IOFileFilter, org.apache.commons.io.filefilter.IOFileFilter)
-     */
-    @JvmStatic
-    fun listAndSortFiles(
-            directory: File,
-            fileFilter: IOFileFilter = TrueFileFilter.TRUE,
-            dirFilter: IOFileFilter = TrueFileFilter.TRUE
-    ): List<File> {
-        return FileUtils.listFiles(directory, fileFilter, dirFilter)
-                .sortedBy { it.invariantSeparatorsPath }
-    }
+  /**
+   * Returns files in a directory, sorted by [File.invariantSeparatorsPath], so that the returned result is stable across OS-es.
+   *
+   * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, org.apache.commons.io.filefilter.IOFileFilter,
+   *   org.apache.commons.io.filefilter.IOFileFilter)
+   */
+  @JvmStatic
+  fun listAndSortFiles(
+    directory: File,
+    fileFilter: IOFileFilter = TrueFileFilter.TRUE,
+    dirFilter: IOFileFilter = TrueFileFilter.TRUE,
+  ): List<File> {
+    return FileUtils.listFiles(directory, fileFilter, dirFilter).sortedBy { it.invariantSeparatorsPath }
+  }
 
-    /**
-     * Returns files in a directory, sorted by [File.invariantSeparatorsPath], so that the returned
-     * result is stable across OS-es.
-     *
-     * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, java.lang.String[], boolean)
-     */
-    @JvmStatic
-    fun listAndSortFiles(directory: File, extensions: Array<String>, recursive: Boolean)
-            : List<File> {
-        return FileUtils.listFiles(directory, extensions, recursive)
-                .sortedBy { it.invariantSeparatorsPath }
-    }
+  /**
+   * Returns files in a directory, sorted by [File.invariantSeparatorsPath], so that the returned result is stable across OS-es.
+   *
+   * @see org.apache.commons.io.FileUtils.listFiles(java.io.File, java.lang.String[], boolean)
+   */
+  @JvmStatic
+  fun listAndSortFiles(directory: File, extensions: Array<String>, recursive: Boolean): List<File> {
+    return FileUtils.listFiles(directory, extensions, recursive).sortedBy { it.invariantSeparatorsPath }
+  }
 }

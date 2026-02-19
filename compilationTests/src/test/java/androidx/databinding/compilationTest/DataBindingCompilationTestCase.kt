@@ -22,21 +22,22 @@ import com.android.tools.analytics.AnalyticsPaths
 import com.android.tools.idea.gradle.project.build.invoker.GradleBuildInvoker
 import com.android.tools.idea.testing.AndroidGradleProjectRule
 import com.android.tools.idea.testing.TestProjectPaths
+import com.intellij.execution.process.ProcessOutputType
 import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListenerAdapter
+import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskNotificationListener
 import com.intellij.openapi.util.io.FileUtil.toSystemDependentName
 import com.intellij.util.io.createDirectories
-import org.junit.After
-import org.junit.Assert
-import org.junit.Before
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import java.io.File
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.util.regex.Pattern
 import kotlin.io.path.readText
+import org.junit.After
+import org.junit.Assert
+import org.junit.Before
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 
 private const val TEST_DEPENDENCIES = "implementation 'androidx.fragment:fragment:+'"
 private const val DEFAULT_SETTINGS_GRADLE = "include ':app'"
@@ -51,223 +52,182 @@ const val KEY_SETTINGS_INCLUDES = "SETTINGS_INCLUDES"
 const val DEFAULT_APP_PACKAGE = "com.android.databinding.compilationTest.test"
 
 abstract class DataBindingCompilationTestCase {
-    @get:Rule
-    val temporaryFolder = TemporaryFolder()
+  @get:Rule val temporaryFolder = TemporaryFolder()
 
-    @get:Rule
-    val androidGradleProjectRule = AndroidGradleProjectRule()
+  @get:Rule val androidGradleProjectRule = AndroidGradleProjectRule()
 
-    @Before
-    fun setup() {
-        AnalyticsPaths.overrideAndroidSettingsHomeDirectory(temporaryFolder.newFolder().absolutePath)
-    }
+  @Before
+  fun setup() {
+    AnalyticsPaths.overrideAndroidSettingsHomeDirectory(temporaryFolder.newFolder().absolutePath)
+  }
 
-    @After
-    fun restoreSystemProperty() {
-        AnalyticsPaths.restoreAndroidSettingsHomeDirectory()
-    }
+  @After
+  fun restoreSystemProperty() {
+    AnalyticsPaths.restoreAndroidSettingsHomeDirectory()
+  }
 
-    protected fun loadApp() {
-        loadApp(emptyMap())
-    }
+  protected fun loadApp() {
+    loadApp(emptyMap())
+  }
 
-    protected fun loadApp(appReplacements: Map<String, String>) {
-        androidGradleProjectRule.loadProject(TestProjectPaths.DATA_BINDING_COMPILATION)
-        projectRoot.toPath().resolve("app/src/main").createDirectories()
-        val replacements = appendTestReplacements(appReplacements)
-        copyTestDataWithReplacement(
-            "AndroidManifest.xml",
-            "app/src/main/AndroidManifest.xml",
-            replacements
+  protected fun loadApp(appReplacements: Map<String, String>) {
+    androidGradleProjectRule.loadProject(TestProjectPaths.DATA_BINDING_COMPILATION)
+    projectRoot.toPath().resolve("app/src/main").createDirectories()
+    val replacements = appendTestReplacements(appReplacements)
+    copyTestDataWithReplacement("AndroidManifest.xml", "app/src/main/AndroidManifest.xml", replacements)
+    copyTestDataWithReplacement("app_build.gradle", "app/build.gradle", replacements)
+    copyTestDataWithReplacement("settings.gradle", "settings.gradle", replacements)
+  }
+
+  protected fun loadModule(moduleName: String, moduleReplacements: Map<String, String>) {
+    val replacements = appendTestReplacements(moduleReplacements)
+    copyTestDataWithReplacement("AndroidManifest.xml", "${moduleName}/src/main/AndroidManifest.xml", replacements)
+    copyTestDataWithReplacement("module_build.gradle", "${moduleName}/build.gradle", replacements)
+  }
+
+  protected fun assembleDebug() = invokeTasks(listOf("assembleDebug"))
+
+  protected fun invokeTasks(tasks: List<String>, args: List<String> = emptyList()): CompilationResult {
+    val outBuilder = StringBuilder()
+    val errBuilder = StringBuilder()
+    val taskListener =
+      object : ExternalSystemTaskNotificationListener {
+        override fun onTaskOutput(id: ExternalSystemTaskId, text: String, processOutputType: ProcessOutputType) {
+          if (ProcessOutputType.isStdout(processOutputType)) {
+            outBuilder.append(text)
+          } else {
+            errBuilder.append(text)
+          }
+        }
+      }
+    val request =
+      GradleBuildInvoker.Request.builder(
+          androidGradleProjectRule.project,
+          File(toSystemDependentName(androidGradleProjectRule.project.basePath!!)),
+          tasks,
         )
-        copyTestDataWithReplacement(
-            "app_build.gradle",
-            "app/build.gradle",
-            replacements
-        )
-        copyTestDataWithReplacement(
-            "settings.gradle",
-             "settings.gradle",
-            replacements
-        )
+        .setCommandLineArguments(listOf("--offline") + args)
+        .setListener(taskListener)
+        .build()
+
+    val result = androidGradleProjectRule.invokeGradle { gradleInvoker -> gradleInvoker.executeTasks(request) }
+    return CompilationResult(if (result.isBuildSuccessful) 0 else 1, outBuilder.toString(), errBuilder.toString())
+  }
+
+  protected val projectRoot by lazy { File(toSystemDependentName(androidGradleProjectRule.project.basePath!!)) }
+
+  /**
+   * Copies the file in the testData directory to the target directory.
+   *
+   * [source] and [target] are relative to testData and projectRoot respectively.
+   */
+  protected fun copyTestData(source: String, target: String) {
+    val sourcePath = TestUtils.resolveWorkspacePath(TEST_DATA_PATH).resolve(source)
+    val targetPath = File(projectRoot, target).toPath()
+    targetPath.parent.createDirectories()
+    Files.copy(sourcePath, targetPath)
+  }
+
+  protected fun copyTestDataWithReplacement(source: String, target: String, replacements: Map<String, String> = emptyMap()) {
+    val sourcePath = TestUtils.resolveWorkspacePath(TEST_DATA_PATH).resolve(source)
+    val targetPath = File(projectRoot, target)
+    val contents = sourcePath.readText()
+    val out = StringBuilder(contents.length)
+    val matcher = pattern.matcher(contents)
+    var location = 0
+    while (matcher.find()) {
+      val start = matcher.start()
+      if (start > location) {
+        out.append(contents, location, start)
+      }
+      val key = matcher.group(1)
+      val replacement = replacements[key]
+      if (replacement != null) {
+        out.append(replacement)
+      }
+      location = matcher.end()
     }
-
-    protected fun loadModule(moduleName: String, moduleReplacements: Map<String, String>) {
-        val replacements = appendTestReplacements(moduleReplacements)
-        copyTestDataWithReplacement(
-            "AndroidManifest.xml",
-            "${moduleName}/src/main/AndroidManifest.xml",
-            replacements
-        )
-        copyTestDataWithReplacement(
-            "module_build.gradle",
-            "${moduleName}/build.gradle",
-            replacements
-        )
+    if (location < contents.length) {
+      out.append(contents, location, contents.length)
     }
+    targetPath.parentFile.mkdirs()
+    targetPath.writeText(out.toString(), StandardCharsets.UTF_8)
+  }
 
-    protected fun assembleDebug() = invokeTasks(listOf("assembleDebug"))
-
-    protected fun invokeTasks(
-        tasks: List<String>,
-        args: List<String> = emptyList()
-    ): CompilationResult {
-        val outBuilder = StringBuilder()
-        val errBuilder = StringBuilder()
-        val taskListener = object : ExternalSystemTaskNotificationListenerAdapter() {
-            override fun onTaskOutput(id: ExternalSystemTaskId, text: String, stdOut: Boolean) {
-                if (stdOut) {
-                    outBuilder.append(text)
-                } else {
-                    errBuilder.append(text)
-                }
-            }
-        }
-        val request =
-            GradleBuildInvoker.Request.builder(
-                androidGradleProjectRule.project,
-                File(toSystemDependentName(androidGradleProjectRule.project.basePath!!)),
-                tasks
-            )
-                .setCommandLineArguments(listOf("--offline") + args)
-                .setListener(taskListener)
-                .build()
-
-        val result = androidGradleProjectRule.invokeGradle { gradleInvoker ->
-            gradleInvoker.executeTasks(request)
-        }
-        return CompilationResult(
-            if (result.isBuildSuccessful) 0 else 1,
-            outBuilder.toString(),
-            errBuilder.toString()
-        )
+  /**
+   * Custom logic that replaces or appends to the replacement values depending on the key.
+   *
+   * If key is [KEY_DEPENDENCIES], then append the replacement. If key is [KEY_NAMESPACE] or [KEY_SETTINGS_INCLUDES], then put if value
+   * doesn't already exist.
+   */
+  private fun appendTestReplacements(map: Map<String, String>): Map<String, String> {
+    val mutableMap = map.toMutableMap()
+    if (mutableMap.containsKey(KEY_DEPENDENCIES)) {
+      mutableMap[KEY_DEPENDENCIES] += "\n$TEST_DEPENDENCIES"
+    } else {
+      mutableMap[KEY_DEPENDENCIES] = TEST_DEPENDENCIES
     }
-
-    protected val projectRoot by lazy {
-        File(toSystemDependentName(androidGradleProjectRule.project.basePath!!))
+    if (!mutableMap.containsKey(KEY_NAMESPACE)) {
+      mutableMap[KEY_NAMESPACE] = DEFAULT_APP_PACKAGE
     }
-
-    /**
-     * Copies the file in the testData directory to the target directory.
-     *
-     * [source] and [target] are relative to testData and projectRoot respectively.
-     */
-    protected fun copyTestData(source: String, target: String) {
-        val sourcePath = TestUtils.resolveWorkspacePath(TEST_DATA_PATH).resolve(source)
-        val targetPath = File(projectRoot, target).toPath()
-        targetPath.parent.createDirectories()
-        Files.copy(sourcePath, targetPath)
+    if (!mutableMap.containsKey(KEY_SETTINGS_INCLUDES)) {
+      mutableMap[KEY_SETTINGS_INCLUDES] = DEFAULT_SETTINGS_GRADLE
     }
+    return mutableMap
+  }
 
-    protected fun copyTestDataWithReplacement(
-        source: String,
-        target: String,
-        replacements: Map<String, String> = emptyMap()
-    ) {
-        val sourcePath = TestUtils.resolveWorkspacePath(TEST_DATA_PATH).resolve(source)
-        val targetPath = File(projectRoot, target)
-        val contents = sourcePath.readText()
-        val out = StringBuilder(contents.length)
-        val matcher = pattern.matcher(contents)
-        var location = 0
-        while (matcher.find()) {
-            val start = matcher.start()
-            if (start > location) {
-                out.append(contents, location, start)
-            }
-            val key = matcher.group(1)
-            val replacement = replacements[key]
-            if (replacement != null) {
-                out.append(replacement)
-            }
-            location = matcher.end()
-        }
-        if (location < contents.length) {
-            out.append(contents, location, contents.length)
-        }
-        targetPath.parentFile.mkdirs()
-        targetPath.writeText(out.toString(), StandardCharsets.UTF_8)
+  /**
+   * Finds the error file referenced in the given error report. Handles possibly relative paths.
+   *
+   * Throws an assertion exception if the error file reported cannot be found.
+   */
+  protected fun requireErrorFile(report: ScopedErrorReport): File {
+    val path = report.filePath
+    Assert.assertNotNull(path)
+    var file = File(path)
+    if (file.exists()) {
+      return file
     }
+    // might be relative, try in test project folder
+    file = File(projectRoot, path)
+    Assert.assertTrue("required error file is missing in " + file.absolutePath, file.exists())
+    return file
+  }
 
-    /**
-     * Custom logic that replaces or appends to the replacement values
-     * depending on the key.
-     *
-     * If key is [KEY_DEPENDENCIES], then append the replacement.
-     * If key is [KEY_NAMESPACE] or [KEY_SETTINGS_INCLUDES],
-     *   then put if value doesn't already exist.
-     */
-    private fun appendTestReplacements(
-        map: Map<String, String>
-    ): Map<String, String> {
-        val mutableMap = map.toMutableMap()
-        if (mutableMap.containsKey(KEY_DEPENDENCIES)) {
-            mutableMap[KEY_DEPENDENCIES] += "\n$TEST_DEPENDENCIES"
-        } else {
-            mutableMap[KEY_DEPENDENCIES] = TEST_DEPENDENCIES
-        }
-        if (!mutableMap.containsKey(KEY_NAMESPACE)) {
-            mutableMap[KEY_NAMESPACE] = DEFAULT_APP_PACKAGE
-        }
-        if (!mutableMap.containsKey(KEY_SETTINGS_INCLUDES)) {
-            mutableMap[KEY_SETTINGS_INCLUDES] = DEFAULT_SETTINGS_GRADLE
-        }
-        return mutableMap
+  /**
+   * Extracts the text in the given location from the file at the given application path.
+   *
+   * @param relativePath the relative path of the file to be extracted from
+   * @param location The location to extract
+   * @return The string that is contained in the given location
+   * @throws IOException If file is invalid.
+   */
+  protected fun extract(relativePath: String, location: Location): String {
+    val file = File(projectRoot, relativePath)
+    Assert.assertTrue(file.exists())
+    val result = StringBuilder()
+    val lines = file.readLines(StandardCharsets.UTF_8)
+    for (i in location.startLine..location.endLine) {
+      if (i > location.startLine) {
+        result.append("\n")
+      }
+      val line = lines[i]
+      var start = 0
+      if (i == location.startLine) {
+        start = location.startOffset
+      }
+      var end = line.length - 1 // inclusive
+      if (i == location.endLine) {
+        end = location.endOffset
+      }
+      result.append(line.substring(start, end + 1))
     }
+    return result.toString()
+  }
 
-    /**
-     * Finds the error file referenced in the given error report.
-     * Handles possibly relative paths.
-     *
-     * Throws an assertion exception if the error file reported cannot be found.
-     */
-    protected fun requireErrorFile(report: ScopedErrorReport): File {
-        val path = report.filePath
-        Assert.assertNotNull(path)
-        var file = File(path)
-        if (file.exists()) {
-            return file
-        }
-        // might be relative, try in test project folder
-        file = File(projectRoot, path)
-        Assert.assertTrue("required error file is missing in " + file.absolutePath, file.exists())
-        return file
-    }
-
-    /**
-     * Extracts the text in the given location from the file at the given application path.
-     *
-     * @param relativePath the relative path of the file to be extracted from
-     * @param location  The location to extract
-     * @return The string that is contained in the given location
-     * @throws IOException If file is invalid.
-     */
-    protected fun extract(relativePath: String, location: Location): String {
-        val file = File(projectRoot, relativePath)
-        Assert.assertTrue(file.exists())
-        val result = StringBuilder()
-        val lines = file.readLines(StandardCharsets.UTF_8)
-        for (i in location.startLine..location.endLine) {
-            if (i > location.startLine) {
-                result.append("\n")
-            }
-            val line = lines[i]
-            var start = 0
-            if (i == location.startLine) {
-                start = location.startOffset
-            }
-            var end = line.length - 1 // inclusive
-            if (i == location.endLine) {
-                end = location.endOffset
-            }
-            result.append(line.substring(start, end + 1))
-        }
-        return result.toString()
-    }
-
-    protected fun writeFile(path: String, contents: String) {
-        val targetFile = File(projectRoot, path)
-        targetFile.parentFile.mkdirs()
-        targetFile.writeText(contents, StandardCharsets.UTF_8)
-    }
+  protected fun writeFile(path: String, contents: String) {
+    val targetFile = File(projectRoot, path)
+    targetFile.parentFile.mkdirs()
+    targetFile.writeText(contents, StandardCharsets.UTF_8)
+  }
 }

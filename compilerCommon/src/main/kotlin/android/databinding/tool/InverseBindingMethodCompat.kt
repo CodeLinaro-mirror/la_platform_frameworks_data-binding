@@ -19,56 +19,49 @@ package android.databinding.tool
 import android.databinding.tool.ext.safeType
 import javax.lang.model.element.Element
 
-/**
- * Compat for InverseBindingMethod
- */
+/** Compat for InverseBindingMethod */
 data class InverseBindingMethodsCompat(val methods: List<InverseBindingMethodCompat>) {
-    companion object {
-        @JvmStatic
-        fun create(element: Element): InverseBindingMethodsCompat {
-            val support = element.getAnnotation(
-                    android.databinding.InverseBindingMethods::class.java)
-            if (support != null) {
-                return create(support)
-            }
+  companion object {
+    @JvmStatic
+    fun create(element: Element): InverseBindingMethodsCompat {
+      val support = element.getAnnotation(android.databinding.InverseBindingMethods::class.java)
+      if (support != null) {
+        return create(support)
+      }
 
-            val androidX = element.getAnnotation(
-                    androidx.databinding.InverseBindingMethods::class.java)
-            if (androidX != null) {
-                return create(androidX)
-            }
-            throw IllegalArgumentException(
-                    "$element does not have InverseBindingMethods annotation")
-        }
-
-        fun create(annotation: android.databinding.InverseBindingMethods)
-                : InverseBindingMethodsCompat {
-            return InverseBindingMethodsCompat(annotation.value.map {
-                InverseBindingMethodCompat(
-                        type = safeType { it.type.java.canonicalName },
-                        attribute = it.attribute,
-                        event = it.event,
-                        method = it.method
-                )
-            })
-        }
-
-        fun create(annotation: androidx.databinding.InverseBindingMethods)
-                : InverseBindingMethodsCompat {
-            return InverseBindingMethodsCompat(annotation.value.map {
-                InverseBindingMethodCompat(
-                        type = safeType { it.type.java.canonicalName },
-                        attribute = it.attribute,
-                        event = it.event,
-                        method = it.method
-                )
-            })
-        }
+      val androidX = element.getAnnotation(androidx.databinding.InverseBindingMethods::class.java)
+      if (androidX != null) {
+        return create(androidX)
+      }
+      throw IllegalArgumentException("$element does not have InverseBindingMethods annotation")
     }
 
-    data class InverseBindingMethodCompat(
-            val type: String,
-            val attribute: String,
-            val event: String,
-            val method: String)
+    fun create(annotation: android.databinding.InverseBindingMethods): InverseBindingMethodsCompat {
+      return InverseBindingMethodsCompat(
+        annotation.value.map {
+          InverseBindingMethodCompat(
+            type = safeType { it.type.java.canonicalName },
+            attribute = it.attribute,
+            event = it.event,
+            method = it.method,
+          )
+        }
+      )
+    }
+
+    fun create(annotation: androidx.databinding.InverseBindingMethods): InverseBindingMethodsCompat {
+      return InverseBindingMethodsCompat(
+        annotation.value.map {
+          InverseBindingMethodCompat(
+            type = safeType { it.type.java.canonicalName },
+            attribute = it.attribute,
+            event = it.event,
+            method = it.method,
+          )
+        }
+      )
+    }
+  }
+
+  data class InverseBindingMethodCompat(val type: String, val attribute: String, val event: String, val method: String)
 }

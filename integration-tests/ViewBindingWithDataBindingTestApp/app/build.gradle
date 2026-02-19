@@ -15,10 +15,8 @@
  */
 
 apply plugin: 'com.android.application'
+apply plugin: 'com.android.legacy-kapt'
 
-apply plugin: 'kotlin-android'
-
-apply plugin: 'kotlin-kapt'
 android {
     namespace = "androidx.databinding.viewbinding.testapp"
     compileSdkVersion rootProject.latestCompileSdk
@@ -37,9 +35,6 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
     }
 }
 

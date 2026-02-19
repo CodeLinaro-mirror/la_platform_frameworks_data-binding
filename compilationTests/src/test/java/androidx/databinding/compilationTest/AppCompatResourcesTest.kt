@@ -16,64 +16,50 @@
 
 package androidx.databinding.compilationTest
 
-import org.hamcrest.CoreMatchers.`is`
+import java.io.File
 import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.CoreMatchers.`is`
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
-import java.io.File
 
-/**
- * The data binding compiler generates different Impl code based on whether
- * `AppCompatResources` is found in the classpath or not.
- */
+/** The data binding compiler generates different Impl code based on whether `AppCompatResources` is found in the classpath or not. */
 @RunWith(Parameterized::class)
-class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) :
-    DataBindingCompilationTestCase() {
+class AppCompatResourcesTest(private val addAppCompatDependency: Boolean) : DataBindingCompilationTestCase() {
 
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "Add support dependency: {0}")
-        fun useSupportDependency() = listOf(true, false)
-    }
+  companion object {
+    @JvmStatic @Parameterized.Parameters(name = "Add support dependency: {0}") fun useSupportDependency() = listOf(true, false)
+  }
 
-    @Before
-    fun setUpTest() {
-        val replacements = if (addAppCompatDependency) {
-            mapOf(
-                KEY_DEPENDENCIES to "implementation 'androidx.appcompat:appcompat:+'"
-            )
-        } else emptyMap()
-        loadApp(replacements)
-        copyTestData(
-            "layout/layout_with_drawable.xml",
-            "app/src/main/res/layout/layout_with_drawable.xml"
-        )
-        copyTestData(
-            "drawable/thumbs_up.png",
-            "app/src/main/res/drawable/thumbs_up.png"
-        )
+  @Before
+  fun setUpTest() {
+    val replacements =
+      if (addAppCompatDependency) {
+        mapOf(KEY_DEPENDENCIES to "implementation 'androidx.appcompat:appcompat:+'")
+      } else emptyMap()
+    loadApp(replacements)
+    copyTestData("layout/layout_with_drawable.xml", "app/src/main/res/layout/layout_with_drawable.xml")
+    copyTestData("drawable/thumbs_up.png", "app/src/main/res/drawable/thumbs_up.png")
 
-        val result = assembleDebug()
-        assertThat(result.error, result.resultCode, `is`(0))
-    }
+    val result = assembleDebug()
+    assertThat(result.error, result.resultCode, `is`(0))
+  }
 
-    @Test
-    fun expectedCodeGenerated() {
-        val bindingImpl = findFile("LayoutWithDrawableBindingImpl.java")!!
+  @Test
+  fun expectedCodeGenerated() {
+    val bindingImpl = findFile("LayoutWithDrawableBindingImpl.java")!!
 
-        val expectedCode = if (addAppCompatDependency) {
-            "androidx.appcompat.content.res.AppCompatResources.getDrawable(mboundView1.getContext(), R.drawable.thumbs_up)"
-        } else {
-            "getDrawableFromResource(mboundView1, R.drawable.thumbs_up)"
-        }
+    val expectedCode =
+      if (addAppCompatDependency) {
+        "androidx.appcompat.content.res.AppCompatResources.getDrawable(mboundView1.getContext(), R.drawable.thumbs_up)"
+      } else {
+        "getDrawableFromResource(mboundView1, R.drawable.thumbs_up)"
+      }
 
-        assertThat(bindingImpl.readText(Charsets.UTF_8), containsString(expectedCode))
-    }
+    assertThat(bindingImpl.readText(Charsets.UTF_8), containsString(expectedCode))
+  }
 
-    private fun findFile(fileName: String): File? =
-        projectRoot.walkBottomUp().firstOrNull { it.name == fileName }
+  private fun findFile(fileName: String): File? = projectRoot.walkBottomUp().firstOrNull { it.name == fileName }
 }
-
