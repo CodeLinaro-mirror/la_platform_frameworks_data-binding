@@ -19,7 +19,7 @@ apply plugin: 'com.android.test'
 android {
     namespace = 'com.example.viewbinding.test'
 
-    targetProjectPath ':app'
+    targetProjectPath = ':app'
 
     compileSdkVersion rootProject.latestCompileSdk
 
@@ -27,7 +27,7 @@ android {
         minSdkVersion 14
         targetSdkVersion rootProject.latestCompileSdk
         testApplicationId 'com.example.viewbinding.test'
-        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     compileOptions {
@@ -40,6 +40,7 @@ android {
 
 dependencies {
     implementation 'junit:junit:4.12'
-    implementation 'com.android.support.test:runner:1.0.1'
-    implementation 'com.android.support.test:rules:1.0.1'
+    implementation 'androidx.test:runner:1.5.0'
+    implementation 'androidx.test:rules:1.5.0'
+    implementation 'androidx.test.ext:junit:1.1.5'
 }

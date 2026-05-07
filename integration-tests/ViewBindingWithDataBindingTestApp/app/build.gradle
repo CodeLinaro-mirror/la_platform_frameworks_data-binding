@@ -22,7 +22,7 @@ android {
     compileSdkVersion rootProject.latestCompileSdk
     defaultConfig {
         applicationId "androidx.databinding.viewbinding.testapp"
-        minSdkVersion 14
+        minSdkVersion 21
         targetSdkVersion rootProject.latestCompileSdk
         versionCode 1
         versionName "1.0"
@@ -45,7 +45,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KaptGenerateStubs.class).config
 }
 
 dependencies {
-    def supportVersion = "1.0.0"
+    def supportVersion = "1.7.0"
     def lifecycleVersion = "2.6.1"
     def testingVersion = "1.3.0"
     implementation fileTree(dir: 'libs', include: ['*.jar'])

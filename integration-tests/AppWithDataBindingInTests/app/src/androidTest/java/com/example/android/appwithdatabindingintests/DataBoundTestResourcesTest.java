@@ -19,8 +19,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import androidx.databinding.DataBindingUtil;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.view.LayoutInflater;
 
 import com.example.androidx.appwithdatabindingintests.R;
@@ -38,7 +38,7 @@ public class DataBoundTestResourcesTest {
             @Override
             public void run() {
                 TestLayoutBinding binding = DataBindingUtil.inflate(
-                        LayoutInflater.from(InstrumentationRegistry.getContext()),
+                        LayoutInflater.from(InstrumentationRegistry.getInstrumentation().getContext()),
                         com.example.androidx.appwithdatabindingintests.test.R.layout.test_layout,
                         null, false);
                 binding.setTestVar("tada");
@@ -54,7 +54,7 @@ public class DataBoundTestResourcesTest {
             @Override
             public void run() {
                 ActivityMainBinding binding = DataBindingUtil.inflate(
-                        LayoutInflater.from(InstrumentationRegistry.getTargetContext()),
+                        LayoutInflater.from(InstrumentationRegistry.getInstrumentation().getTargetContext()),
                         R.layout.activity_main, null, false);
                 binding.setAppTestVar("tada");
                 binding.executePendingBindings();
