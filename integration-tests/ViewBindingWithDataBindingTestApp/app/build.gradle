@@ -49,7 +49,6 @@ dependencies {
     def lifecycleVersion = "2.6.1"
     def testingVersion = "1.3.0"
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:$rootProject.kotlinVersion"
     implementation "androidx.lifecycle:lifecycle-runtime:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycleVersion"
     implementation "androidx.appcompat:appcompat:$supportVersion"
