@@ -17,7 +17,7 @@
 package com.example.viewbinding;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.view.LayoutInflater;
 import com.example.viewbinding.databinding.IncludeIdCollusionBinding;
 import org.junit.Test;
@@ -25,7 +25,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 public final class IncludeIdCollusionTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
     @Test public void inflate() {

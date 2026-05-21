@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package androidx.databinding.viewbinding.testapp
+package androidx.databinding.viewbinding.testapp.test
 
+import androidx.databinding.viewbinding.testapp.Model
+import androidx.databinding.viewbinding.testapp.R
 import androidx.databinding.viewbinding.testapp.databinding.DataBindingIncludingViewBindingLayoutBinding
 import androidx.test.annotation.UiThreadTest
 import androidx.test.runner.AndroidJUnit4
@@ -26,23 +28,21 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class DataBindingWithIncludedViewBindingTest {
-    @Suppress("MemberVisibilityCanPrivate")
-    @Rule
-    @JvmField
-    val rule = DataBindingActivityRule<DataBindingIncludingViewBindingLayoutBinding>(
-            R.layout.data_binding_including_view_binding_layout
-    )
+  @Suppress("MemberVisibilityCanPrivate")
+  @Rule
+  @JvmField
+  val rule = DataBindingActivityRule<DataBindingIncludingViewBindingLayoutBinding>(R.layout.data_binding_including_view_binding_layout)
 
-    @Test
-    @UiThreadTest
-    fun test() {
-        val model = Model("aValue")
-        val binding = rule.binding
-        binding.model = model
-        binding.executePendingBindings()
-        assertThat(binding.viewBinding1, notNullValue())
-        assertThat(binding.viewBinding2, notNullValue())
-        assertThat(binding.viewBinding1, not(sameInstance(binding.viewBinding2)))
-        assertThat(binding.widgetInDataBinding.text.toString(), `is`("aValue"))
-    }
+  @Test
+  @UiThreadTest
+  fun test() {
+    val model = Model("aValue")
+    val binding = rule.binding
+    binding.model = model
+    binding.executePendingBindings()
+    assertThat(binding.viewBinding1, notNullValue())
+    assertThat(binding.viewBinding2, notNullValue())
+    assertThat(binding.viewBinding1, not(sameInstance(binding.viewBinding2)))
+    assertThat(binding.widgetInDataBinding.text.toString(), `is`("aValue"))
+  }
 }

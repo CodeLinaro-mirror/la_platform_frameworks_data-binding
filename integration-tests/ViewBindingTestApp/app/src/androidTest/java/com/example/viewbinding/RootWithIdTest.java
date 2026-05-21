@@ -21,14 +21,14 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.view.LayoutInflater;
 import android.view.View;
 import com.example.viewbinding.databinding.RootWithIdBinding;
 import org.junit.Test;
 
 public final class RootWithIdTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
     @Test public void inflate() {

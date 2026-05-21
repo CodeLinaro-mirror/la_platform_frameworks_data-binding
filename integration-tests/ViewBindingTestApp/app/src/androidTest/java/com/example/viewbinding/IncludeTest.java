@@ -22,7 +22,7 @@ import static org.junit.Assert.assertSame;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +31,7 @@ import com.example.viewbinding.databinding.SimpleBinding;
 import org.junit.Test;
 
 public final class IncludeTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     @Test public void bindPortrait() {
         LayoutInflater inflater = LayoutInflater.from(context);

@@ -19,14 +19,14 @@ package com.example.feature;
 import static org.junit.Assert.assertNotNull;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.view.LayoutInflater;
 import android.view.View;
 import com.example.feature.databinding.IncludeFromAppBinding;
 import org.junit.Test;
 
 public final class IncludeFromAppTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
     @Test public void inflate() {

@@ -19,7 +19,7 @@ package com.example.viewbinding;
 import static org.junit.Assert.assertSame;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import android.view.LayoutInflater;
 import android.view.View;
 import com.example.viewbinding.databinding.IncludeReplaceIdBinding;
@@ -27,7 +27,7 @@ import com.example.viewbinding.databinding.RootWithIdBinding;
 import org.junit.Test;
 
 public final class IncludeReplaceIdTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
     private final LayoutInflater inflater = LayoutInflater.from(context);
 
     @Test public void inflate() {
