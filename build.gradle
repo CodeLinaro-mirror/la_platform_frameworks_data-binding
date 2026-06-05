@@ -80,7 +80,7 @@ file('integration-tests').listFiles().findAll { it.isDirectory() }.each {
 }
 
 task runIntegrationTests {
-    dependsOn tasks.findAll { task -> task.name.startsWith('runTestsOf') }
+    dependsOn tasks.matching { task -> task.name.startsWith('runTestsOf') }
 }
 
 task runAllTests {
@@ -94,9 +94,9 @@ task preparePrebuilds() {
 
 allprojects {
     afterEvaluate { project ->
-        runAllTests.dependsOn project.tasks.findAll {task -> task.name.equals('test')}
-        runAllTests.dependsOn project.tasks.findAll {task -> task.name.equals('connectedCheck')}
-        preparePrebuilds.dependsOn project.tasks.findAll {task -> task.name.startsWith('prebuild')}
+        runAllTests.dependsOn project.tasks.matching {task -> task.name.equals('test')}
+        runAllTests.dependsOn project.tasks.matching {task -> task.name.equals('connectedCheck')}
+        preparePrebuilds.dependsOn project.tasks.matching {task -> task.name.startsWith('prebuild')}
     }
 }
 
