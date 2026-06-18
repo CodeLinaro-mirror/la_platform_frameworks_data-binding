@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import android.content.res.Configuration;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -37,7 +37,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
 public class ViewBindingTypeTest {
-    private final Context context = InstrumentationRegistry.getTargetContext();
+    private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
     @Test
     public void bindPortrait() {

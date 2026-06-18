@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package androidx.databinding.viewbinding.testapp
+package androidx.databinding.viewbinding.testapp.test
 
 import android.view.LayoutInflater
+import androidx.databinding.viewbinding.testapp.Model
 import androidx.databinding.viewbinding.testapp.databinding.ViewBindingIncludingDataBindingLayoutBinding
 import androidx.test.annotation.UiThreadTest
 import androidx.test.platform.app.InstrumentationRegistry
@@ -29,18 +30,17 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class ViewBindingIncludesDataBindingTest {
-    @Test
-    @UiThreadTest
-    fun viewBindingIncludesDataBinding() {
-        val binding = ViewBindingIncludingDataBindingLayoutBinding.inflate(
-                LayoutInflater.from(InstrumentationRegistry.getInstrumentation().targetContext)
-        )
-        assertThat(binding.dataBinding1, notNullValue())
-        val model = Model("a content")
-        binding.dataBinding1.apply {
-            this.model = model
-            executePendingBindings()
-            assertThat(widgetInDataBinding2.text.toString(), `is`("a content"))
-        }
+  @Test
+  @UiThreadTest
+  fun viewBindingIncludesDataBinding() {
+    val binding =
+      ViewBindingIncludingDataBindingLayoutBinding.inflate(LayoutInflater.from(InstrumentationRegistry.getInstrumentation().targetContext))
+    assertThat(binding.dataBinding1, notNullValue())
+    val model = Model("a content")
+    binding.dataBinding1.apply {
+      this.model = model
+      executePendingBindings()
+      assertThat(widgetInDataBinding2.text.toString(), `is`("a content"))
     }
+  }
 }

@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package androidx.databinding.viewbinding.testapp
+package androidx.databinding.viewbinding.testapp.test
 
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import androidx.databinding.viewbinding.testapp.TestActivity
 import androidx.test.rule.ActivityTestRule
 
-class DataBindingActivityRule<out B : ViewDataBinding>(private val layoutId: Int)
-    : ActivityTestRule<TestActivity>(TestActivity::class.java) {
-    val binding: B by lazy {
-        val activity = activity
-        var result: B? = null
-        runOnUiThread {
-            result = DataBindingUtil.setContentView(activity, layoutId)!!
-        }
-        result!!
-    }
+class DataBindingActivityRule<out B : ViewDataBinding>(private val layoutId: Int) :
+  ActivityTestRule<TestActivity>(TestActivity::class.java) {
+  val binding: B by lazy {
+    val activity = activity
+    var result: B? = null
+    runOnUiThread { result = DataBindingUtil.setContentView(activity, layoutId)!! }
+    result!!
+  }
 
-    fun executePendingBindings() {
-        runOnUiThread {
-            binding.executePendingBindings()
-        }
-    }
+  fun executePendingBindings() {
+    runOnUiThread { binding.executePendingBindings() }
+  }
 }
