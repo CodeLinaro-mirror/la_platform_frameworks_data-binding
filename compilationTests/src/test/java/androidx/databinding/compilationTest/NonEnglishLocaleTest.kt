@@ -56,8 +56,8 @@ class NonEnglishLocaleTest : DataBindingCompilationTestCase() {
 
   companion object {
     // İ
-    private val CAPITAL_I = "i".toUpperCase(Locale.forLanguageTag("tr-TR"))
+    private val CAPITAL_I = "i".uppercase(Locale.forLanguageTag("tr-TR"))
     // ı
-    private val LOWERCASE_I = "I".toLowerCase(Locale.forLanguageTag("tr-TR"))
+    private val LOWERCASE_I = "I".lowercase(Locale.forLanguageTag("tr-TR"))
   }
 }
