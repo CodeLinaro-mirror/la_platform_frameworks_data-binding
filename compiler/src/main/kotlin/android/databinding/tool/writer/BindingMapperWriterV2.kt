@@ -126,7 +126,7 @@ class BindingMapperWriterV2(
         throw IllegalArgumentException("cannot have multiple info containing $layoutName")
       }
       return localizedLayoutIdMap.getOrPut(layoutName) {
-        val fieldName = "LAYOUT_${layoutName.stripNonJava().toUpperCase(Locale.US)}"
+        val fieldName = "LAYOUT_${layoutName.stripNonJava().uppercase(Locale.US)}"
         // must be > 0
         val id = localizedLayoutIdMap.size + 1
         val spec = FieldSpec.builder(TypeName.INT, fieldName, Modifier.FINAL, Modifier.STATIC, Modifier.PRIVATE).initializer(L, id).build()
