@@ -17,7 +17,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    namespace "!@{NAMESPACE}"
+    namespace = "!@{NAMESPACE}"
     compileSdkVersion rootProject.latestCompileSdk
     buildToolsVersion rootProject.buildToolsVersion
     defaultConfig {
