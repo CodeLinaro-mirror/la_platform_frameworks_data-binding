@@ -246,7 +246,6 @@ kotlin_test(
     deps = [
         ":tools.compilerCommon",
         "//prebuilts/tools/common/m2:javapoet",
-        "//tools/base/bazel:langtools",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.truth.truth",
         "@maven//:commons-io.commons-io",
@@ -355,7 +354,6 @@ kotlin_test(
         ":tools.compiler",
         ":tools.compilerCommon",
         "//prebuilts/tools/common/m2:javapoet",
-        "//tools/base/bazel:langtools",
         "@maven//:com.google.testing.compile.compile-testing",
         "@maven//:com.google.truth.truth",
         "@maven//:commons-io.commons-io",
