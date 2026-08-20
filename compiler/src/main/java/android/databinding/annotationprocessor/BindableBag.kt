@@ -93,24 +93,23 @@ class BindableBag(
     writtenPackages = brPackagesToGenerate.toList()
     val brMapping = idBag.buildMapping()
     // now assign id to all stuff we'll generate
-    toBeGenerated =
-      brPackagesToGenerate.map { brPkg ->
-        ModuleBR(brPkg, brMapping)
-        // WHEN we have BR per module, the code below should be executed instead
-        //            val packageProps = brFiles.firstOrNull {
-        //                it.pkg == brPkg
-        //            }
-        //            if (packageProps == null) {
-        //                L.e("cannot find the package prop but need to generate $brPkg")
-        //
-        //            } else {
-        //                // when we have BR per module, this should be the codegen
-        //                val pairs = packageProps.properties.values.map {
-        //                    Pair(it.name, it.value ?: idBag.findId(it.name))
-        //                } + Pair("_all", 0)
-        //                ModuleBR(brPkg, pairs)
-        //            }
-      }
+    toBeGenerated = brPackagesToGenerate.map { brPkg ->
+      ModuleBR(brPkg, brMapping)
+      // WHEN we have BR per module, the code below should be executed instead
+      //            val packageProps = brFiles.firstOrNull {
+      //                it.pkg == brPkg
+      //            }
+      //            if (packageProps == null) {
+      //                L.e("cannot find the package prop but need to generate $brPkg")
+      //
+      //            } else {
+      //                // when we have BR per module, this should be the codegen
+      //                val pairs = packageProps.properties.values.map {
+      //                    Pair(it.name, it.value ?: idBag.findId(it.name))
+      //                } + Pair("_all", 0)
+      //                ModuleBR(brPkg, pairs)
+      //            }
+    }
     variableIdLookup = brMapping
   }
 

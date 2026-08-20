@@ -153,7 +153,8 @@ class SimpleCompilationTest : DataBindingCompilationTestCase() {
       resource = "layout/layout_with_bad_callback_return_type.xml",
       targetFile = "app/src/main/res/layout/broken.xml",
       expectedExtract = null,
-      errorMessage = ErrorMessages.callbackReturnTypeMismatchError("onLongClick", "boolean", """() -> System.out.println("nada")""", "void"),
+      errorMessage =
+        ErrorMessages.callbackReturnTypeMismatchError("onLongClick", "boolean", """() -> System.out.println("nada")""", "void"),
     )
   }
 
