@@ -64,6 +64,6 @@ public class ExecutionPathTest {
         List<ExecutionPath> result = parsed.toExecutionPath(paths);
         StringBuilder sb = new StringBuilder();
         root.debug(sb, 0);
-        sb.toString();
+        String unused = sb.toString();
     }
 }
