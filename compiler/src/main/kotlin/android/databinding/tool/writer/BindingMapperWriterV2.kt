@@ -250,11 +250,10 @@ class BindingMapperWriterV2(
             }
             .build()
         addField(keysField)
-        val items =
-          allMappings.flatMap { mapping ->
-            val rClass = getRClass(mapping.genClass.modulePackage)
-            mapping.genClass.implementations.map { impl -> Triple(mapping, rClass, impl) }
-          }
+        val items = allMappings.flatMap { mapping ->
+          val rClass = getRClass(mapping.genClass.modulePackage)
+          mapping.genClass.implementations.map { impl -> Triple(mapping, rClass, impl) }
+        }
         addChunkedStaticBlock(methodPrefix = "internalPopulateLayoutIdLookup", items = items) {
           val (mapping, rClass, impl) = it
           addStatement("$N.put($S, $L)", keysField, "${impl.tag}_0", "$rClass.layout.${mapping.layoutName}")

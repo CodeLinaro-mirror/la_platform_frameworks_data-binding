@@ -56,8 +56,9 @@ class RecursionTracker<T>(
 
 class RecursiveResolutionStack {
   /** List of items. Using a thread local here to be able to maintain it across multiple calls */
-  private val items: ThreadLocal<RecursionTracker<Any>> =
-    ThreadLocal.withInitial { RecursionTracker<Any> { L.d("found recursive type, canceling resolution: %s", it) } }
+  private val items: ThreadLocal<RecursionTracker<Any>> = ThreadLocal.withInitial {
+    RecursionTracker<Any> { L.d("found recursive type, canceling resolution: %s", it) }
+  }
 
   /** Visits the given [referenceObject]. If it is not in the stack, calls [process], if it is in the stack, calls [onRecursionDetected]. */
   fun <T : Any, R> visit(referenceObject: T, process: (T) -> R, onRecursionDetected: (T) -> R): R {
