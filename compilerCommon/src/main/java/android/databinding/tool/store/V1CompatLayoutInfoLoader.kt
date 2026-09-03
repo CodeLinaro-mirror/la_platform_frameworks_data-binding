@@ -72,6 +72,25 @@ class V1CompatLayoutInfoLoader {
   }
 
   private class CompatObjectInputStream(`in`: InputStream) : ObjectInputStream(`in`) {
+    init {
+      try {
+        val configClass = Class.forName("java.io.ObjectInputFilter\$Config")
+        val createFilterMethod = configClass.getMethod("createFilter", String::class.java)
+        val filter =
+          createFilterMethod.invoke(
+            null,
+            "android.databinding.tool.store.V1CompatLayoutInfoLoader\$Intermediate*;" +
+              "android.databinding.annotationprocessor.ProcessExpressions\$Intermediate*;" +
+              "java.util.*;" +
+              "java.lang.*;" +
+              "!*",
+          )
+        val filterClass = Class.forName("java.io.ObjectInputFilter")
+        val setFilterMethod = ObjectInputStream::class.java.getMethod("setObjectInputFilter", filterClass)
+        setFilterMethod.invoke(this, filter)
+      } catch (ignored: Throwable) {}
+    }
+
     override fun readClassDescriptor(): ObjectStreamClass {
       val original = super.readClassDescriptor()
       // hack for https://issuetracker.google.com/issues/71057619
@@ -80,13 +99,36 @@ class V1CompatLayoutInfoLoader {
       }
       return original
     }
+
+    override fun resolveClass(desc: ObjectStreamClass): Class<*> {
+      val name = desc.name
+      if (!isAllowed(name)) {
+        throw java.io.InvalidClassException("Unauthorized deserialization attempt: $name", name)
+      }
+      return super.resolveClass(desc)
+    }
+
+    private fun isAllowed(name: String): Boolean {
+      return name == IntermediateV1Compat::class.java.name ||
+        name == IntermediateV2Compat::class.java.name ||
+        name == "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV1" ||
+        name == "android.databinding.annotationprocessor.ProcessExpressions\$IntermediateV2" ||
+        name.startsWith("java.util.") ||
+        name.startsWith("java.lang.") ||
+        name.startsWith("[Ljava.util.") ||
+        name.startsWith("[Ljava.lang.")
+    }
   }
 
   class IntermediateV2Compat : IntermediateV1Compat(), Serializable {}
 
   open class IntermediateV1Compat : Serializable {
     // name to xml content map
-    @JvmField internal var mLayoutInfoMap: MutableMap<String, String> = HashMap()
+    @JvmField var mLayoutInfoMap: MutableMap<String, String> = HashMap()
+
+    fun addEntry(name: String, xmlContent: String) {
+      mLayoutInfoMap[name] = xmlContent
+    }
   }
 
   companion object {

@@ -42,6 +42,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -902,6 +905,7 @@ public class ResourceBundle implements Serializable {
 
         private static final Marshaller sMarshaller;
         private static final Unmarshaller sUnmarshaller;
+        private static final XMLInputFactory sXmlInputFactory;
 
         static {
             try {
@@ -909,6 +913,10 @@ public class ResourceBundle implements Serializable {
                 sMarshaller = context.createMarshaller();
                 sMarshaller.setProperty(Marshaller.JAXB_ENCODING, "utf-8");
                 sUnmarshaller = context.createUnmarshaller();
+
+                sXmlInputFactory = XMLInputFactory.newFactory();
+                sXmlInputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+                sXmlInputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
             } catch (JAXBException e) {
                 throw new RuntimeException("Cannot create the xml marshaller", e);
             }
@@ -937,8 +945,13 @@ public class ResourceBundle implements Serializable {
 
         public static LayoutFileBundle fromXML(InputStream inputStream)
                 throws JAXBException {
-            synchronized (sUnmarshaller) {
-                return (LayoutFileBundle) sUnmarshaller.unmarshal(inputStream);
+            try {
+                XMLStreamReader xsr = sXmlInputFactory.createXMLStreamReader(inputStream);
+                synchronized (sUnmarshaller) {
+                    return (LayoutFileBundle) sUnmarshaller.unmarshal(xsr);
+                }
+            } catch (XMLStreamException e) {
+                throw new JAXBException(e);
             }
         }
 

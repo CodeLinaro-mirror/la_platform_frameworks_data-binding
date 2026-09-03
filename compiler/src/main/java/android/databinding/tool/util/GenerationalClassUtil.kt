@@ -116,6 +116,25 @@ class GenerationalClassUtil constructor(private val inputDir: File, private val 
   }
 
   private class IgnoreSerialIdObjectInputStream @Throws(IOException::class) constructor(`in`: InputStream) : ObjectInputStream(`in`) {
+    init {
+      try {
+        val configClass = Class.forName("java.io.ObjectInputFilter\$Config")
+        val createFilterMethod = configClass.getMethod("createFilter", String::class.java)
+        val filter =
+          createFilterMethod.invoke(
+            null,
+            "android.databinding.annotationprocessor.ProcessExpressions\$Intermediate*;" +
+              "android.databinding.annotationprocessor.ProcessBindable\$Intermediate*;" +
+              "android.databinding.tool.store.SetterStore\$*;" +
+              "java.util.*;" +
+              "java.lang.*;" +
+              "!*",
+          )
+        val filterClass = Class.forName("java.io.ObjectInputFilter")
+        val setFilterMethod = ObjectInputStream::class.java.getMethod("setObjectInputFilter", filterClass)
+        setFilterMethod.invoke(this, filter)
+      } catch (ignored: Throwable) {}
+    }
 
     @Throws(IOException::class, ClassNotFoundException::class)
     override fun readClassDescriptor(): ObjectStreamClass {
@@ -124,6 +143,26 @@ class GenerationalClassUtil constructor(private val inputDir: File, private val 
       return if (ProcessExpressions.IntermediateV1::class.java.name == original.name) {
         ObjectStreamClass.lookup(ProcessExpressions.IntermediateV1::class.java)
       } else original
+    }
+
+    @Throws(IOException::class, ClassNotFoundException::class)
+    override fun resolveClass(desc: ObjectStreamClass): Class<*> {
+      val name = desc.name
+      if (!isAllowed(name)) {
+        throw java.io.InvalidClassException("Unauthorized deserialization attempt: $name", name)
+      }
+      return super.resolveClass(desc)
+    }
+
+    private fun isAllowed(name: String): Boolean {
+      return name.startsWith("android.databinding.annotationprocessor.ProcessExpressions\$Intermediate") ||
+        name.startsWith("android.databinding.annotationprocessor.ProcessBindable\$Intermediate") ||
+        name.startsWith("android.databinding.tool.store.SetterStore\$") ||
+        name.startsWith("java.util.") ||
+        name.startsWith("java.lang.") ||
+        name.startsWith("[Ljava.util.") ||
+        name.startsWith("[Ljava.lang.") ||
+        name.startsWith("[Landroid.databinding.")
     }
   }
 }
