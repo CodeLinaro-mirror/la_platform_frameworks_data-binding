@@ -21,5 +21,8 @@
 -keepclassmembers class com.example.androidx.proguardedappwithtest.databinding.** {
   *;
 }
+-keep class com.example.androidx.proguardedappwithtest.R$* {
+  public static <fields>;
+}
 -dontwarn androidx.databinding.**
 -dontwarn org.xmlpull.v1.**
