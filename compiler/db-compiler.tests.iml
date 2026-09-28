@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/src/test/java">
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
+    </content>
+    <orderEntry type="module-library">
+      <library name="compilerCommon.antlr_runtime.shaded">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../bazel-bin/tools/data-binding/compilerCommon.antlr_runtime.shaded_jar.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="compilerCommon.antlr.shaded">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../bazel-bin/tools/data-binding/compilerCommon.antlr.shaded_jar.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="library" name="studio-sdk" level="project" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="db-compiler" />
+    <orderEntry type="module" module-name="db-compilerCommon" />
+    <orderEntry type="module-library">
+      <library name="javapoet">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" scope="TEST" name="junit4" level="project" />
+    <orderEntry type="library" scope="TEST" name="kotlin-test" level="project" />
+    <orderEntry type="library" scope="TEST" name="mockito" level="project" />
+    <orderEntry type="library" scope="TEST" name="compile-testing" level="project" />
+    <orderEntry type="library" scope="TEST" name="truth" level="project" />
+  </component>
+  <component name="TestModuleProperties" production-module="db-compiler" />
+</module>
