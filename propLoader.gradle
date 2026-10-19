@@ -19,6 +19,12 @@ databindingProperties.androidPluginVersion=ext.buildVersion
 databindingProperties.isIndependent = rootProject.name.equals("data-binding")
 databindingProperties.compileSdkVersion = databindingProperties.compileSdkVersionStr.trim()
 
+// The version of the prebuilt data binding runtime libraries that AGP adds to projects.
+Properties runtimeVersionProperties = new Properties()
+new File("${root}/runtime_version.bzl").withReader { runtimeVersionProperties.load(it) }
+databindingProperties.runtimeVersion =
+        runtimeVersionProperties.getProperty('DATA_BINDING_RUNTIME_VERSION') - '"' - '"'
+
 ext.dataBindingConfig = databindingProperties
 databindingProperties.artifactOutFolder = "${root}/../../out/repo"
 def addRemoteRepos = getBooleanValue(project, "addRemoteRepos", false)

@@ -1,6 +1,6 @@
 #!/bin/bash
 current_dir=$PWD;
-if [ ! -e 'integration-tests' ] || [ ! -e 'extensions' ]; then
+if [ ! -e 'integration-tests' ]; then
   echo "must run this under {src}/tools/data-binding"
   exit 1
 fi
@@ -27,10 +27,6 @@ copy_gradle() {
 OIFS="$IFS"
 IFS=$'\n'
 
-cd extensions;
-copy_gradle "../.."
-cd ../extensions-support;
-copy_gradle "../.."
 echo "start in $current_dir"
 cd $current_dir;
 for line in `find integration-tests integration-tests-support -name 'settings.gradle'`

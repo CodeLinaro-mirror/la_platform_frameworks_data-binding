@@ -11,8 +11,6 @@ maven-repo
 .idea/libraries
 .idea/modules
 old-version-projects/*/build
-extensions/*/build
-extensions-support/*/build
 build/kotlin-build/caches/version.txt
 # the gradle files below are generated locally, never commit
 integration-tests/*/build
@@ -23,22 +21,7 @@ integration-tests-support/*/gradle
 integration-tests-support/*/build
 integration-tests-support/*/gradlew
 integration-tests-support/*/gradlew.bat
-extensions/gradle
-extensions/gradlew
-extensions-support/gradle
-extensions-support/gradlew
 */out
-tmp_lib
-tmp_jar
-tmp_adapters
-extensions/baseAdapters/baseAdapters.iml
-extensions/extensions.iml
-extensions/library/library.iml
-extensions-support/baseAdapters/baseAdapters.iml
-extensions-support/extensions.iml
-extensions-support/library/library.iml
-extensions-support/*/build
-extensions/*/build
 data-binding.iml
 *.classpath
 *.project

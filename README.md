@@ -1,6 +1,6 @@
 ## Setting up
-run the init.sh script in {src}/tools/data-binding. This will make the extensions and integration
-tests runnable directly.
+run the init.sh script in {src}/tools/data-binding. This will make the integration tests runnable
+directly.
 
 `cd {src}/tools/data-binding && ./init.sh`
 
@@ -26,42 +26,26 @@ coffee. Then it will be faster and more reliable than gradle.
 
 `bazel build //tools/data-binding/...`
 
-### Runtime Artifacts (extensions)
-This project is compiled using android gradle plugin or bazel
-to compile from gradle (under {src}/tools)
-
-`./gradlew :dB:buildDataBindingRuntimeArtifacts`
-
-to compile from bazel run
+### Runtime Artifacts
+The runtime libraries (e.g. androidx.databinding:databinding-runtime) are not built from source.
+AGP adds the version in DATA_BINDING_RUNTIME_VERSION (in runtime_version.bzl), the latest stable
+version on maven.google.com, to projects that use data binding or view binding. Bazel takes them
+from the prebuilts in {src}/prebuilts/tools/common/m2/repository, and
 
 `bazel build //tools/data-binding:runtimeLibraries`
 
-You can also compile them from command line if you've run init.sh
-you must first compile the android gradle plugin:
+packages them as a Maven repository for tests.
 
-```
-cd {src}/tools && ./gradlew :pL
-cd {src}/tools/data-binding && ./gradlew build
-```
+To update them, add the new version to the prebuilts, then update DATA_BINDING_RUNTIME_VERSION in
+runtime_version.bzl and its copy in the integration test framework (TestVersions.kt in
+{src}/tools/base/build-system/integration-test/framework).
 
-Due to the androidX change, we still keep the libraries in the old namespace.
-They are under extensions-support so any change in extensions should be ported to
-extensions-support.
+Their sources are kept in extensions/ (androidx.databinding) and extensions-support/ (the old
+com.android.databinding namespace) for reference only. Nothing builds them anymore.
 
 ## Running in the IDE
 ### Compile Time Code
 The main project still has proper gradle configuration so you can open it in Intellij
-
-### Runtime Libraries (a.k.a extensions)
-First, compile the local gradle plugin and also make sure you've run init.gradle
-
-`cd {src}/tools && ./gradlew :pL`
-
-The run the init script:
-
-`cd {src}/tools/data-binding && ./init.sh`
-
-Now you can open extensions in Android Studio.
 
 ## Running Android Gradle Plugin Data Binding Tests
 Some of data binding tests are only in AGP. To run them:
@@ -168,10 +152,3 @@ breakpoints in databinding code.
 ```
 ./gradlew :base:build-system:integration-test:databinding:test :base:build-system:integration-test:application:cIT -D:base:build-system:integration-test:application:connectedIntegrationTest.single=DataBinding\*
 ```
-
-### generating online docs for runtime libs
-
-`cd extensions && gradlew  :generateDocs -Pandroid.injected.invoked.from.ide=true --info -Ponline=true -PincludeDoclava`
-
-// remove online parameter to get offline docs
-// we pass invoked from ide to enable default setup

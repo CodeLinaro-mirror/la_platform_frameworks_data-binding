@@ -48,24 +48,6 @@ task deleteEap(type: Delete) {
     delete "${dataBindingConfig.eapOutDir}"
 }
 
-def buildExtensionsTask = project.tasks.create "buildExtensionsTask", Exec
-buildExtensionsTask.workingDir file('extensions').getAbsolutePath()
-buildExtensionsTask.commandLine './gradlew'
-buildExtensionsTask.args 'clean', 'publish', '--info', '--stacktrace',
-        "-PuseReleaseVersion=${dataBindingConfig.inReleaseBuild ? 'true' : 'false'}",
-        "-PaddRemoteRepos=${dataBindingConfig.addRemoteRepos ? 'true' : 'false'}",
-        "-PforGradlePlugin=${dataBindingConfig.forGradlePlugin ? 'true' : 'false'}"
-buildExtensionsTask.dependsOn publishAllSubprojects
-
-def prepareExtensionPrebuilds = project.tasks.create "prepareExtensionPrebuilds", Exec
-prepareExtensionPrebuilds.workingDir file('extensions').getAbsolutePath()
-prepareExtensionPrebuilds.commandLine './gradlew'
-prepareExtensionPrebuilds.args 'clean', 'preparePrebuilds', '--info', '--stacktrace',
-        "-PuseReleaseVersion=${dataBindingConfig.inReleaseBuild ? 'true' : 'false'}",
-        "-PaddRemoteRepos=${dataBindingConfig.addRemoteRepos ? 'true' : 'false'}",
-        "-PforGradlePlugin=${dataBindingConfig.forGradlePlugin ? 'true' : 'false'}"
-prepareExtensionPrebuilds.dependsOn publishAllSubprojects
-
 file('integration-tests').listFiles().findAll { it.isDirectory() }.each {
     def strippedName = it.getName().replaceAll("[^A-Za-z0-9]", "-")
     def testTask = project.tasks.create "runTestsOf${strippedName.capitalize()}", Exec
@@ -89,7 +71,6 @@ task runAllTests {
 
 task preparePrebuilds() {
     dependsOn deletePrebuildFolder
-    dependsOn prepareExtensionPrebuilds
 }
 
 allprojects {
@@ -103,7 +84,6 @@ allprojects {
 publishAllSubprojects.shouldRunAfter deleteRepo
 publishAllSubprojects.shouldRunAfter deletePrebuildFolder
 
-buildExtensionsTask.shouldRunAfter deleteRepo
 tasks['runTestsOfMultiModuleTestApp'].dependsOn tasks['runTestsOfIndependentLibrary']
 
 
@@ -285,49 +265,4 @@ def fullJar(project) {
                 }
             }
     }
-}
-
-def getOsSdkFolderName() {
-    final String osName = System.getProperty("os.name").toLowerCase();
-    if (osName.startsWith("mac")) {
-        return "darwin";
-    } else if (osName.startsWith("linux")) {
-        return "linux";
-    } else if (osName.startsWith("windows")) {
-        return "windows";
-    }
-    throw new IllegalStateException("cannot run build on $osName")
-}
-// compilation for runtime libraries
-def getFullSdkPath() {
-    return rootProject.file("../prebuilts/studio/sdk/${getOsSdkFolderName()}")
-}
-
-def createExtensionsBuildTask(folder, taskName) {
-    def buildRuntimeLibrary = tasks.create(name: taskName, type: Exec) {
-        def libBuild = file("${dataBindingRootFolder}/$folder")
-        workingDir libBuild.getAbsolutePath()
-        if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
-            commandLine "$rootDir\\gradlew.bat"
-        } else {
-            commandLine "$rootDir/gradlew"
-        }
-        args '-q', '-p', libBuild.getAbsolutePath(), 'publish', '--stacktrace'
-        environment VERSION: rootProject.buildVersion
-        environment MAVEN_REPO: rootProject.ext.localRepo
-        environment PREBUILTS_REPO: rootProject.file('../prebuilts/tools/common/m2/repository')
-        environment OUT_REPO: rootProject.ext.localRepo
-        def fullSdkPath = getFullSdkPath()
-        if (fullSdkPath.exists()) {
-            environment ANDROID_HOME: fullSdkPath
-            environment ANDROID_SDK_ROOT: null
-        }
-    }
-    return buildRuntimeLibrary
-}
-
-if (!dataBindingConfig.isIndependent) {
-    apply from: '../buildSrc/base/runtimeArtifact.gradle'
-    registerRuntimeArtifactTask(createExtensionsBuildTask("extensions", "buildDataBindingRuntimeArtifacts"))
-    registerRuntimeArtifactTask(createExtensionsBuildTask("extensions-support", "buildDataBindingRuntimeArtifactsForSupport"))
 }

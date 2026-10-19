@@ -93,6 +93,9 @@ project.tasks.create(name : "generateGrammar", type : JavaExec) {
 }
 
 def versionProvider = project.provider { project.version }
+// The version of the prebuilt data binding runtime libraries that AGP adds to projects, from
+// runtime_version.bzl (see propLoader.gradle).
+def runtimeVersionProvider = project.provider { dataBindingConfig.runtimeVersion }
 def buildVersionFileProvider = project.provider { project.file(new File(sourceSets.main.output.resourcesDir,"data_binding_version_info.properties")) }
 tasks.create(name : 'exportBuildVersions').doLast {
     def props = new HashMap();
@@ -102,7 +105,7 @@ tasks.create(name : 'exportBuildVersions').doLast {
     props.put("compilerCommon", versionProvider.get())
     props.put("compiler", versionProvider.get())
     props.put("baseLibrary", versionProvider.get())
-    props.put("extensions", versionProvider.get())
+    props.put("extensions", runtimeVersionProvider.get())
     buildVersionFile.getParentFile().mkdirs()
     logger.info("writing build versions file to $buildVersionFile")
     def propText = new StringBuilder();
