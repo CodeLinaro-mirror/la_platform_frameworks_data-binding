@@ -16,22 +16,11 @@
     <orderEntry type="module" module-name="android.sdktools.android-annotations" scope="TEST" />
     <orderEntry type="module" module-name="db-compilerCommon" scope="TEST" />
     <orderEntry type="module" module-name="db-compiler" scope="TEST" />
-    <orderEntry type="module-library" scope="TEST">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/junit/junit/4.12/junit-4.12.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/junit/junit/4.12/junit-4.12-sources.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/org/apache/commons/commons-lang3/3.3.2/commons-lang3-3.3.2.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/org/apache/commons/commons-lang3/3.21.0/commons-lang3-3.21.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -40,7 +29,7 @@
     <orderEntry type="module-library" scope="TEST">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/commons-io/commons-io/2.4/commons-io-2.4.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../../prebuilts/tools/common/m2/repository/commons-io/commons-io/2.22.0/commons-io-2.22.0.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
