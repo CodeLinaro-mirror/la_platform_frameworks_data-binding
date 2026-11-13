@@ -12,17 +12,7 @@ version. YMMV)
 
 ## Building Artifacts
 ### Compile Time Artifacts
-They are compiled as part of the Android Gradle Plugin when they are shipped.
-Under {src}/tools, you can run tasks for
-
-`./gradlew :dB:<TASK_NAME>`
-
-It also works independently, so you can just run
-
-`cd {src}/data-binding && ./gradlew :dB:comp:test`
-
-It also compiles with BAZEL :). It will take ages when you run it for the first time, go for a
-coffee. Then it will be faster and more reliable than gradle.
+Data binding compile-time artifacts are built with Bazel:
 
 `bazel build //tools/data-binding/...`
 
@@ -45,7 +35,7 @@ com.android.databinding namespace) for reference only. Nothing builds them anymo
 
 ## Running in the IDE
 ### Compile Time Code
-The main project still has proper gradle configuration so you can open it in Intellij
+Compile-time modules can be opened and developed from the Studio IntelliJ project (`tools/adt/idea`).
 
 ## Running Android Gradle Plugin Data Binding Tests
 Some of data binding tests are only in AGP. To run them:
